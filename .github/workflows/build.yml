@@ -42,6 +42,11 @@ jobs:
         run: echo "##[set-output name=branch;]$(echo `git branch --show-current`)"
         id: extract_branch
 
+      - name: Print branch name
+        shell: bash
+        run: |
+          echo "## branch name is: ${{ steps.extract_branch.outputs.branch }}"
+
       - name: Build/Push (main)
         uses: docker/build-push-action@v2
         with:
