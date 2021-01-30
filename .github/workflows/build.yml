@@ -42,26 +42,25 @@ jobs:
         run: echo "##[set-output name=branch;]$(echo `git branch --show-current`)"
         id: extract_branch
 
-      - name: Generate Container Tag
-        shell: bash
-        run: echo "##[set-output name=tag;]$(echo latest)"
-        id: container_tag
-        if: |
-          steps.extract_branch.outputs.branch == 'main'
-
-      - name: Generate Container Tag
-        shell: bash
-        run: echo "##[set-output name=tag;]$(echo snapshot-${{ steps.extract_branch.outputs.branch }}-${{ github.run_number }})"
-        id: container_tag
-        if: |
-          steps.extract_branch.outputs.branch != 'main'
-
-      - name: Build and Push
+      - name: Build/Push (main)
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
           tags: |
             ghcr.io/openziti/ziti-http-agent:${{ github.run_number }}
-            ghcr.io/openziti/ziti-http-agent:${{ steps.container_tag.outputs.tag }}
+            ghcr.io/openziti/ziti-http-agent:latest
+        if: |
+          steps.extract_branch.outputs.branch == 'main'
 
+      - name: Build/Push (PR)
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/openziti/ziti-http-agent:${{ github.run_number }}
+            ghcr.io/openziti/ziti-http-agent:snapshot-${{ steps.extract_branch.outputs.branch }}-${{ github.run_number }}
+        if: |
+          steps.extract_branch.outputs.branch != 'main'
+          
