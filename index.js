@@ -21,7 +21,8 @@ const path      = require('path');
 const http      = require('http');
 const connect   = require('connect');
 const httpProxy = require('./lib/http-proxy');
-const common = require('./lib/http-proxy/common');
+const common    = require('./lib/http-proxy/common');
+const terminate = require('./lib/terminate');
 const winston   = require('winston');
 require('winston-daily-rotate-file');
 // const serveStatic = require('serve-static');
@@ -236,18 +237,29 @@ const startAgent = ( logger ) => {
         proxy.web(req, res);
     })
 
-    http.createServer(app).listen( agent_port );
+    const server = http.createServer(app).listen( agent_port );
+
+    const exitHandler = terminate( server, {
+        logger: logger,
+        coredump: true,
+        timeout: 500
+    });
+
+    process.on('uncaughtException', exitHandler(1, 'Unexpected Error'))
+    process.on('unhandledRejection', exitHandler(1, 'Unhandled Promise'))
+    process.on('SIGTERM', exitHandler(0, 'SIGTERM'))
+    process.on('SIGINT', exitHandler(0, 'SIGINT'))
+    
 };
 
 
-  
 /** --------------------------------------------------------------------------------------------------
  *  Initialize the Ziti NodeJS SDK 
  */
 zitiInit().then(() =>  {
 
     var logger = createLogger();
-
+    
     // Now start the agent
     startAgent( logger );
 

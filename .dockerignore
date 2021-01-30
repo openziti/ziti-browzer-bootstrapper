@@ -1,0 +1,2 @@
+# ignore local assets from development
+node_modules
