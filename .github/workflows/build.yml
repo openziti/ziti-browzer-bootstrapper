@@ -40,6 +40,8 @@ jobs:
       - name: Extract branch name
         shell: bash
         run: |
+          echo "1---branch is: $(git branch --show-current)"
+          echo "2---pr_number is: $(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")"
           echo "##[set-output name=branch;]$(echo $(git branch --show-current))"
         id: extract_branch
 
