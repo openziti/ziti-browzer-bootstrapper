@@ -39,16 +39,14 @@ jobs:
 
       - name: Extract branch name
         shell: bash
-        run: |
-          echo "1---branch is: $(git branch --show-current)"
-          echo "2---pr_number is: $(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")"
-          echo "##[set-output name=branch;]$(echo $(git branch --show-current))"
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
 
-      - name: Print branch name
+      - name: Extract PR number
         shell: bash
         run: |
-          echo "## branch name is: ${{ steps.extract_branch.outputs.branch }}"
+          echo "##[set-output name=pr_number;]$(echo $(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH"))"
+        id: extract_pr_number
 
       - name: Build/Push (main)
         uses: docker/build-push-action@v2
@@ -68,7 +66,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/openziti/ziti-http-agent:${{ github.run_number }}
-            ghcr.io/openziti/ziti-http-agent:snapshot-${{ steps.extract_branch.outputs.branch }}-${{ github.run_number }}
+            ghcr.io/openziti/ziti-http-agent:PR${{ steps.extract_pr_number.outputs.pr_number }}.${{ github.run_number }}
         if: |
           steps.extract_branch.outputs.branch != 'main'
           
