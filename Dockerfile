@@ -27,7 +27,7 @@ USER node
 COPY --chown=node:node index.js .
 COPY --chown=node:node lib ./lib/
 COPY --chown=node:node bin ./bin/
-COPY --chown=node:node agent.json .
+# COPY --chown=node:node agent.json .
 
 # Expose the Ziti HTTP Agent for traffic to be proxied (8000) and the
 # REST API where it can be configured (8001)
