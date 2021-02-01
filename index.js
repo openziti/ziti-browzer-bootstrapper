@@ -15,14 +15,16 @@ limitations under the License.
 */
 
 const SegfaultHandler = require('segfault-handler');
-SegfaultHandler.registerHandler('crash.log');
+SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const path      = require('path');
+const fs        = require('fs');
 const http      = require('http');
 const connect   = require('connect');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
 const terminate = require('./lib/terminate');
+const pjson     = require('./package.json');
 const winston   = require('winston');
 require('winston-daily-rotate-file');
 // const serveStatic = require('serve-static');
@@ -31,8 +33,8 @@ require('winston-daily-rotate-file');
 const ziti    = require('ziti-sdk-nodejs');
 require('assert').strictEqual(ziti.ziti_hello(),"ziti");
 
+var logger;
 
-  
 /**
  * 
  */
@@ -78,6 +80,12 @@ var ziti_inject_html = `
  */
     const createLogger = () => {
 
+    var logDir = 'log';
+
+    if ( !fs.existsSync( logDir ) ) {
+        fs.mkdirSync( logDir );
+    }
+    
     const { combine, timestamp, label, printf, splat } = winston.format;
 
     const logFormat = printf(({ level, message, durationMs, timestamp }) => {
@@ -89,9 +97,8 @@ var ziti_inject_html = `
     });
 
     var dailyRotateFile = new winston.transports.DailyRotateFile({
-        filename: 'ziti-http-agent-%DATE%.log',
-        datePattern: 'YYYY-MM-DD-HH',
-        zippedArchive: true,
+        filename: path.join(__dirname, logDir, '/ziti-http-agent.log'),
+        datePattern: 'MM-DD-YYYY',
         maxSize: '20m',
         maxFiles: '7d'
     });
@@ -107,14 +114,14 @@ var ziti_inject_html = `
             logFormat
         ),
         transports: [
-            new winston.transports.File({ filename: 'ziti-http-agent.log' }),
-            // dailyRotateFile
+            new winston.transports.File({ filename: path.join(__dirname, logDir, '/ziti-http-agent.log' ) }),
+            dailyRotateFile
         ],
         exceptionHandlers: [    // handle Uncaught exceptions
-            new winston.transports.File({ filename: 'ziti-http-agent.log' })
+            new winston.transports.File({ filename: path.join(__dirname, logDir, '/ziti-http-agent-uncaught-exceptions.log' ) })
         ],
         rejectionHandlers: [    // handle Uncaught Promise Rejections
-            new winston.transports.File({ filename: 'ziti-http-agent.log' })
+            new winston.transports.File({ filename: path.join(__dirname, logDir, '/ziti-http-agent-uncaught-promise-rejections.log' ) })
         ],
         exitOnError: false,     // Don't die if we encounter an uncaught exception or promise rejection
     });
@@ -145,12 +152,17 @@ const zitiInit = () => {
 
     return new Promise((resolve, reject) => {
 
-        var rc = ziti.ziti_init( agent_identity_path , () => {
-            resolve();
+        var rc = ziti.ziti_init( agent_identity_path , ( init_rc ) => {
+            if (init_rc < 0) {
+                return reject('ziti_init failed');
+            }
+            return resolve();
         });
+
         if (rc < 0) {
-            reject('ziti_init failed');
+            return reject('ziti_init failed');
         }
+
     });
 };
 
@@ -253,21 +265,30 @@ const startAgent = ( logger ) => {
 };
 
 
-/** --------------------------------------------------------------------------------------------------
- *  Initialize the Ziti NodeJS SDK 
+/**
+ * 
  */
-zitiInit().then(() =>  {
+const main = async () => {
 
-    var logger = createLogger();
-    
-    // Now start the agent
+    logger = createLogger();
+
+    logger.info(`ziti-http-agent version ${pjson.version} starting at ${new Date()}`);
+
+    zitiInit().then( () =>  {
+        logger.info('zitiInit completed');
+    } ).catch((err) => {
+        logger.error('FAILURE: (%s)', err);
+        winston.log_and_exit("info","bye",1);
+        setTimeout(function(){  
+            process.exit(-1);
+        }, 1000);
+    });
+
+
+    // Now start the Ziti HTTP Agent
     startAgent( logger );
 
-})
-.catch((err) => {
-    console.error('FAILURE: (%s)', err);
-    setTimeout(function(){  
-        process.exit(-1);
-    }, 1000);
-});
-
+  };
+  
+main();
+  
