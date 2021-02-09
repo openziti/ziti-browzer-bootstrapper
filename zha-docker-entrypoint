@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec node index.js >> ./log/ziti-http-agent.log 2>&1

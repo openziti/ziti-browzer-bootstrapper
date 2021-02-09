@@ -28,12 +28,14 @@ const pjson     = require('./package.json');
 const winston   = require('winston');
 require('winston-daily-rotate-file');
 // const serveStatic = require('serve-static');
+const heapdump  = require('heapdump');
 
 
-const ziti    = require('ziti-sdk-nodejs');
-require('assert').strictEqual(ziti.ziti_hello(),"ziti");
 
-var logger;
+var logger;     // for ziti-http-agent
+var log_file    // for ...
+
+var ziti;
 
 /**
  * 
@@ -78,14 +80,14 @@ var ziti_inject_html = `
 /** --------------------------------------------------------------------------------------------------
  *  Create logger 
  */
-    const createLogger = () => {
+const createLogger = () => {
 
     var logDir = 'log';
 
     if ( !fs.existsSync( logDir ) ) {
         fs.mkdirSync( logDir );
     }
-    
+
     const { combine, timestamp, label, printf, splat } = winston.format;
 
     const logFormat = printf(({ level, message, durationMs, timestamp }) => {
@@ -96,15 +98,6 @@ var ziti_inject_html = `
         }
     });
 
-    var dailyRotateFile = new winston.transports.DailyRotateFile({
-        filename: path.join(__dirname, logDir, '/ziti-http-agent.log'),
-        datePattern: 'MM-DD-YYYY',
-        maxSize: '20m',
-        maxFiles: '7d'
-    });
-    dailyRotateFile.on('rotate', function(oldFilename, newFilename) {
-        // in case we want to do anything when rotate happens
-    });    
 
     var logger = winston.createLogger({
         level: ziti_agent_loglevel,
@@ -114,8 +107,7 @@ var ziti_inject_html = `
             logFormat
         ),
         transports: [
-            new winston.transports.File({ filename: path.join(__dirname, logDir, '/ziti-http-agent.log' ) }),
-            dailyRotateFile
+            new winston.transports.Console({format: combine( timestamp(), logFormat ), }),
         ],
         exceptionHandlers: [    // handle Uncaught exceptions
             new winston.transports.File({ filename: path.join(__dirname, logDir, '/ziti-http-agent-uncaught-exceptions.log' ) })
@@ -126,16 +118,6 @@ var ziti_inject_html = `
         exitOnError: false,     // Don't die if we encounter an uncaught exception or promise rejection
     });
     
-    // If we're not in production then log to the `console` with the format:
-    //  `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
-    if (process.env.NODE_ENV !== 'production') {
-        logger.add(new winston.transports.Console({
-            format: combine(
-                timestamp(),
-                logFormat
-            ),
-        }));
-    }
 
     return( logger );
 }
@@ -182,14 +164,25 @@ const startAgent = ( logger ) => {
     headselect.query = 'head';
     headselect.func = function (node) {
 
-        var rs = node.createReadStream();
-        var ws = node.createWriteStream({outer: false});
+        node.rs = node.createReadStream();
+        node.ws = node.createWriteStream({outer: false, emitClose: true});
 
-        // Inject the Ziti JS SDK at the front of <head> element so we are prepared to intercept as soon as possible
-        ws.write( ziti_inject_html );
+        node.rs.on('error', () => {
+            node.ws.end();
+            this.destroy();
+        });
+         
+        node.rs.on('end', () => {
+            node.ws.end();
+            node.rs = null;
+            node.ws = null;
+        });
+
+        // Inject the Ziti JS SDK at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
+        node.ws.write( ziti_inject_html );
 
         // Read the node and put it back into our write stream.
-        rs.pipe(ws, {});	
+        node.rs.pipe(node.ws, {});	
     } 
 
     selects.push(headselect);
@@ -273,6 +266,9 @@ const main = async () => {
     logger = createLogger();
 
     logger.info(`ziti-http-agent version ${pjson.version} starting at ${new Date()}`);
+
+    ziti = require('ziti-sdk-nodejs');
+    require('assert').strictEqual(ziti.ziti_hello(),"ziti");
 
     zitiInit().then( () =>  {
         logger.info('zitiInit completed');

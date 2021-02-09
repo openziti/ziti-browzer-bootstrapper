@@ -25,8 +25,9 @@ USER node
 
 # Bring in the source of the Ziti HTTP Agent to the working folder
 COPY --chown=node:node index.js .
+COPY --chown=node:node zha-docker-entrypoint .
 COPY --chown=node:node lib ./lib/
-COPY --chown=node:node bin ./bin/
+# COPY --chown=node:node bin ./bin/
 # COPY --chown=node:node agent.json .
 
 # Expose the Ziti HTTP Agent for traffic to be proxied (8000) and the
@@ -36,6 +37,6 @@ EXPOSE 8001
 
 # Put the Ziti HTTP Agent on path for zha-docker-entrypoint
 ENV PATH=/home/node/bin:$PATH
-# ENTRYPOINT ["/home/node/ziti-http-agent/zha-docker-entrypoint"]
+ENTRYPOINT ["/home/node/ziti-http-agent/zha-docker-entrypoint"]
 
-# CMD ["node index.js"]
+# CMD ["node index.js > ./log/ziti-http-agent.log > 2&1"]
