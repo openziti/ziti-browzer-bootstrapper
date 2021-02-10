@@ -55,7 +55,10 @@ var target_port = process.env.ZITI_AGENT_TARGET_PORT
  * 
  */
 var agent_host = process.env.ZITI_AGENT_HOST;
-var agent_port = process.env.ZITI_AGENT_PORT
+var agent_http_port = process.env.ZITI_AGENT_HTTP_PORT
+if (typeof agent_http_port === 'undefined') { agent_http_port = 8080; }
+var agent_https_port = process.env.ZITI_AGENT_HTTPS_PORT
+if (typeof agent_https_port === 'undefined') { agent_https_port = 8443; }
 
 
 /**
@@ -278,17 +281,20 @@ const startAgent = ( logger ) => {
 
     /** --------------------------------------------------------------------------------------------------
      *  Crank up the web server (which will do all the magic regarding cert acquisition, refreshing, etc)
+     *  The 'agent_http_port' and 'agent_https_port' values can be arbitrary values since they are used
+     *  inside the container.  The ports 80/443 are typically mapped onto the 'agent_http_port' and 
+     *  'agent_https_port' values.  e.g.  80->8080 & 443->8443
      */
-        // Start a TLS-based listener on the configured port (typically 443)
+        // Start a TLS-based listener on the configured port
         const httpsServer = glx.httpsServer(null, app);        
-        httpsServer.listen( agent_port, "0.0.0.0", function() {
+        httpsServer.listen( agent_https_port, "0.0.0.0", function() {
             logger.info('Listening on %o', httpsServer.address());
         });
 
         // ALSO listen on port 80 for ACME HTTP-01 Challenges
         // (the ACME and http->https middleware are loaded by glx.httpServer)
         var httpServer = glx.httpServer();
-        httpServer.listen(80, "0.0.0.0", function() {
+        httpServer.listen( agent_http_port, "0.0.0.0", function() {
             logger.info('Listening on %o', httpServer.address());
         });
     }
