@@ -19,7 +19,6 @@ SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const path      = require('path');
 const fs        = require('fs');
-const http      = require('http');
 const connect   = require('connect');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
@@ -29,6 +28,8 @@ const winston   = require('winston');
 require('winston-daily-rotate-file');
 // const serveStatic = require('serve-static');
 const heapdump  = require('heapdump');
+const greenlock = require('greenlock');
+const greenlock_express = require("greenlock-express");
 
 
 
@@ -53,7 +54,9 @@ var target_port = process.env.ZITI_AGENT_TARGET_PORT
 /**
  * 
  */
+var agent_host = process.env.ZITI_AGENT_HOST;
 var agent_port = process.env.ZITI_AGENT_PORT
+
 
 /**
  * 
@@ -154,6 +157,8 @@ const zitiInit = () => {
  */
 const startAgent = ( logger ) => {
 
+    logger.info(`Agent starting`);
+
     /** --------------------------------------------------------------------------------------------------
      *  Dynamically modify the proxied site's <head> element as we stream it back to the browser.  We will:
      *  1) inject the zitiConfig needed by the SDK
@@ -224,36 +229,142 @@ const startAgent = ( logger ) => {
     /** --------------------------------------------------------------------------------------------------
      *  Initiate the proxy and engage the above content injectors.
      */
-    var app = connect();
+    // var app = connect();
 
-    var proxy = httpProxy.createProxyServer({
-        ziti: ziti,
-        logger: logger,
-        changeOrigin: true,
-        target: target_scheme + '://' + target_host + ':' + target_port
+    // var proxy = httpProxy.createProxyServer({
+    //     ziti: ziti,
+    //     logger: logger,
+    //     changeOrigin: true,
+    //     target: target_scheme + '://' + target_host + ':' + target_port
+    // });
+
+    // // console.log('----: ', path.join(__dirname, 'ziti-static/js'));
+    // // app.use(serveStatic(path.join(__dirname, 'ziti-static/js')));
+
+    // app.use(require('./lib/inject')([], selects));
+
+    // app.use(function (req, res) {
+    //     proxy.web(req, res);
+    // })
+
+    // // if(process.env.NODE_ENV === 'production') {
+        // app.use((req, res, next) => {
+        //     if (req.header('x-forwarded-proto') !== 'https') {
+        //         res.redirect(`https://${req.header('host')}${req.url}`)
+        //     } else {
+        //         next()
+        //     }
+        // })
+    // // }
+
+    // const server = http.createServer(app).listen( agent_port );
+
+    // var options = {
+    //     key: fs.readFileSync('test/fixtures/keys/agent2-key.pem'),
+    //     cert: fs.readFileSync('test/fixtures/keys/agent2-cert.cert')
+    // };
+
+    // const server = https.createServer(options, app).listen( agent_port );
+
+    // const exitHandler = terminate( server, {
+    //     logger: logger,
+    //     coredump: true,
+    //     timeout: 500
+    // });
+
+    // process.on('uncaughtException', exitHandler(1, 'Unexpected Error'))
+    // process.on('unhandledRejection', exitHandler(1, 'Unhandled Promise'))
+    // process.on('SIGTERM', exitHandler(0, 'SIGTERM'))
+    // process.on('SIGINT', exitHandler(0, 'SIGINT'))
+    
+    //
+    // var greenlock = require('greenlock')
+    // logger.info('greenlock.sites is: %o', greenlock.sites);
+
+    // logger.info(`doing greenlock.sites.set of ${agent_host}  at ${new Date()}`);
+    // greenlock.sites.set({
+    //     subject: agent_host,
+    //     altnames: [agent_host]
+    // });
+
+    // var greenlock_express = require("greenlock-express")
+    // logger.info('greenlock is: %o', greenlock);
+
+    // logger.info(`greenlock.sites.add is: ${greenlock.sites.add}`);
+    // logger.info(`doing greenlock.sites.add  at ${new Date()}`);
+    // greenlock.sites.add({
+    //     subject: agent_host,
+    //     altnames: [agent_host]
+    // });
+
+
+    /** --------------------------------------------------------------------------------------------------
+     *  Set up the Let's Encrypt infra.  
+     * The configured 'agent_host' will be used when generating the TLS certs.
+     */
+    var gl = greenlock.create({
+        packageRoot: __dirname,
+        configDir: "./greenlock.d",
+        maintainerEmail: "openziti@openziti.org",
+        serverKeyType: "RSA-4096",
+        cluster: false      
     });
-
-    // console.log('----: ', path.join(__dirname, 'ziti-static/js'));
-    // app.use(serveStatic(path.join(__dirname, 'ziti-static/js')));
-
-    app.use(require('./lib/inject')([], selects));
-
-    app.use(function (req, res) {
-        proxy.web(req, res);
-    })
-
-    const server = http.createServer(app).listen( agent_port );
-
-    const exitHandler = terminate( server, {
-        logger: logger,
-        coredump: true,
-        timeout: 500
+    gl.sites.add({
+        subject: agent_host,
+        altnames: [agent_host]
     });
+    var gle = greenlock_express.init({
+        packageRoot: __dirname,
+        configDir: "./greenlock.d",
+        maintainerEmail: "openziti@openziti.org",
+        cluster: false
+    });
+    gle.ready(httpsWorker);
+    /** -------------------------------------------------------------------------------------------------- */
 
-    process.on('uncaughtException', exitHandler(1, 'Unexpected Error'))
-    process.on('unhandledRejection', exitHandler(1, 'Unhandled Promise'))
-    process.on('SIGTERM', exitHandler(0, 'SIGTERM'))
-    process.on('SIGINT', exitHandler(0, 'SIGINT'))
+      
+
+    /** --------------------------------------------------------------------------------------------------
+     *  Initiate the proxy and engage the content injectors.
+     */
+    function httpsWorker( glx ) {
+
+        logger.info(`httpsWorker starting`);
+
+        var app = connect();
+
+        var proxy = httpProxy.createProxyServer({
+            ziti: ziti,
+            logger: logger,
+            changeOrigin: true,
+            target: target_scheme + '://' + target_host + ':' + target_port
+        });
+        
+        app.use(require('./lib/inject')([], selects));
+    
+        app.use(function (req, res) {
+            proxy.web(req, res);
+        })
+    /** -------------------------------------------------------------------------------------------------- */
+    
+
+    /** --------------------------------------------------------------------------------------------------
+     *  Crank up the web server (which will do all the magic regarding cert acquisition, refreshing, etc)
+     */
+        // Start a TLS-based listener on the configured port (typically 443)
+        const httpsServer = glx.httpsServer(null, app);        
+        httpsServer.listen( agent_port, "0.0.0.0", function() {
+            logger.info('Listening on %o', httpsServer.address());
+        });
+
+        // ALSO listen on port 80 for ACME HTTP-01 Challenges
+        // (the ACME and http->https middleware are loaded by glx.httpServer)
+        var httpServer = glx.httpServer();
+        httpServer.listen(80, "0.0.0.0", function() {
+            logger.info('Listening on %o', httpServer.address());
+        });
+    }
+    /** -------------------------------------------------------------------------------------------------- */
     
 };
 
@@ -271,7 +382,7 @@ const main = async () => {
     require('assert').strictEqual(ziti.ziti_hello(),"ziti");
 
     zitiInit().then( () =>  {
-        logger.info('zitiInit completed');
+        logger.info('zitiInit() completed');
     } ).catch((err) => {
         logger.error('FAILURE: (%s)', err);
         winston.log_and_exit("info","bye",1);
@@ -284,7 +395,7 @@ const main = async () => {
     // Now start the Ziti HTTP Agent
     startAgent( logger );
 
-  };
+};
   
 main();
   
