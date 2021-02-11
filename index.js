@@ -239,57 +239,6 @@ const startAgent = ( logger ) => {
      *  The configured 'agent_host' will be used when auto-generating the TLS certs.
      */
 
-
-    // try {
-    //     logger.info('now doing greenlock.create');
-
-    //     var gl = greenlock.create({
-    //         packageRoot: __dirname,
-    //         agreeToTerms: true,
-    //         configDir: "./greenlock.d",
-    //         packageAgent: pkg.name + '/' + pkg.version,
-    //         maintainerEmail: "openziti@netfoundry.io",
-    //         serverKeyType: "RSA-2048",
-    //         cluster: false,
-    //         notify: function(event, details) {
-    //             logger.info('greenlock event: %o, details: %o', event, details);
-    //         }    
-    //     });
-    //     logger.info('greenlock.create completed');
-        
-    //     var altnames = ['mattermost.ziti.netfoundry.io', 'mattermost.ziti.netfoundry.io'];
-    //     gl.sites.add({
-    //         subject: altnames[0],
-    //         altnames: altnames
-    //     });
-    //     logger.info('gl.sites.add completed');
-
-    //     gl.get({ servername: altnames[0] }).then(function(pems) {
-    //         if (pems && pems.privkey && pems.cert && pems.chain) {
-    //             logger.info('greenlock.get Success');
-    //         }
-    //         logger.info('greenlock.get returns pems: %o', pems);
-    //     })
-    //     .catch(function(e) {
-    //         logger.error('greenlock.get exception: %o', e);
-    //     });
-    // } catch (e) {
-    //     logger.error('exception: %o', e);
-    // }
-
-    // var gle = greenlock_express.init({
-    //     packageRoot: __dirname,
-    //     agreeToTerms: true,
-    //     packageAgent: pkg.name + '/' + pkg.version,
-    //     configDir: "./greenlock.d",
-    //     maintainerEmail: "openziti@netfoundry.io",
-    //     cluster: false,
-    //     notify: function(event, details) {
-    //         logger.info('greenlock event: %o, details: %o', event, details);
-    //     }    
-    // });
-    // gle.ready(httpsWorker);
-
     try {
 
         var domains = [ agent_host ];
@@ -353,9 +302,6 @@ const startAgent = ( logger ) => {
                 logger.info('greenlock event: %o, details: %o', event, details);
             }    
         });
-
-        //
-        // app.use('/', greenlock.middleware());
 
         // // Check in-memory cache of certificates for the named domain
         greenlock.check({ domains: domains }).then(function (results) {
