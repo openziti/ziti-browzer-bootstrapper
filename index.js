@@ -19,7 +19,6 @@ SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const path      = require('path');
 const fs        = require('fs');
-const http      = require('http');
 const connect   = require('connect');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
@@ -29,6 +28,12 @@ const winston   = require('winston');
 require('winston-daily-rotate-file');
 // const serveStatic = require('serve-static');
 const heapdump  = require('heapdump');
+// const greenlock = require('greenlock');
+const greenlock_express = require("greenlock-express");
+const pkg       = require('./package.json');
+var os = require('os')
+var Greenlock = require('greenlock');
+
 
 
 
@@ -53,7 +58,12 @@ var target_port = process.env.ZITI_AGENT_TARGET_PORT
 /**
  * 
  */
-var agent_port = process.env.ZITI_AGENT_PORT
+var agent_host = process.env.ZITI_AGENT_HOST;
+var agent_http_port = process.env.ZITI_AGENT_HTTP_PORT
+if (typeof agent_http_port === 'undefined') { agent_http_port = 8080; }
+var agent_https_port = process.env.ZITI_AGENT_HTTPS_PORT
+if (typeof agent_https_port === 'undefined') { agent_https_port = 8443; }
+
 
 /**
  * 
@@ -154,6 +164,8 @@ const zitiInit = () => {
  */
 const startAgent = ( logger ) => {
 
+    logger.info(`Agent starting`);
+
     /** --------------------------------------------------------------------------------------------------
      *  Dynamically modify the proxied site's <head> element as we stream it back to the browser.  We will:
      *  1) inject the zitiConfig needed by the SDK
@@ -220,40 +232,182 @@ const startAgent = ( logger ) => {
     selects.push(metaselect);
     /** -------------------------------------------------------------------------------------------------- */
 
-
-    /** --------------------------------------------------------------------------------------------------
-     *  Initiate the proxy and engage the above content injectors.
-     */
     var app = connect();
 
-    var proxy = httpProxy.createProxyServer({
-        ziti: ziti,
-        logger: logger,
-        changeOrigin: true,
-        target: target_scheme + '://' + target_host + ':' + target_port
-    });
+    /** --------------------------------------------------------------------------------------------------
+     *  Set up the Let's Encrypt infra.  
+     *  The configured 'agent_host' will be used when auto-generating the TLS certs.
+     */
 
-    // console.log('----: ', path.join(__dirname, 'ziti-static/js'));
-    // app.use(serveStatic(path.join(__dirname, 'ziti-static/js')));
+    try {
 
-    app.use(require('./lib/inject')([], selects));
+        var domains = [ agent_host ];
 
-    app.use(function (req, res) {
-        proxy.web(req, res);
-    })
+        // Let's Encrypt staging API
+        var acme_server =  'https://acme-staging-v02.api.letsencrypt.org/directory';
+        // Let's Encrypt production API
+        // var acme_server =  'https://acme-v02.api.letsencrypt.org/directory';
+        
 
-    const server = http.createServer(app).listen( agent_port );
+        // Storage Backend
+        var leStore = require('le-store-certbot').create({
+            configDir: '~/acme/etc'                                 // or /etc/letsencrypt or wherever
+        , debug: true
+        });
+  
+        // ACME Challenge Handlers
+        var leHttpChallenge = require('le-challenge-fs').create({
+            webrootPath: '~/acme/var/'                              // or template string such as
+        , debug: true                                               // '/srv/www/:hostname/.well-known/acme-challenge'
+        });
+  
+        function leAgree(opts, agreeCb) {
+            agreeCb(null, opts.tosUrl);
+        }
+          
+        var greenlock = Greenlock.create({
+            version: 'draft-12'                                     // 'draft-12' or 'v01'
+                                                                    // 'draft-12' is for Let's Encrypt v2 otherwise known as ACME draft 12
+                                                                    // 'v02' is an alias for 'draft-12'
+                                                                    // 'v01' is for the pre-spec Let's Encrypt v1
+          , server: acme_server
+                      
+          , maintainerEmail: "openziti@netfoundry.io"
 
-    const exitHandler = terminate( server, {
-        logger: logger,
-        coredump: true,
-        timeout: 500
-    });
+          , packageRoot: __dirname
+          , configDir: "./greenlock.d"
+          , packageAgent: pkg.name + '/' + pkg.version
 
-    process.on('uncaughtException', exitHandler(1, 'Unexpected Error'))
-    process.on('unhandledRejection', exitHandler(1, 'Unhandled Promise'))
-    process.on('SIGTERM', exitHandler(0, 'SIGTERM'))
-    process.on('SIGINT', exitHandler(0, 'SIGINT'))
+          , store: leStore                                          // handles saving of config, accounts, and certificates
+          , challenges: {
+              'http-01': leHttpChallenge                            // handles /.well-known/acme-challege keys and tokens
+            }
+          , challengeType: 'http-01'                                // default to this challenge type
+          , agreeToTerms: leAgree                                   // hook to allow user to view and accept LE TOS
+           
+                                                                    // renewals happen at a random time within this window
+          , renewWithin: 14 * 24 * 60 * 60 * 1000                   // certificate renewal may begin at this time
+          , renewBy:     10 * 24 * 60 * 60 * 1000                   // certificate renewal should happen by this time
+           
+          , debug: true
+          , log: function (debug) {
+              logger.debug('greenlock log: %o', debug);
+            } 
+
+          , serverKeyType: "RSA-2048"
+
+          , cluster: false
+          
+          , notify: function(event, details) {
+                logger.info('greenlock event: %o, details: %o', event, details);
+            }    
+        });
+
+        // // Check in-memory cache of certificates for the named domain
+        greenlock.check({ domains: domains }).then(function (results) {
+
+            if (results) {
+                // we already have certificates
+                return;
+            }
+        
+            // Register Certificate manually
+            greenlock.register({
+        
+                  domains: domains,
+                  server: acme_server
+                , email: 'openziti@netfoundry.io'                      
+                , agreeTos: true                                      
+                , rsaKeySize: 2048                            
+                , challengeType: 'http-01'  // http-01, tls-sni-01, or dns-01
+        
+            }).then(function (results) {
+        
+                logger.info('Success: %o', results);
+        
+            }, function (err) {
+        
+                // Note: you must either use greenlock.middleware() with express,
+                // manually use greenlock.challenges['http-01'].get(opts, domain, key, val, done)
+                // or have a webserver running and responding
+                // to /.well-known/acme-challenge at `webrootPath`
+                logger.error(err);
+            });
+        });
+            
+        var gle = greenlock_express.init({
+            version: 'draft-12',
+            server: acme_server,
+            packageRoot: __dirname,
+            agreeToTerms: true,
+            packageAgent: pkg.name + '/' + pkg.version,
+            configDir: "./greenlock.d",
+            maintainerEmail: "openziti@netfoundry.io",
+            serverKeyType: "RSA-2048",
+            cluster: false,
+            notify: function(event, details) {
+                logger.info('greenlock_express event: %o, details: %o', event, details);
+            }    
+        });
+
+        // gle.sites.add({
+        //     subject: domains[0],
+        //     altnames: domains
+        // });
+
+        gle.ready(httpsWorker);
+
+    } catch (e) {
+        logger.error('exception: %o', e);
+    }
+    /** -------------------------------------------------------------------------------------------------- */
+
+      
+
+    /** --------------------------------------------------------------------------------------------------
+     *  Initiate the proxy and engage the content injectors.
+     */
+    function httpsWorker( glx ) {
+
+        logger.info(`httpsWorker starting`);
+
+        // var app = connect();
+
+        var proxy = httpProxy.createProxyServer({
+            ziti: ziti,
+            logger: logger,
+            changeOrigin: true,
+            target: target_scheme + '://' + target_host + ':' + target_port
+        });
+        
+        app.use(require('./lib/inject')([], selects));
+    
+        app.use(function (req, res) {
+            proxy.web(req, res);
+        })
+    /** -------------------------------------------------------------------------------------------------- */
+    
+
+    /** --------------------------------------------------------------------------------------------------
+     *  Crank up the web server (which will do all the magic regarding cert acquisition, refreshing, etc)
+     *  The 'agent_http_port' and 'agent_https_port' values can be arbitrary values since they are used
+     *  inside the container.  The ports 80/443 are typically mapped onto the 'agent_http_port' and 
+     *  'agent_https_port' values.  e.g.  80->8080 & 443->8443
+     */
+        // Start a TLS-based listener on the configured port
+        const httpsServer = glx.httpsServer(null, app);        
+        httpsServer.listen( agent_https_port, "0.0.0.0", function() {
+            logger.info('Listening on %o', httpsServer.address());
+        });
+
+        // ALSO listen on port 80 for ACME HTTP-01 Challenges
+        // (the ACME and http->https middleware are loaded by glx.httpServer)
+        var httpServer = glx.httpServer();
+        httpServer.listen( agent_http_port, "0.0.0.0", function() {
+            logger.info('Listening on %o', httpServer.address());
+        });
+    }
+    /** -------------------------------------------------------------------------------------------------- */
     
 };
 
@@ -271,7 +425,7 @@ const main = async () => {
     require('assert').strictEqual(ziti.ziti_hello(),"ziti");
 
     zitiInit().then( () =>  {
-        logger.info('zitiInit completed');
+        logger.info('zitiInit() completed');
     } ).catch((err) => {
         logger.error('FAILURE: (%s)', err);
         winston.log_and_exit("info","bye",1);
@@ -284,7 +438,7 @@ const main = async () => {
     // Now start the Ziti HTTP Agent
     startAgent( logger );
 
-  };
+};
   
 main();
   
