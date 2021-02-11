@@ -33,7 +33,7 @@ COPY --chown=node:node lib ./lib/
 # Expose the Ziti HTTP Agent for traffic to be proxied (8000) and the
 # REST API where it can be configured (8001)
 EXPOSE 8000
-EXPOSE 8001
+EXPOSE 8443
 
 # Put the Ziti HTTP Agent on path for zha-docker-entrypoint
 ENV PATH=/home/node/bin:$PATH

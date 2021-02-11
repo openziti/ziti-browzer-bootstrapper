@@ -28,8 +28,12 @@ const winston   = require('winston');
 require('winston-daily-rotate-file');
 // const serveStatic = require('serve-static');
 const heapdump  = require('heapdump');
-const greenlock = require('greenlock');
+// const greenlock = require('greenlock');
 const greenlock_express = require("greenlock-express");
+const pkg       = require('./package.json');
+var os = require('os')
+var Greenlock = require('greenlock');
+
 
 
 
@@ -228,29 +232,188 @@ const startAgent = ( logger ) => {
     selects.push(metaselect);
     /** -------------------------------------------------------------------------------------------------- */
 
+    var app = connect();
 
     /** --------------------------------------------------------------------------------------------------
      *  Set up the Let's Encrypt infra.  
-     * The configured 'agent_host' will be used when generating the TLS certs.
+     *  The configured 'agent_host' will be used when auto-generating the TLS certs.
      */
-    var gl = greenlock.create({
-        packageRoot: __dirname,
-        configDir: "./greenlock.d",
-        maintainerEmail: "openziti@openziti.org",
-        serverKeyType: "RSA-4096",
-        cluster: false      
-    });
-    gl.sites.add({
-        subject: agent_host,
-        altnames: [agent_host]
-    });
-    var gle = greenlock_express.init({
-        packageRoot: __dirname,
-        configDir: "./greenlock.d",
-        maintainerEmail: "openziti@openziti.org",
-        cluster: false
-    });
-    gle.ready(httpsWorker);
+
+
+    // try {
+    //     logger.info('now doing greenlock.create');
+
+    //     var gl = greenlock.create({
+    //         packageRoot: __dirname,
+    //         agreeToTerms: true,
+    //         configDir: "./greenlock.d",
+    //         packageAgent: pkg.name + '/' + pkg.version,
+    //         maintainerEmail: "openziti@netfoundry.io",
+    //         serverKeyType: "RSA-2048",
+    //         cluster: false,
+    //         notify: function(event, details) {
+    //             logger.info('greenlock event: %o, details: %o', event, details);
+    //         }    
+    //     });
+    //     logger.info('greenlock.create completed');
+        
+    //     var altnames = ['mattermost.ziti.netfoundry.io', 'mattermost.ziti.netfoundry.io'];
+    //     gl.sites.add({
+    //         subject: altnames[0],
+    //         altnames: altnames
+    //     });
+    //     logger.info('gl.sites.add completed');
+
+    //     gl.get({ servername: altnames[0] }).then(function(pems) {
+    //         if (pems && pems.privkey && pems.cert && pems.chain) {
+    //             logger.info('greenlock.get Success');
+    //         }
+    //         logger.info('greenlock.get returns pems: %o', pems);
+    //     })
+    //     .catch(function(e) {
+    //         logger.error('greenlock.get exception: %o', e);
+    //     });
+    // } catch (e) {
+    //     logger.error('exception: %o', e);
+    // }
+
+    // var gle = greenlock_express.init({
+    //     packageRoot: __dirname,
+    //     agreeToTerms: true,
+    //     packageAgent: pkg.name + '/' + pkg.version,
+    //     configDir: "./greenlock.d",
+    //     maintainerEmail: "openziti@netfoundry.io",
+    //     cluster: false,
+    //     notify: function(event, details) {
+    //         logger.info('greenlock event: %o, details: %o', event, details);
+    //     }    
+    // });
+    // gle.ready(httpsWorker);
+
+    try {
+
+        var domains = [ agent_host ];
+
+        // Let's Encrypt staging API
+        var acme_server =  'https://acme-staging-v02.api.letsencrypt.org/directory';
+        // Let's Encrypt production API
+        // var acme_server =  'https://acme-v02.api.letsencrypt.org/directory';
+        
+
+        // Storage Backend
+        var leStore = require('le-store-certbot').create({
+            configDir: '~/acme/etc'                                 // or /etc/letsencrypt or wherever
+        , debug: true
+        });
+  
+        // ACME Challenge Handlers
+        var leHttpChallenge = require('le-challenge-fs').create({
+            webrootPath: '~/acme/var/'                              // or template string such as
+        , debug: true                                               // '/srv/www/:hostname/.well-known/acme-challenge'
+        });
+  
+        function leAgree(opts, agreeCb) {
+            agreeCb(null, opts.tosUrl);
+        }
+          
+        var greenlock = Greenlock.create({
+            version: 'draft-12'                                     // 'draft-12' or 'v01'
+                                                                    // 'draft-12' is for Let's Encrypt v2 otherwise known as ACME draft 12
+                                                                    // 'v02' is an alias for 'draft-12'
+                                                                    // 'v01' is for the pre-spec Let's Encrypt v1
+          , server: acme_server
+                      
+          , maintainerEmail: "openziti@netfoundry.io"
+
+          , packageRoot: __dirname
+          , configDir: "./greenlock.d"
+          , packageAgent: pkg.name + '/' + pkg.version
+
+          , store: leStore                                          // handles saving of config, accounts, and certificates
+          , challenges: {
+              'http-01': leHttpChallenge                            // handles /.well-known/acme-challege keys and tokens
+            }
+          , challengeType: 'http-01'                                // default to this challenge type
+          , agreeToTerms: leAgree                                   // hook to allow user to view and accept LE TOS
+           
+                                                                    // renewals happen at a random time within this window
+          , renewWithin: 14 * 24 * 60 * 60 * 1000                   // certificate renewal may begin at this time
+          , renewBy:     10 * 24 * 60 * 60 * 1000                   // certificate renewal should happen by this time
+           
+          , debug: true
+          , log: function (debug) {
+              logger.debug('greenlock log: %o', debug);
+            } 
+
+          , serverKeyType: "RSA-2048"
+
+          , cluster: false
+          
+          , notify: function(event, details) {
+                logger.info('greenlock event: %o, details: %o', event, details);
+            }    
+        });
+
+        //
+        // app.use('/', greenlock.middleware());
+
+        // // Check in-memory cache of certificates for the named domain
+        greenlock.check({ domains: domains }).then(function (results) {
+
+            if (results) {
+                // we already have certificates
+                return;
+            }
+        
+            // Register Certificate manually
+            greenlock.register({
+        
+                  domains: domains,
+                  server: acme_server
+                , email: 'openziti@netfoundry.io'                      
+                , agreeTos: true                                      
+                , rsaKeySize: 2048                            
+                , challengeType: 'http-01'  // http-01, tls-sni-01, or dns-01
+        
+            }).then(function (results) {
+        
+                logger.info('Success: %o', results);
+        
+            }, function (err) {
+        
+                // Note: you must either use greenlock.middleware() with express,
+                // manually use greenlock.challenges['http-01'].get(opts, domain, key, val, done)
+                // or have a webserver running and responding
+                // to /.well-known/acme-challenge at `webrootPath`
+                logger.error(err);
+            });
+        });
+            
+        var gle = greenlock_express.init({
+            version: 'draft-12',
+            server: acme_server,
+            packageRoot: __dirname,
+            agreeToTerms: true,
+            packageAgent: pkg.name + '/' + pkg.version,
+            configDir: "./greenlock.d",
+            maintainerEmail: "openziti@netfoundry.io",
+            serverKeyType: "RSA-2048",
+            cluster: false,
+            notify: function(event, details) {
+                logger.info('greenlock_express event: %o, details: %o', event, details);
+            }    
+        });
+
+        // gle.sites.add({
+        //     subject: domains[0],
+        //     altnames: domains
+        // });
+
+        gle.ready(httpsWorker);
+
+    } catch (e) {
+        logger.error('exception: %o', e);
+    }
     /** -------------------------------------------------------------------------------------------------- */
 
       
@@ -262,7 +425,7 @@ const startAgent = ( logger ) => {
 
         logger.info(`httpsWorker starting`);
 
-        var app = connect();
+        // var app = connect();
 
         var proxy = httpProxy.createProxyServer({
             ziti: ziti,
