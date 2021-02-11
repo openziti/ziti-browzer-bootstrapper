@@ -1,5 +1,7 @@
 #!/bin/sh
 
-npx greenlock add --subject "$ZITI_AGENT_HOST" --altnames "$ZITI_AGENT_HOST"
+exec npx greenlock add --subject "$ZITI_AGENT_HOST" --altnames "$ZITI_AGENT_HOST"
+
+sleep 1
 
 exec node index.js >> /ziti/log/ziti-http-agent.log 2>&1
