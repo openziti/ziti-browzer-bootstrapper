@@ -27,7 +27,7 @@ USER node
 COPY --chown=node:node index.js .
 COPY --chown=node:node zha-docker-entrypoint .
 COPY --chown=node:node lib ./lib/
-# COPY --chown=node:node bin ./bin/
+COPY --chown=node:node greenlock.d ./greenlock.d/
 # COPY --chown=node:node agent.json .
 
 # Expose the Ziti HTTP Agent for traffic to be proxied (8000) and the
