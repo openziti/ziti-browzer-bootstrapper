@@ -1,7 +1,7 @@
 #!/bin/sh
 
-npx greenlock add --subject "$ZITI_AGENT_HOST" --altnames "$ZITI_AGENT_HOST"
+# npx greenlock init --config-dir /ziti/greenlock.d --maintainer-email "$ZITI_AGENT_ACME_MAINTAINER_EMAIL"
 
-sleep 1
+npx greenlock add --subject "$ZITI_AGENT_HOST" --altnames "$ZITI_AGENT_HOST"
 
 node index.js >> /ziti/log/ziti-http-agent.log 2>&1 &
