@@ -28,52 +28,54 @@ const winston   = require('winston');
 require('winston-daily-rotate-file');
 // const serveStatic = require('serve-static');
 const heapdump  = require('heapdump');
-// const greenlock = require('greenlock');
 const greenlock_express = require("greenlock-express");
 const pkg       = require('./package.json');
-var os = require('os')
-var Greenlock = require('greenlock');
 
 
 
 
 var logger;     // for ziti-http-agent
-var log_file    // for ...
 
 var ziti;
 
 /**
  * 
  */
-var ziti_sdk_js_src = process.env.ZITI_SDK_JS_SRC
+var ziti_sdk_js_src = process.env.ZITI_SDK_JS_SRC;
 
 /**
  * 
  */
-var target_scheme = process.env.ZITI_AGENT_TARGET_SCHEME
+var target_scheme = process.env.ZITI_AGENT_TARGET_SCHEME;
 if (typeof target_scheme === 'undefined') { target_scheme = 'https'; }
-var target_host = process.env.ZITI_AGENT_TARGET_HOST
-var target_port = process.env.ZITI_AGENT_TARGET_PORT
+var target_host = process.env.ZITI_AGENT_TARGET_HOST;
+var target_port = process.env.ZITI_AGENT_TARGET_PORT;
 
 /**
  * 
  */
 var agent_host = process.env.ZITI_AGENT_HOST;
-var agent_http_port = process.env.ZITI_AGENT_HTTP_PORT
+var agent_http_port = process.env.ZITI_AGENT_HTTP_PORT;
 if (typeof agent_http_port === 'undefined') { agent_http_port = 8080; }
-var agent_https_port = process.env.ZITI_AGENT_HTTPS_PORT
+var agent_https_port = process.env.ZITI_AGENT_HTTPS_PORT;
 if (typeof agent_https_port === 'undefined') { agent_https_port = 8443; }
 
 
 /**
  * 
  */
-var agent_identity_path = process.env.ZITI_AGENT_IDENTITY_PATH
+var agent_identity_path = process.env.ZITI_AGENT_IDENTITY_PATH;
 
 /**
  * 
  */
-var ziti_agent_loglevel = process.env.ZITI_AGENT_LOGLEVEL
+var ziti_agent_loglevel = process.env.ZITI_AGENT_LOGLEVEL;
+
+/**
+ * 
+ */
+var ziti_agent_acme_maintainerEmail = process.env.ZITI_AGENT_ACME_MAINTAINER_EMAIL;
+if (typeof ziti_agent_acme_maintainerEmail === 'undefined') { ziti_agent_acme_maintainerEmail = 'openziti@netfoundry.io'; }
 
 
 /**
@@ -241,49 +243,36 @@ const startAgent = ( logger ) => {
 
     try {
 
-        var domains = [ agent_host ];
-
         // Let's Encrypt staging API
         var acme_server =  'https://acme-staging-v02.api.letsencrypt.org/directory';
         // Let's Encrypt production API
         // var acme_server =  'https://acme-v02.api.letsencrypt.org/directory';
-        
-
-        // Storage Backend
-        var leStore = require('le-store-certbot').create({
-            configDir: '~/acme/etc'                                 // or /etc/letsencrypt or wherever
-        , debug: true
-        });
-  
-        // ACME Challenge Handlers
-        var leHttpChallenge = require('le-challenge-fs').create({
-            webrootPath: '~/acme/var/'                              // or template string such as
-        , debug: true                                               // '/srv/www/:hostname/.well-known/acme-challenge'
-        });
-  
-        function leAgree(opts, agreeCb) {
-            agreeCb(null, opts.tosUrl);
+            
+        var configDir;
+        if (fs.existsSync('/ziti')) {
+            configDir = '/ziti/greenlock.d';                        // running in a container w/ziti volume mounted to host
+        } else {
+            configDir = './greenlock.d';                            // running on dev box with just node
         }
-          
-        var greenlock = Greenlock.create({
+
+        var gle = greenlock_express.init({
             version: 'draft-12'                                     // 'draft-12' or 'v01'
                                                                     // 'draft-12' is for Let's Encrypt v2 otherwise known as ACME draft 12
                                                                     // 'v02' is an alias for 'draft-12'
                                                                     // 'v01' is for the pre-spec Let's Encrypt v1
           , server: acme_server
+
+          , subject: agent_host
+          , altnames: [agent_host]
                       
-          , maintainerEmail: "openziti@netfoundry.io"
+          , maintainerEmail: ziti_agent_acme_maintainerEmail
 
           , packageRoot: __dirname
-          , configDir: "./greenlock.d"
+          , configDir: configDir
           , packageAgent: pkg.name + '/' + pkg.version
 
-          , store: leStore                                          // handles saving of config, accounts, and certificates
-          , challenges: {
-              'http-01': leHttpChallenge                            // handles /.well-known/acme-challege keys and tokens
-            }
           , challengeType: 'http-01'                                // default to this challenge type
-          , agreeToTerms: leAgree                                   // hook to allow user to view and accept LE TOS
+          , agreeToTerms: true                                      // hook to allow user to view and accept LE TOS
            
                                                                     // renewals happen at a random time within this window
           , renewWithin: 14 * 24 * 60 * 60 * 1000                   // certificate renewal may begin at this time
@@ -294,7 +283,7 @@ const startAgent = ( logger ) => {
               logger.debug('greenlock log: %o', debug);
             } 
 
-          , serverKeyType: "RSA-2048"
+          , serverKeyType: "RSA-4096"
 
           , cluster: false
           
@@ -302,58 +291,6 @@ const startAgent = ( logger ) => {
                 logger.info('greenlock event: %o, details: %o', event, details);
             }    
         });
-
-        // // Check in-memory cache of certificates for the named domain
-        greenlock.check({ domains: domains }).then(function (results) {
-
-            if (results) {
-                // we already have certificates
-                return;
-            }
-        
-            // Register Certificate manually
-            greenlock.register({
-        
-                  domains: domains,
-                  server: acme_server
-                , email: 'openziti@netfoundry.io'                      
-                , agreeTos: true                                      
-                , rsaKeySize: 2048                            
-                , challengeType: 'http-01'  // http-01, tls-sni-01, or dns-01
-        
-            }).then(function (results) {
-        
-                logger.info('Success: %o', results);
-        
-            }, function (err) {
-        
-                // Note: you must either use greenlock.middleware() with express,
-                // manually use greenlock.challenges['http-01'].get(opts, domain, key, val, done)
-                // or have a webserver running and responding
-                // to /.well-known/acme-challenge at `webrootPath`
-                logger.error(err);
-            });
-        });
-            
-        var gle = greenlock_express.init({
-            version: 'draft-12',
-            server: acme_server,
-            packageRoot: __dirname,
-            agreeToTerms: true,
-            packageAgent: pkg.name + '/' + pkg.version,
-            configDir: "./greenlock.d",
-            maintainerEmail: "openziti@netfoundry.io",
-            serverKeyType: "RSA-2048",
-            cluster: false,
-            notify: function(event, details) {
-                logger.info('greenlock_express event: %o, details: %o', event, details);
-            }    
-        });
-
-        // gle.sites.add({
-        //     subject: domains[0],
-        //     altnames: domains
-        // });
 
         gle.ready(httpsWorker);
 
@@ -370,8 +307,6 @@ const startAgent = ( logger ) => {
     function httpsWorker( glx ) {
 
         logger.info(`httpsWorker starting`);
-
-        // var app = connect();
 
         var proxy = httpProxy.createProxyServer({
             ziti: ziti,
