@@ -5,7 +5,7 @@ LABEL maintainer="OpenZiti <openziti@netfoundry.io>"
 
 # Install useful tools
 RUN apt-get update
-RUN apt-get install jq curl python2 
+RUN apt-get install -y jq curl python2 
 
 # Create directory for the Ziti HTTP Agent, and explicitly set the owner of that new directory to the node user
 RUN mkdir /home/node/ziti-http-agent/ && chown -R node:node /home/node/ziti-http-agent

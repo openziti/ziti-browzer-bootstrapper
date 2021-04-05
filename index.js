@@ -70,6 +70,8 @@ var agent_identity_path = process.env.ZITI_AGENT_IDENTITY_PATH;
  * 
  */
 var ziti_agent_loglevel = process.env.ZITI_AGENT_LOGLEVEL;
+if (typeof ziti_agent_loglevel === 'undefined') { ziti_agent_loglevel = 'info'; }
+ziti_agent_loglevel = ziti_agent_loglevel.toLowerCase();
 
 /**
  * 
@@ -109,8 +111,7 @@ const createLogger = () => {
             return `${timestamp} ${level}: ${message}`;
         }
     });
-
-
+    
     var logger = winston.createLogger({
         level: ziti_agent_loglevel,
         format: combine(
@@ -130,6 +131,18 @@ const createLogger = () => {
         exitOnError: false,     // Don't die if we encounter an uncaught exception or promise rejection
     });
     
+    // // If we're not in production then log to the `console` with the format:
+    // //  `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
+    // if ((typeof process.env.NODE_ENV === 'undefined') || (process.env.NODE_ENV === 'undefined') || (process.env.NODE_ENV !== 'production')) {
+    //     console.log(`-------> createLogger() adding winston.transports.Console`);
+
+    //     logger.add(new winston.transports.Console({
+    //         format: combine(
+    //             timestamp(),
+    //             logFormat
+    //         ),
+    //     }));
+    // }
 
     return( logger );
 }
@@ -280,7 +293,7 @@ const startAgent = ( logger ) => {
            
           , debug: true
           , log: function (debug) {
-              logger.debug('greenlock log: %o', debug);
+              logger.debug('greenlock, log() entered: %o', debug);
             } 
 
           , serverKeyType: "RSA-4096"
@@ -312,7 +325,11 @@ const startAgent = ( logger ) => {
             ziti: ziti,
             logger: logger,
             changeOrigin: true,
-            target: target_scheme + '://' + target_host + ':' + target_port
+            target: target_scheme + '://' + target_host + ':' + target_port,
+
+            // Set up to rewrite 'Location' headers on redirects
+            hostRewrite: agent_host,
+            autoRewrite: true,
         });
         
         app.use(require('./lib/inject')([], selects));
