@@ -25,9 +25,8 @@ const common    = require('./lib/http-proxy/common');
 const terminate = require('./lib/terminate');
 const pjson     = require('./package.json');
 const winston   = require('winston');
-require('winston-daily-rotate-file');
 // const serveStatic = require('serve-static');
-const heapdump  = require('heapdump');
+// const heapdump  = require('heapdump');
 const greenlock_express = require("greenlock-express");
 const pkg       = require('./package.json');
 
@@ -133,16 +132,16 @@ const createLogger = () => {
     
     // // If we're not in production then log to the `console` with the format:
     // //  `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
-    // if ((typeof process.env.NODE_ENV === 'undefined') || (process.env.NODE_ENV === 'undefined') || (process.env.NODE_ENV !== 'production')) {
-    //     console.log(`-------> createLogger() adding winston.transports.Console`);
+    if ((typeof process.env.NODE_ENV === 'undefined') || (process.env.NODE_ENV === 'undefined') || (process.env.NODE_ENV !== 'production')) {
+        console.log(`-------> createLogger() adding winston.transports.Console`);
 
-    //     logger.add(new winston.transports.Console({
-    //         format: combine(
-    //             timestamp(),
-    //             logFormat
-    //         ),
-    //     }));
-    // }
+        logger.add(new winston.transports.Console({
+            format: combine(
+                timestamp(),
+                logFormat
+            ),
+        }));
+    }
 
     return( logger );
 }
@@ -347,7 +346,12 @@ const startAgent = ( logger ) => {
      *  'agent_https_port' values.  e.g.  80->8080 & 443->8443
      */
         // Start a TLS-based listener on the configured port
-        const httpsServer = glx.httpsServer(null, app);        
+        const httpsServer = glx.httpsServer(null, app);
+        
+        httpsServer.on('error', function (e) {
+            logger.info('err: %o', e);
+        });
+            
         httpsServer.listen( agent_https_port, "0.0.0.0", function() {
             logger.info('Listening on %o', httpsServer.address());
         });
@@ -355,9 +359,15 @@ const startAgent = ( logger ) => {
         // ALSO listen on port 80 for ACME HTTP-01 Challenges
         // (the ACME and http->https middleware are loaded by glx.httpServer)
         var httpServer = glx.httpServer();
+
+        httpServer.on('error', function (e) {
+            logger.info('err: %o', e);
+        });
+
         httpServer.listen( agent_http_port, "0.0.0.0", function() {
             logger.info('Listening on %o', httpServer.address());
         });
+
     }
     /** -------------------------------------------------------------------------------------------------- */
     
@@ -380,7 +390,6 @@ const main = async () => {
         logger.info('zitiInit() completed');
     } ).catch((err) => {
         logger.error('FAILURE: (%s)', err);
-        winston.log_and_exit("info","bye",1);
         setTimeout(function(){  
             process.exit(-1);
         }, 1000);
@@ -388,7 +397,12 @@ const main = async () => {
 
 
     // Now start the Ziti HTTP Agent
-    startAgent( logger );
+    try {
+        startAgent( logger );
+    }
+    catch (e) {
+        console.error(e);
+    }
 
 };
   

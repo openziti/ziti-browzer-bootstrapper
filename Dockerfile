@@ -1,11 +1,20 @@
 # FROM node:lts-alpine3.12
-FROM node:14.15.4-buster
+# FROM node:14.16.1-buster
+FROM ubuntu:20.04
 
 LABEL maintainer="OpenZiti <openziti@netfoundry.io>"
 
 # Install useful tools
 RUN apt-get update
-RUN apt-get install -y jq curl python2 
+RUN apt-get install -y jq curl python2 build-essential
+
+# Install NodeJS 14.x
+RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
+RUN apt-get -y install nodejs
+
+# Add 'node' user
+RUN groupadd --gid 1000 node \
+  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
 # Create directory for the Ziti HTTP Agent, and explicitly set the owner of that new directory to the node user
 RUN mkdir /home/node/ziti-http-agent/ && chown -R node:node /home/node/ziti-http-agent
