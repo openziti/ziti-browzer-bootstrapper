@@ -178,8 +178,6 @@ const zitiInit = () => {
  */
 const startAgent = ( logger ) => {
 
-    logger.info(`Agent starting`);
-
     /** --------------------------------------------------------------------------------------------------
      *  Dynamically modify the proxied site's <head> element as we stream it back to the browser.  We will:
      *  1) inject the zitiConfig needed by the SDK
