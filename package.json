@@ -38,7 +38,7 @@
     "trumpet": "^1.7.2",
     "uuid": "^8.3.2",
     "winston": "~3.3.0",
-    "ziti-sdk-nodejs": "0.2.4"
+    "ziti-sdk-nodejs": "0.2.6"
   },
   "devDependencies": {
     "async": "^3.0.0",
