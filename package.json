@@ -38,7 +38,7 @@
     "trumpet": "^1.7.2",
     "uuid": "^8.3.2",
     "winston": "~3.3.0",
-    "ziti-sdk-nodejs": "0.2.4"
+    "ziti-sdk-nodejs": "0.2.6"
   },
   "devDependencies": {
     "async": "^3.0.0",
@@ -50,6 +50,7 @@
     "semver": "^7.3.4",
     "socket.io": "^3.1.1",
     "socket.io-client": "^3.1.1",
-    "sse": "0.0.8"
+    "sse": "0.0.8",
+    "xmlhttprequest-ssl": ">=1.6.2"
   }
 }
