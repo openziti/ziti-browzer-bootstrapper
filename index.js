@@ -22,6 +22,7 @@ const fs        = require('fs');
 const connect   = require('connect');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
+const rateLimiter = require('./lib/rate-limiter');
 const terminate = require('./lib/terminate');
 const pjson     = require('./package.json');
 const winston   = require('winston');
@@ -66,7 +67,16 @@ if (typeof agent_https_port === 'undefined') { agent_https_port = 8443; }
 var agent_identity_path = process.env.ZITI_AGENT_IDENTITY_PATH;
 
 /**
+ *  These are the supported values for loglevel
  * 
+    error 
+    warn 
+    info 
+    http
+    verbose 
+    debug 
+    silly
+ *
  */
 var ziti_agent_loglevel = process.env.ZITI_AGENT_LOGLEVEL;
 if (typeof ziti_agent_loglevel === 'undefined') { ziti_agent_loglevel = 'info'; }
@@ -79,6 +89,39 @@ var ziti_agent_acme_maintainerEmail = process.env.ZITI_AGENT_ACME_MAINTAINER_EMA
 if (typeof ziti_agent_acme_maintainerEmail === 'undefined') { ziti_agent_acme_maintainerEmail = 'openziti@netfoundry.io'; }
 
 
+/**
+ *  DDoS protection (request-rate limiting) variables
+ */
+var ratelimit_terminate_on_exceed = process.env.ZITI_AGENT_RATELIMIT_TERMINATE_ON_EXCEED;
+if (typeof ratelimit_terminate_on_exceed !== 'undefined') {
+    if (!common.toBool(ratelimit_terminate_on_exceed)) {
+        throw new Error('ZITI_AGENT_RATELIMIT_TERMINATE_ON_EXCEED value is not a boolean');
+    }
+} else {
+    ratelimit_terminate_on_exceed = true;
+}
+
+var ratelimit_reqs_per_minute = process.env.ZITI_AGENT_RATELIMIT_REQS_PER_MINUTE;
+if (typeof ratelimit_reqs_per_minute === 'undefined') { ratelimit_reqs_per_minute = 30; }
+
+var ratelimit_whitelist = process.env.ZITI_AGENT_RATELIMIT_WHITELIST;
+var ratelimit_whitelist_array = [];
+if (typeof ratelimit_whitelist !== 'undefined') {
+    if (typeof ratelimit_whitelist !== 'string') {
+        throw new Error('ZITI_AGENT_RATELIMIT_WHITELIST value is not a string');
+    }
+    ratelimit_whitelist_array = ratelimit_whitelist.split(',');
+} 
+
+var ratelimit_blacklist = process.env.ZITI_AGENT_RATELIMIT_BLACKLIST;
+var ratelimit_blacklist_array = [];
+if (typeof ratelimit_blacklist !== 'undefined') { 
+    if (typeof ratelimit_blacklist !== 'string') {
+        throw new Error('ZITI_AGENT_RATELIMIT_BLACKLIST value is not a string');
+    }
+    ratelimit_blacklist_array = ratelimit_blacklist.split(',');
+}
+ 
 /**
  * 
  */
@@ -246,6 +289,41 @@ const startAgent = ( logger ) => {
 
     var app = connect();
 
+    /** --------------------------------------------------------------------------------------------------
+     *  Set up the DDoS limiter
+     */
+    app.use(
+        rateLimiter(
+            {
+                logger: logger,
+
+                end: ratelimit_terminate_on_exceed,   // Whether to terminate the request if rate-limit exceeded
+
+                whitelist: ratelimit_whitelist_array, // By default client names in the whitelist will be subject to 4000 requests per hour
+
+                blacklist: ratelimit_blacklist_array, // By default client names in the blacklist will be subject to 0 requests per 0 time. In other words they will always be exceding the rate limit
+
+                categories: {
+
+                    normal: {
+                        totalRequests:  ratelimit_reqs_per_minute,
+                        every:          (60 * 1000)
+                    },
+
+                    whitelist: {
+                        every:          (60 * 60 * 1000)
+                    },
+
+                    blacklist: {
+                        totalRequests:  0,
+                        every:          0 
+                    }
+                }
+            }
+        )
+    );
+    /** -------------------------------------------------------------------------------------------------- */
+      
     /** --------------------------------------------------------------------------------------------------
      *  Set up the Let's Encrypt infra.  
      *  The configured 'agent_host' will be used when auto-generating the TLS certs.
