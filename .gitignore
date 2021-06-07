@@ -107,3 +107,6 @@ dist
 .vscode/
 .clinic/
 .DS_Store
+
+docker-compose.override.yml
+.env
