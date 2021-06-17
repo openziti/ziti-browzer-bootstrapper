@@ -1,6 +1,6 @@
 {
   "name": "ziti-http-agent",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "HTTP proxying over Ziti network into Dark web server",
   "main": "index.js",
   "scripts": {
