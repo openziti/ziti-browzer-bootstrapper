@@ -1,6 +1,6 @@
 {
   "name": "ziti-http-agent",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "HTTP proxying over Ziti network into Dark web server",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,7 @@
     "@greenlock/manager": "^3.1.0",
     "acme-http-01-standalone": "^3.0.5",
     "connect": "^3.7.0",
+    "connect-rest": "^3.0.33",
     "cookie": "^0.4.1",
     "dotenv": "^8.2.0",
     "eventemitter3": "^4.0.0",

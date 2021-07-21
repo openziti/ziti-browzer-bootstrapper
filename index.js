@@ -26,6 +26,8 @@ const rateLimiter = require('./lib/rate-limiter');
 const terminate = require('./lib/terminate');
 const pjson     = require('./package.json');
 const winston   = require('winston');
+const { v4: uuidv4 } = require('uuid');
+const Rest      = require('connect-rest');
 // const serveStatic = require('serve-static');
 // const heapdump  = require('heapdump');
 const greenlock_express = require("greenlock-express");
@@ -35,6 +37,8 @@ const pkg       = require('./package.json');
 
 
 var logger;     // for ziti-http-agent
+
+var uuid;       // for API authn
 
 var ziti;
 
@@ -122,16 +126,6 @@ if (typeof ratelimit_blacklist !== 'undefined') {
     ratelimit_blacklist_array = ratelimit_blacklist.split(',');
 }
  
-/**
- * 
- */
-var ziti_inject_html = `
-<!-- config for the Ziti JS SDK -->
-<script type="text/javascript">${common.generateZitiConfig()}</script>
-<!-- load the Ziti JS SDK itself -->
-<script type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
-`;
-
 
 /** --------------------------------------------------------------------------------------------------
  *  Create logger 
@@ -246,6 +240,12 @@ const startAgent = ( logger ) => {
         });
 
         // Inject the Ziti JS SDK at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
+        let ziti_inject_html = `
+<!-- config for the Ziti JS SDK -->
+<script type="text/javascript">${common.generateZitiConfig()}</script>
+<!-- load the Ziti JS SDK itself -->
+<script type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
+`;
         node.ws.write( ziti_inject_html );
 
         // Read the node and put it back into our write stream.
@@ -289,6 +289,52 @@ const startAgent = ( logger ) => {
 
     var app = connect();
 
+    var rest = Rest.create(
+        {
+            context: '/ziti',
+            'logger': 'connect-rest',
+            apiKeys: [ uuid ],
+        }    
+    );
+
+    app.use( rest.processRequest() )
+
+    function mapEntriesToString(entries) {
+        return Array
+          .from(entries, ([k, v]) => `${k}:${v}, `)
+          .join("") + "";
+    }
+
+    rest.post('/loglevel/:client/:level', async function( req ) {
+
+        const client = req.parameters.client;
+        const level = req.parameters.level;
+
+        common.logLevelSet(client, level);
+
+        return { 
+            result: {
+                logLevel: common.logLevelGet()
+            }, 
+            options: { 
+                statusCode: 200
+            } 
+        }
+    });
+
+    rest.get('/loglevel', async function( req ) {
+        
+        return { 
+            result: {
+                logLevel: common.logLevelGet()
+            }, 
+            options: { 
+                statusCode: 200
+            } 
+        }
+    });
+
+    
     /** --------------------------------------------------------------------------------------------------
      *  Set up the DDoS limiter
      */
@@ -323,7 +369,41 @@ const startAgent = ( logger ) => {
         )
     );
     /** -------------------------------------------------------------------------------------------------- */
-      
+
+
+    /** --------------------------------------------------------------------------------------------------
+     *  
+     */
+    //  app.use('/ziti/loglevel', function loglevelMiddleware(req, res, next) {
+
+    //     logger.info(`loglevelMiddleware entered`);
+
+    //     logger.info(`req is: %o`, req);
+    //     const token = req.query.token;
+    //     const client_ip = req.query.client_ip;
+    //     const log_level = req.query.log_level;
+
+    //     logger.info(`client_ip: ${client_ip}`);
+    //     logger.info(`token: ${token}`);
+
+    //     if (token !== uuid) {
+    //         res.writeHead(401, { 'x-ziti-http-agent-forbidden': 'access prohibited' });
+    //         res.end('');
+    //         return;    
+    //     }
+
+    //     if (typeof client_ip === undefined) {
+    //         res.writeHead(403, { 'x-ziti-http-agent-forbidden': 'client_ip not specified' });
+    //         res.end('');
+    //         return;    
+    //     }
+
+    //     res.writeHead(200, { 'x-ziti-http-agent': `client_ip '${client_ip}' now at log_level '${log_level}'` });
+    //     res.end('');
+    // });
+    /** -------------------------------------------------------------------------------------------------- */
+
+
     /** --------------------------------------------------------------------------------------------------
      *  Set up the Let's Encrypt infra.  
      *  The configured 'agent_host' will be used when auto-generating the TLS certs.
@@ -455,9 +535,13 @@ const startAgent = ( logger ) => {
  */
 const main = async () => {
 
+    uuid = uuidv4();
+
     logger = createLogger();
 
     logger.info(`ziti-http-agent version ${pjson.version} starting at ${new Date()}`);
+
+    logger.info(`ziti-http-agent uuid to auth API is: ${uuid}`);
 
     ziti = require('ziti-sdk-nodejs');
     require('assert').strictEqual(ziti.ziti_hello(),"ziti");
