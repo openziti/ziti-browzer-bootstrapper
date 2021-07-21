@@ -19,6 +19,7 @@ SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const path      = require('path');
 const fs        = require('fs');
+const requestIp = require('request-ip');
 const connect   = require('connect');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
@@ -26,6 +27,8 @@ const rateLimiter = require('./lib/rate-limiter');
 const terminate = require('./lib/terminate');
 const pjson     = require('./package.json');
 const winston   = require('winston');
+const { v4: uuidv4 } = require('uuid');
+const Rest      = require('connect-rest');
 // const serveStatic = require('serve-static');
 // const heapdump  = require('heapdump');
 const greenlock_express = require("greenlock-express");
@@ -35,6 +38,8 @@ const pkg       = require('./package.json');
 
 
 var logger;     // for ziti-http-agent
+
+var uuid;       // for API authn
 
 var ziti;
 
@@ -122,16 +127,6 @@ if (typeof ratelimit_blacklist !== 'undefined') {
     ratelimit_blacklist_array = ratelimit_blacklist.split(',');
 }
  
-/**
- * 
- */
-var ziti_inject_html = `
-<!-- config for the Ziti JS SDK -->
-<script type="text/javascript">${common.generateZitiConfig()}</script>
-<!-- load the Ziti JS SDK itself -->
-<script type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
-`;
-
 
 /** --------------------------------------------------------------------------------------------------
  *  Create logger 
@@ -229,7 +224,7 @@ const startAgent = ( logger ) => {
     var headselect = {};
 
     headselect.query = 'head';
-    headselect.func = function (node) {
+    headselect.func = function (node, req) {
 
         node.rs = node.createReadStream();
         node.ws = node.createWriteStream({outer: false, emitClose: true});
@@ -246,6 +241,12 @@ const startAgent = ( logger ) => {
         });
 
         // Inject the Ziti JS SDK at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
+        let ziti_inject_html = `
+<!-- config for the Ziti JS SDK -->
+<script type="text/javascript">${common.generateZitiConfig( '', requestIp.getClientIp(req))}</script>
+<!-- load the Ziti JS SDK itself -->
+<script type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
+`;
         node.ws.write( ziti_inject_html );
 
         // Read the node and put it back into our write stream.
@@ -289,6 +290,52 @@ const startAgent = ( logger ) => {
 
     var app = connect();
 
+    var rest = Rest.create(
+        {
+            context: '/ziti',
+            'logger': 'connect-rest',
+            apiKeys: [ uuid ],
+        }    
+    );
+
+    app.use( rest.processRequest() )
+
+    function mapEntriesToString(entries) {
+        return Array
+          .from(entries, ([k, v]) => `${k}:${v}, `)
+          .join("") + "";
+    }
+
+    rest.post('/loglevel/:client/:level', async function( req ) {
+
+        const client = req.parameters.client;
+        const level = req.parameters.level;
+
+        common.logLevelSet(client, level);
+
+        return { 
+            result: {
+                logLevel: common.logLevelGet()
+            }, 
+            options: { 
+                statusCode: 200
+            } 
+        }
+    });
+
+    rest.get('/loglevel', async function( req ) {
+        
+        return { 
+            result: {
+                logLevel: common.logLevelGet()
+            }, 
+            options: { 
+                statusCode: 200
+            } 
+        }
+    });
+
+    
     /** --------------------------------------------------------------------------------------------------
      *  Set up the DDoS limiter
      */
@@ -323,7 +370,8 @@ const startAgent = ( logger ) => {
         )
     );
     /** -------------------------------------------------------------------------------------------------- */
-      
+
+
     /** --------------------------------------------------------------------------------------------------
      *  Set up the Let's Encrypt infra.  
      *  The configured 'agent_host' will be used when auto-generating the TLS certs.
@@ -455,9 +503,13 @@ const startAgent = ( logger ) => {
  */
 const main = async () => {
 
+    uuid = uuidv4();
+
     logger = createLogger();
 
     logger.info(`ziti-http-agent version ${pjson.version} starting at ${new Date()}`);
+
+    logger.info(`ziti-http-agent uuid to auth API is: ${uuid}`);
 
     ziti = require('ziti-sdk-nodejs');
     require('assert').strictEqual(ziti.ziti_hello(),"ziti");
