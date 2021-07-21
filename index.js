@@ -19,6 +19,7 @@ SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const path      = require('path');
 const fs        = require('fs');
+const requestIp = require('request-ip');
 const connect   = require('connect');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
@@ -223,7 +224,7 @@ const startAgent = ( logger ) => {
     var headselect = {};
 
     headselect.query = 'head';
-    headselect.func = function (node) {
+    headselect.func = function (node, req) {
 
         node.rs = node.createReadStream();
         node.ws = node.createWriteStream({outer: false, emitClose: true});
@@ -242,7 +243,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti JS SDK at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- config for the Ziti JS SDK -->
-<script type="text/javascript">${common.generateZitiConfig()}</script>
+<script type="text/javascript">${common.generateZitiConfig( '', requestIp.getClientIp(req))}</script>
 <!-- load the Ziti JS SDK itself -->
 <script type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
 `;
@@ -368,39 +369,6 @@ const startAgent = ( logger ) => {
             }
         )
     );
-    /** -------------------------------------------------------------------------------------------------- */
-
-
-    /** --------------------------------------------------------------------------------------------------
-     *  
-     */
-    //  app.use('/ziti/loglevel', function loglevelMiddleware(req, res, next) {
-
-    //     logger.info(`loglevelMiddleware entered`);
-
-    //     logger.info(`req is: %o`, req);
-    //     const token = req.query.token;
-    //     const client_ip = req.query.client_ip;
-    //     const log_level = req.query.log_level;
-
-    //     logger.info(`client_ip: ${client_ip}`);
-    //     logger.info(`token: ${token}`);
-
-    //     if (token !== uuid) {
-    //         res.writeHead(401, { 'x-ziti-http-agent-forbidden': 'access prohibited' });
-    //         res.end('');
-    //         return;    
-    //     }
-
-    //     if (typeof client_ip === undefined) {
-    //         res.writeHead(403, { 'x-ziti-http-agent-forbidden': 'client_ip not specified' });
-    //         res.end('');
-    //         return;    
-    //     }
-
-    //     res.writeHead(200, { 'x-ziti-http-agent': `client_ip '${client_ip}' now at log_level '${log_level}'` });
-    //     res.end('');
-    // });
     /** -------------------------------------------------------------------------------------------------- */
 
 
