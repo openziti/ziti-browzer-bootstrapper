@@ -107,7 +107,7 @@ if (typeof ratelimit_terminate_on_exceed !== 'undefined') {
 }
 
 var ratelimit_reqs_per_minute = process.env.ZITI_AGENT_RATELIMIT_REQS_PER_MINUTE;
-if (typeof ratelimit_reqs_per_minute === 'undefined') { ratelimit_reqs_per_minute = 30; }
+if (typeof ratelimit_reqs_per_minute === 'undefined') { ratelimit_reqs_per_minute = 300; }
 
 var ratelimit_whitelist = process.env.ZITI_AGENT_RATELIMIT_WHITELIST;
 var ratelimit_whitelist_array = [];
@@ -339,36 +339,36 @@ const startAgent = ( logger ) => {
     /** --------------------------------------------------------------------------------------------------
      *  Set up the DDoS limiter
      */
-    app.use(
-        rateLimiter(
-            {
-                logger: logger,
+    // app.use(
+    //     rateLimiter(
+    //         {
+    //             logger: logger,
 
-                end: ratelimit_terminate_on_exceed,   // Whether to terminate the request if rate-limit exceeded
+    //             end: ratelimit_terminate_on_exceed,   // Whether to terminate the request if rate-limit exceeded
 
-                whitelist: ratelimit_whitelist_array, // By default client names in the whitelist will be subject to 4000 requests per hour
+    //             whitelist: ratelimit_whitelist_array, // By default client names in the whitelist will be subject to 4000 requests per hour
 
-                blacklist: ratelimit_blacklist_array, // By default client names in the blacklist will be subject to 0 requests per 0 time. In other words they will always be exceding the rate limit
+    //             blacklist: ratelimit_blacklist_array, // By default client names in the blacklist will be subject to 0 requests per 0 time. In other words they will always be exceding the rate limit
 
-                categories: {
+    //             categories: {
 
-                    normal: {
-                        totalRequests:  ratelimit_reqs_per_minute,
-                        every:          (60 * 1000)
-                    },
+    //                 normal: {
+    //                     totalRequests:  ratelimit_reqs_per_minute,
+    //                     every:          (60 * 1000)
+    //                 },
 
-                    whitelist: {
-                        every:          (60 * 60 * 1000)
-                    },
+    //                 whitelist: {
+    //                     every:          (60 * 60 * 1000)
+    //                 },
 
-                    blacklist: {
-                        totalRequests:  0,
-                        every:          0 
-                    }
-                }
-            }
-        )
-    );
+    //                 blacklist: {
+    //                     totalRequests:  0,
+    //                     every:          0 
+    //                 }
+    //             }
+    //         }
+    //     )
+    // );
     /** -------------------------------------------------------------------------------------------------- */
 
 
