@@ -23,6 +23,7 @@ const requestIp = require('request-ip');
 const connect   = require('connect');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
+const whiteListFilter = require('./lib/white-list-filter');
 const rateLimiter = require('./lib/rate-limiter');
 const terminate = require('./lib/terminate');
 const pjson     = require('./package.json');
@@ -127,6 +128,14 @@ if (typeof ratelimit_blacklist !== 'undefined') {
     ratelimit_blacklist_array = ratelimit_blacklist.split(',');
 }
  
+var cidr_whitelist = process.env.ZITI_AGENT_CIDR_WHITELIST;
+var cidr_whitelist_array = [];
+if (typeof cidr_whitelist !== 'undefined') { 
+    if (typeof cidr_whitelist !== 'string') {
+        throw new Error('ZITI_AGENT_CIDR_WHITELIST value is not a string');
+    }
+    cidr_whitelist_array = cidr_whitelist.split(',');
+}
 
 /** --------------------------------------------------------------------------------------------------
  *  Create logger 
@@ -197,7 +206,11 @@ const zitiInit = () => {
     return new Promise((resolve, reject) => {
 
         var rc = ziti.ziti_init( agent_identity_path , ( init_rc ) => {
-            if (init_rc < 0) {
+            if (init_rc === -30) {
+                logger.debug('ignoring PARTIALLY_AUTHENTICATED event from controller');
+                return;
+            }
+            else if (init_rc < 0) {
                 return reject('ziti_init failed');
             }
             return resolve();
@@ -277,7 +290,7 @@ const startAgent = ( logger ) => {
                 var content = node.getAttribute('content');
                 if (typeof content !== 'undefined') {
 
-                    content += ' * ' + ziti_sdk_js_src + "/ 'unsafe-inline' 'unsafe-eval'";
+                    content += ' * ' + ziti_sdk_js_src + "/ 'unsafe-inline' 'unsafe-eval' 'wasm-eval'";
 
                     node.setAttribute('content', content);
                 }
@@ -335,40 +348,56 @@ const startAgent = ( logger ) => {
         }
     });
 
+
+    /** --------------------------------------------------------------------------------------------------
+     *  Set up the White List filter
+     */
+    app.use(
+        whiteListFilter(
+            {
+                logger: logger,
+
+                cidrList: cidr_whitelist_array, // By default all clients are allowed in
+
+            }
+        )
+    );
+    /** -------------------------------------------------------------------------------------------------- */
+
     
     /** --------------------------------------------------------------------------------------------------
      *  Set up the DDoS limiter
      */
-    // app.use(
-    //     rateLimiter(
-    //         {
-    //             logger: logger,
+    app.use(
+        rateLimiter(
+            {
+                logger: logger,
 
-    //             end: ratelimit_terminate_on_exceed,   // Whether to terminate the request if rate-limit exceeded
+                end: ratelimit_terminate_on_exceed,   // Whether to terminate the request if rate-limit exceeded
 
-    //             whitelist: ratelimit_whitelist_array, // By default client names in the whitelist will be subject to 4000 requests per hour
+                whitelist: ratelimit_whitelist_array, // By default client names in the whitelist will be subject to 4000 requests per hour
 
-    //             blacklist: ratelimit_blacklist_array, // By default client names in the blacklist will be subject to 0 requests per 0 time. In other words they will always be exceding the rate limit
+                blacklist: ratelimit_blacklist_array, // By default client names in the blacklist will be subject to 0 requests per 0 time. In other words they will always be exceding the rate limit
 
-    //             categories: {
+                categories: {
 
-    //                 normal: {
-    //                     totalRequests:  ratelimit_reqs_per_minute,
-    //                     every:          (60 * 1000)
-    //                 },
+                    normal: {
+                        totalRequests:  ratelimit_reqs_per_minute,
+                        every:          (60 * 1000)
+                    },
 
-    //                 whitelist: {
-    //                     every:          (60 * 60 * 1000)
-    //                 },
+                    whitelist: {
+                        every:          (60 * 60 * 1000)
+                    },
 
-    //                 blacklist: {
-    //                     totalRequests:  0,
-    //                     every:          0 
-    //                 }
-    //             }
-    //         }
-    //     )
-    // );
+                    blacklist: {
+                        totalRequests:  0,
+                        every:          0 
+                    }
+                }
+            }
+        )
+    );
     /** -------------------------------------------------------------------------------------------------- */
 
 
