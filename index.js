@@ -137,6 +137,9 @@ if (typeof cidr_whitelist !== 'undefined') {
     cidr_whitelist_array = cidr_whitelist.split(',');
 }
 
+var target_path = process.env.ZITI_AGENT_TARGET_PATH;
+if (typeof target_path === 'undefined') { target_path = '/'; }
+
 /** --------------------------------------------------------------------------------------------------
  *  Create logger 
  */
@@ -400,6 +403,7 @@ const startAgent = ( logger ) => {
     );
     /** -------------------------------------------------------------------------------------------------- */
 
+    logger.info('target path: %o', target_path);
 
     /** --------------------------------------------------------------------------------------------------
      *  Set up the Let's Encrypt infra.  
@@ -478,6 +482,7 @@ const startAgent = ( logger ) => {
             logger: logger,
             changeOrigin: true,
             target: target_scheme + '://' + target_host + ':' + target_port,
+            targetPath: target_path,
 
             // Set up to rewrite 'Location' headers on redirects
             hostRewrite: agent_host,
