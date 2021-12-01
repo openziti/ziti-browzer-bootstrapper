@@ -304,6 +304,64 @@ const startAgent = ( logger ) => {
     selects.push(metaselect);
     /** -------------------------------------------------------------------------------------------------- */
 
+    /** --------------------------------------------------------------------------------------------------
+     *  Dynamically modify the proxied site's <form method="POST" action="..." ...> element as
+     *  we stream it back to the browser.  We will ensure that:
+     *  1) the ACTION is massaged to ensure that the target specified is changed to the HTTP Agent
+     */
+    var formselect = {};
+
+    formselect.query = 'form';
+    formselect.func = function (node) {
+
+        var action = node.getAttribute('action');
+        if (typeof action !== 'undefined') {
+
+            var actionUrl = new URL( action );
+
+            if ((actionUrl.protocol === 'http:') || (actionUrl.protocol === 'https:')) {
+
+                let href = actionUrl.href;
+                logger.debug('actionUrl.href is: %o', href);
+
+                let origin = actionUrl.origin;
+                logger.debug('actionUrl.origin is: %o', origin);
+
+                let protocol = actionUrl.protocol;
+                logger.debug('actionUrl.protocol is: %o', protocol);
+
+                let hostname = actionUrl.hostname;
+                logger.debug('actionUrl.hostname is: %o', hostname);
+
+                let host = actionUrl.host;
+                logger.debug('actionUrl.host is: %o', host);
+
+                // If we need to adjust
+                if (host === target_host) {
+
+                    actionUrl.href  =  actionUrl.href.replace(host, agent_host);
+                    actionUrl.href  =  actionUrl.href.replace('http:', 'https:');
+                    actionUrl.origin  =  actionUrl.origin.replace(host, agent_host);
+                    actionUrl.origin  =  actionUrl.origin.replace('http:', 'https:');
+                    actionUrl.protocol  =  actionUrl.protocol.replace('http:', 'https:');
+                    actionUrl.host  =  actionUrl.host.replace(host, agent_host);
+                    actionUrl.hostname  =  actionUrl.hostname.replace(host, agent_host);
+
+                    logger.debug('new action URL is: %o', actionUrl.toString());
+
+                    node.setAttribute('action', actionUrl.toString());
+
+                    action = node.getAttribute('action');
+
+                    logger.debug('action is: %o', action);
+                }
+            }
+        }
+    }
+
+    selects.push(formselect);
+    /** -------------------------------------------------------------------------------------------------- */
+
     var app = connect();
 
     var rest = Rest.create(
