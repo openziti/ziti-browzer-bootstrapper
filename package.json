@@ -24,7 +24,7 @@
     "connect": "^3.7.0",
     "connect-rest": "^3.0.33",
     "cookie": "^0.4.1",
-    "dotenv": "^8.2.0",
+    "dotenv": "^16.0.0",
     "eventemitter3": "^4.0.0",
     "follow-redirects": "^1.14.9",
     "greenlock-express": "^4.0.3",
