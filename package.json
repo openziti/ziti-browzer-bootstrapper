@@ -35,7 +35,7 @@
     "le-challenge-fs": "^2.0.9",
     "le-store-certbot": "^2.2.3",
     "lodash.foreach": "^4.5.0",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
     "pump": "^3.0.0",
     "request-ip": "^2.1.3",
     "requires-port": "^1.0.0",
