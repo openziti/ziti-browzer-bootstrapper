@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-const SegfaultHandler = require('segfault-handler');
-SegfaultHandler.registerHandler('log/crash.log');
+// const SegfaultHandler = require('segfault-handler');
+// SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const path      = require('path');
 const fs        = require('fs');
 const requestIp = require('request-ip');
-const connect   = require('connect');
+const express   = require("express");
+const crypto    = require('crypto');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
 const whiteListFilter = require('./lib/white-list-filter');
@@ -35,6 +36,7 @@ const Rest      = require('connect-rest');
 const greenlock_express = require("greenlock-express");
 const pkg       = require('./package.json');
 
+const { auth } = require('express-openid-connect');
 
 
 
@@ -210,7 +212,7 @@ const zitiInit = () => {
 
         var rc = ziti.ziti_init( agent_identity_path , ( init_rc ) => {
             if (init_rc === -30) {
-                logger.debug('ignoring PARTIALLY_AUTHENTICATED event from controller');
+                logger.trace('ignoring PARTIALLY_AUTHENTICATED event from controller');
                 return;
             }
             else if (init_rc < 0) {
@@ -235,7 +237,7 @@ const startAgent = ( logger ) => {
     /** --------------------------------------------------------------------------------------------------
      *  Dynamically modify the proxied site's <head> element as we stream it back to the browser.  We will:
      *  1) inject the zitiConfig needed by the SDK
-     *  2) inject the Ziti JS SDK
+     *  2) inject the Ziti browZer Runtime
      */
     var headselect = {};
 
@@ -256,11 +258,9 @@ const startAgent = ( logger ) => {
             node.ws = null;
         });
 
-        // Inject the Ziti JS SDK at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
+        // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
-<!-- config for the Ziti JS SDK -->
-<script type="text/javascript">${common.generateZitiConfig( '', requestIp.getClientIp(req))}</script>
-<!-- load the Ziti JS SDK itself -->
+<!-- load Ziti browZer Runtime -->
 <script type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
 `;
         node.ws.write( ziti_inject_html );
@@ -276,9 +276,8 @@ const startAgent = ( logger ) => {
     /** --------------------------------------------------------------------------------------------------
      *  Dynamically modify the proxied site's <meta http-equiv="Content-Security-Policy" ...>  element as 
      *  we stream it back to the browser.  We will ensure that:
-     *  1) the CSP will allow loading the Ziti JS SDK from specified CDN
-     *  2) the CSP will allow webassembly (used within the Ziti JS SDK) to load
-     *  3) the CSP will allow the above-injected inline JS (SDK config) to execute
+     *  1) the CSP will allow loading the Ziti browZer Runtime from specified CDN
+     *  2) the CSP will allow webassembly (used within the Ziti browZer Runtime) to load
      */
     var metaselect = {};
 
@@ -362,7 +361,36 @@ const startAgent = ( logger ) => {
     selects.push(formselect);
     /** -------------------------------------------------------------------------------------------------- */
 
-    var app = connect();
+    // var app = connect();
+    var app = express();
+
+    /** --------------------------------------------------------------------------------------------------
+     *  Engage the OpenID Connect middleware.
+     */
+     app.use(
+
+        auth({
+
+            authRequired:   true,
+
+            clientID:       process.env.IDP_CLIENT_ID,
+            issuerBaseURL:  process.env.IDP_ISSUER_BASE_URL,
+            clientSecret:   process.env.IDP_CLIENT_SECRET, // clientSecret is required for a response_type that includes 'code' (see below)
+
+            secret:         crypto.randomBytes(32).toString('hex'),
+
+            baseURL:        'https://' + process.env.ZITI_AGENT_HOST,
+            
+            authorizationParams: {  // we need this in oder to acquire the User's externalId from the IdP
+                response_type:  'code',
+                scope:          'openid email',
+                audience:       'https://' + process.env.ZITI_AGENT_HOST,
+            },          
+        }),
+
+    );
+    /** -------------------------------------------------------------------------------------------------- */
+
 
     var rest = Rest.create(
         {
