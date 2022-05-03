@@ -6,7 +6,7 @@ LABEL maintainer="OpenZiti <openziti@netfoundry.io>"
 
 # Install useful tools
 RUN apt-get update
-RUN apt-get install -y jq curl python2 build-essential
+RUN apt-get install -y jq curl python2 build-essential git
 
 # Install NodeJS 14.x
 RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
@@ -21,11 +21,13 @@ RUN mkdir /home/node/ziti-http-agent/ && chown -R node:node /home/node/ziti-http
 WORKDIR /home/node/ziti-http-agent
 
 # Prepare for dependencies installation
-COPY --chown=node:node package*.json ./
+COPY --chown=node:node package.json ./
+COPY --chown=node:node yarn.lock ./
 
 # Install the dependencies for the Ziti HTTP Agent according to package-lock.json (ci) without
 # devDepdendencies (--production), then uninstall npm which isn't needed.
-RUN npm ci --production \
+RUN npm install --global yarn \
+ && yarn install \
  && npm cache clean --force --loglevel=error 
 
 RUN chown -R node:node .
