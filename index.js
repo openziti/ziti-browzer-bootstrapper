@@ -375,15 +375,14 @@ const startAgent = ( logger ) => {
 
             clientID:       process.env.IDP_CLIENT_ID,
             issuerBaseURL:  process.env.IDP_ISSUER_BASE_URL,
-            clientSecret:   process.env.IDP_CLIENT_SECRET, // clientSecret is required for a response_type that includes 'code' (see below)
 
             secret:         crypto.randomBytes(32).toString('hex'),
 
             baseURL:        'https://' + process.env.ZITI_AGENT_HOST,
             
-            authorizationParams: {  // we need this in oder to acquire the User's externalId from the IdP
-                response_type:  'code',
-                scope:          'openid email',
+            authorizationParams: {  // we need this in oder to acquire the User's externalId (claimsProperty) from the IdP
+                response_type:  'id_token',
+                scope:          'openid ' + process.env.IDP_CLAIMS_PROPERTY,
                 audience:       'https://' + process.env.ZITI_AGENT_HOST,
             },          
         }),
