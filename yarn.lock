@@ -151,6 +151,13 @@
   resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.17.9.tgz#9c94189a6062f0291418ca021077983058e171ef"
   integrity sha512-vqUSBLP8dQHFPdPi9bc5GK9vRkYHJ49fsZdtoJ8EQ8ibpwk5rPKfvNIwChB0KVXcIjcepEBBd2VHC5r9Gy8ueg==
 
+"@babel/runtime@^7.17.9":
+  version "7.18.3"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.18.3.tgz#c7b654b57f6f63cf7f8b418ac9ca04408c4579f4"
+  integrity sha512-38Y8f7YUhce/K7RMwTp7m0uCumpv9hZkitCbBClqQIow1qSbCvGkcegKOXpEWCQLfWmevgRiWokZ1GkpfhbZug==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
 "@babel/template@^7.16.7":
   version "7.16.7"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.16.7.tgz#8d126c8701fde4d66b264b3eba3d96f07666d155"
@@ -271,20 +278,20 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
-"@openziti/libcrypto-js@^0.6.21":
-  version "0.6.21"
-  resolved "https://registry.yarnpkg.com/@openziti/libcrypto-js/-/libcrypto-js-0.6.21.tgz#b1943dd6ffe6239ee0749ccb37cf84434f2404eb"
-  integrity sha512-+wTbXqLlAaKiwH74evnKbwmkPNj8vNqnUJJ+AV2FtfEWwfbyL6xulAhemgM/ps0sfB7fSPtiH6yx1+PbFiKCsg==
+"@openziti/libcrypto-js@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@openziti/libcrypto-js/-/libcrypto-js-0.9.0.tgz#db883c420a701e3f87ab4e43a7587469d16004b1"
+  integrity sha512-Ol1mKt8/4CsoiR2l2h0eVFfHvONuCbv4qf2ep6DKYH2vEO+KhAuqP6SVn3ElaMec/5UKc4MDZvk2TdlbXpOKWg==
   dependencies:
     "@types/emscripten" "^1.39.6"
     "@wasmer/wasi" "^1.0.2"
 
-"@openziti/ziti-browzer-core@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-core/-/ziti-browzer-core-0.8.0.tgz#68ae0131977e05bf5e09006e0b0b0bb187eb2315"
-  integrity sha512-AJO0mNcxVBxG9gDwZn3GBXx0LUlwIyZDyjV1ImWQkYAHwiA0bJVwCwcGUQm7EMPHmFU0ESI0YFR8Nm1bufq3Yw==
+"@openziti/ziti-browzer-core@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-core/-/ziti-browzer-core-0.10.0.tgz#3d6530ac3a26dab0799a07be35a979d1f2877ee3"
+  integrity sha512-JUXdo/DfVgtNY/aF9oe1hjl7rc1lvz4jxeHfICmHAxzpP2YcM52eNXABxBfRGOckEuNlo/YgTK5pr1E1w3CePA==
   dependencies:
-    "@openziti/libcrypto-js" "^0.6.21"
+    "@openziti/libcrypto-js" "^0.9.0"
     "@openziti/ziti-browzer-edge-client" "^0.2.0"
     asn1js "^2.4.0"
     assert "^2.0.0"
@@ -302,7 +309,6 @@
     md5.js "^1.3.5"
     mime-types "^2.1.35"
     multistream "^4.1.0"
-    node-forge "git+https://github.com/openziti-test-kitchen/forge#master"
     pkijs "^2.3.0"
     process "^0.11.10"
     promise-controller "^1.0.0"
@@ -325,12 +331,26 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-sw-workbox-strategies@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.6.1.tgz#11e46ab56ad972815e0d3a6f7fec2c64313fc7f0"
-  integrity sha512-vX2OyLrkodtz8T6Upx46tCwbyn0Xg+876Wuis1nEH3EETpvBkhPFRhfPfsnvEeQgh3KiTZMwhb6GiyQ2AItL5w==
+"@openziti/ziti-browzer-runtime@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.8.0.tgz#b0f83c78c4f15f8121ae9a86c09d85a25ff445e5"
+  integrity sha512-8rkB5wpaiizXHJG9aTWQ7bJnLo73IfJz/nbzfXATSqIi3H1nUJfvJ40aYPnYR1lwOpf//8C5TUV2JCYkuCA3Dw==
   dependencies:
-    "@openziti/ziti-browzer-core" "^0.8.0"
+    "@babel/runtime" "^7.17.9"
+    "@openziti/ziti-browzer-core" "^0.10.0"
+    cookie-interceptor "^1.0.0"
+    core-js "^3.22.8"
+    js-base64 "^3.7.2"
+    jwt-decode "^3.1.2"
+    lodash-es "^4.17.21"
+    workbox-window "^6.5.3"
+
+"@openziti/ziti-browzer-sw-workbox-strategies@^0.6.2":
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.6.2.tgz#5b28fc25d3efeb7dee8914d392192c4db9d4368a"
+  integrity sha512-lH4YCHf+Q53NtoSEOsZ/MZq49xr6atJZ/hlxod9SHlJoEcYfVVgCd8ycPJObPByM7jYzYgfkzZOi1/EGGxI0CQ==
+  dependencies:
+    "@openziti/ziti-browzer-core" "^0.10.0"
     async-mutex "^0.3.2"
     jwt-decode "^3.1.2"
     lodash-es "^4.17.21"
@@ -339,12 +359,12 @@
     workbox-expiration "^6.5.3"
     workbox-strategies "^6.5.3"
 
-"@openziti/ziti-browzer-sw@^0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.5.2.tgz#e7e450e88909c30198443ef0698a715ab430e66f"
-  integrity sha512-LoNayeY55U6vtZD3w/vmvK0HjtC9PIqMxjV/7klSDNcarY0HmptrAGyDJrC6Ww+MQ7pcPED422mwm2CGNhCbxg==
+"@openziti/ziti-browzer-sw@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.6.0.tgz#5f96a3f0210ff3478c8751030333842af63febc4"
+  integrity sha512-m5KFX+UVWA3SyQeMVhnp6jFELIjCvpLHOZDqTKSqymootPLv2b/f/Clfi9ucVZwEBlkOpD7uL2BJEDC7iPcUGQ==
   dependencies:
-    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.6.1"
+    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.6.2"
     "@types/lodash-es" "^4.17.6"
     workbox-core "^6.5.3"
     workbox-expiration "^6.5.0"
@@ -530,6 +550,11 @@
   integrity sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==
   dependencies:
     "@types/node" "*"
+
+"@types/trusted-types@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@types/trusted-types/-/trusted-types-2.0.2.tgz#fc25ad9943bcac11cceb8168db4f275e0e72e756"
+  integrity sha512-F5DIZ36YVLE+PN+Zwws4kJogq47hNgX3Nx6WyDJ3kcplxyke3XIzB8uK5n/Lpm1HBsbGzd6nmGehL8cPekP+Tg==
 
 "@ungap/promise-all-settled@1.1.2":
   version "1.1.2"
@@ -1144,6 +1169,11 @@ convert-source-map@^1.7.0:
   dependencies:
     safe-buffer "~5.1.1"
 
+cookie-interceptor@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/cookie-interceptor/-/cookie-interceptor-1.0.0.tgz#330a4bfdc774197731b4a143965decb4626e566c"
+  integrity sha512-RY2mNyzyXSi+dtyE/WGQ0e56DUkPs0/2QF3Y0xTGLBW8FpVwnFlj2klOgFemCPM0iL+NGCZvjvdAFgMbVEV4Ng==
+
 cookie-signature@1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/cookie-signature/-/cookie-signature-1.0.6.tgz#e303a882b342cc3ee8ca513a79999734dab3ae2c"
@@ -1163,6 +1193,11 @@ cookiejar@^2.1.3:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/cookiejar/-/cookiejar-2.1.3.tgz#fc7a6216e408e74414b90230050842dacda75acc"
   integrity sha512-JxbCBUdrfr6AQjOXrxoTvAMJO4HBTUIlBzslcJPAz+/KT8yk53fXun51u+RenNYvad/+Vc2DIz5o9UxlCDymFQ==
+
+core-js@^3.22.8:
+  version "3.22.8"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.22.8.tgz#23f860b1fe60797cc4f704d76c93fea8a2f60631"
+  integrity sha512-UoGQ/cfzGYIuiq6Z7vWL1HfkE9U9IZ4Ub+0XSiJTCzvbZzgPA69oDF2f+lgJ6dFFLEdjW5O6svvoKzXX23xFkA==
 
 core-util-is@~1.0.0:
   version "1.0.3"
@@ -1970,6 +2005,11 @@ heapdump@^0.3.15:
   integrity sha512-n8aSFscI9r3gfhOcAECAtXFaQ1uy4QSke6bnaL+iymYZ/dWs9cqDqHM+rALfsHUwukUbxsdlECZ0pKmJdQ/4OA==
   dependencies:
     nan "^2.13.2"
+
+helmet@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/helmet/-/helmet-5.1.0.tgz#e98a5d4bf89ab8119c856018a3bcc82addadcd47"
+  integrity sha512-klsunXs8rgNSZoaUrNeuCiWUxyc+wzucnEnFejUg3/A+CaF589k9qepLZZ1Jehnzig7YbD4hEuscGXuBY3fq+g==
 
 hexoid@1.0.0:
   version "1.0.0"
@@ -2862,10 +2902,6 @@ node-fetch@^2.6.1, node-fetch@^2.6.7:
   dependencies:
     whatwg-url "^5.0.0"
 
-"node-forge@git+https://github.com/openziti-test-kitchen/forge#master":
-  version "0.7.6-dev"
-  resolved "git+https://github.com/openziti-test-kitchen/forge#b60656a5896fb70c83f22f8f7dd7ba17cc097b34"
-
 node-gyp-build@^4.3.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.4.0.tgz#42e99687ce87ddeaf3a10b99dc06abc11021f3f4"
@@ -3401,6 +3437,11 @@ redirect-https@^1.1.5, redirect-https@^1.3.1:
   integrity sha512-Stex2nI+tMpZXKvy++32TiBXEy+GdpAfp3EUnl5BqCiJ5f5i6XvUSFrs7TR7IoRSlthM7ZtD89uYGTtJBXlFYg==
   dependencies:
     escape-html "^1.0.3"
+
+regenerator-runtime@^0.13.4:
+  version "0.13.9"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.9.tgz#8925742a98ffd90814988d7566ad30ca3b263b52"
+  integrity sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==
 
 release-zalgo@^1.0.0:
   version "1.0.0"
@@ -4179,6 +4220,14 @@ workbox-strategies@^6.5.3:
   resolved "https://registry.yarnpkg.com/workbox-strategies/-/workbox-strategies-6.5.3.tgz#4bea9a48fee16cf43766e0d8138296773c8a9783"
   integrity sha512-MgmGRrDVXs7rtSCcetZgkSZyMpRGw8HqL2aguszOc3nUmzGZsT238z/NN9ZouCxSzDu3PQ3ZSKmovAacaIhu1w==
   dependencies:
+    workbox-core "6.5.3"
+
+workbox-window@^6.5.3:
+  version "6.5.3"
+  resolved "https://registry.yarnpkg.com/workbox-window/-/workbox-window-6.5.3.tgz#4ade70056cb73477ef1cd8fea7cfd0ecbd825c7f"
+  integrity sha512-GnJbx1kcKXDtoJBVZs/P7ddP0Yt52NNy4nocjBpYPiRhMqTpJCNrSL+fGHZ/i/oP6p/vhE8II0sA6AZGKGnssw==
+  dependencies:
+    "@types/trusted-types" "^2.0.2"
     workbox-core "6.5.3"
 
 workerpool@6.1.0:

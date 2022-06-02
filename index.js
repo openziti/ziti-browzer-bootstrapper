@@ -36,7 +36,8 @@ const Rest      = require('connect-rest');
 const greenlock_express = require("greenlock-express");
 const pkg       = require('./package.json');
 
-const { auth } = require('express-openid-connect');
+const { auth }  = require('express-openid-connect');
+const helmet    = require("helmet");
 
 
 
@@ -363,6 +364,26 @@ const startAgent = ( logger ) => {
 
     // var app = connect();
     var app = express();
+
+    /** --------------------------------------------------------------------------------------------------
+     *  HTTP Header middleware
+     */
+    //  app.use(helmet.contentSecurityPolicy());
+     app.use(helmet.crossOriginEmbedderPolicy());
+     app.use(helmet.crossOriginOpenerPolicy());
+     app.use(helmet.crossOriginResourcePolicy());
+     app.use(helmet.dnsPrefetchControl());
+     app.use(helmet.expectCt());
+     app.use(helmet.frameguard());
+     app.use(helmet.hidePoweredBy());
+     app.use(helmet.hsts());
+     app.use(helmet.ieNoOpen());
+     app.use(helmet.noSniff());
+     app.use(helmet.originAgentCluster());
+     app.use(helmet.permittedCrossDomainPolicies());
+     app.use(helmet.referrerPolicy());
+     app.use(helmet.xssFilter());
+    /** -------------------------------------------------------------------------------------------------- */
 
     /** --------------------------------------------------------------------------------------------------
      *  Engage the OpenID Connect middleware.
