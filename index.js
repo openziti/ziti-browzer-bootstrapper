@@ -30,7 +30,7 @@ const terminate = require('./lib/terminate');
 const pjson     = require('./package.json');
 const winston   = require('winston');
 const { v4: uuidv4 } = require('uuid');
-const Rest      = require('connect-rest');
+// const Rest      = require('connect-rest');
 // const serveStatic = require('serve-static');
 // const heapdump  = require('heapdump');
 const greenlock_express = require("greenlock-express");
@@ -412,50 +412,54 @@ const startAgent = ( logger ) => {
     /** -------------------------------------------------------------------------------------------------- */
 
 
-    var rest = Rest.create(
-        {
-            context: '/ziti',
-            'logger': 'connect-rest',
-            apiKeys: [ uuid ],
-        }    
-    );
+    /** --------------------------------------------------------------------------------------------------
+     *  Set up /ziti API handler
+     */
+    //  var rest = Rest.create(
+    //     {
+    //         context: '/ziti',
+    //         'logger': 'connect-rest',
+    //         apiKeys: [ uuid ],
+    //     }    
+    // );
 
-    app.use( rest.processRequest() )
+    // app.use( rest.processRequest() )
 
-    function mapEntriesToString(entries) {
-        return Array
-          .from(entries, ([k, v]) => `${k}:${v}, `)
-          .join("") + "";
-    }
+    // function mapEntriesToString(entries) {
+    //     return Array
+    //       .from(entries, ([k, v]) => `${k}:${v}, `)
+    //       .join("") + "";
+    // }
 
-    rest.post('/loglevel/:client/:level', async function( req ) {
+    // rest.post('/loglevel/:client/:level', async function( req ) {
 
-        const client = req.parameters.client;
-        const level = req.parameters.level;
+    //     const client = req.parameters.client;
+    //     const level = req.parameters.level;
 
-        common.logLevelSet(client, level);
+    //     common.logLevelSet(client, level);
 
-        return { 
-            result: {
-                logLevel: common.logLevelGet()
-            }, 
-            options: { 
-                statusCode: 200
-            } 
-        }
-    });
+    //     return { 
+    //         result: {
+    //             logLevel: common.logLevelGet()
+    //         }, 
+    //         options: { 
+    //             statusCode: 200
+    //         } 
+    //     }
+    // });
 
-    rest.get('/loglevel', async function( req ) {
+    // rest.get('/loglevel', async function( req ) {
         
-        return { 
-            result: {
-                logLevel: common.logLevelGet()
-            }, 
-            options: { 
-                statusCode: 200
-            } 
-        }
-    });
+    //     return { 
+    //         result: {
+    //             logLevel: common.logLevelGet()
+    //         }, 
+    //         options: { 
+    //             statusCode: 200
+    //         } 
+    //     }
+    // });
+    /** -------------------------------------------------------------------------------------------------- */
 
 
     /** --------------------------------------------------------------------------------------------------
