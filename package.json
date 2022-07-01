@@ -41,7 +41,7 @@
     "le-store-certbot": "^2.2.3",
     "lodash.foreach": "^4.5.0",
     "pump": "^3.0.0",
-    "request-ip": "^2.1.3",
+    "request-ip": "^3.0.2",
     "requires-port": "^1.0.0",
     "segfault-handler": "^1.3.0",
     "trumpet": "^1.7.2",
