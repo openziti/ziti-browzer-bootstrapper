@@ -263,7 +263,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
+<script id="from-ziti-http-agent" type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
@@ -592,7 +592,6 @@ const startAgent = ( logger ) => {
             ziti: ziti,
             logger: logger,
             changeOrigin: true,
-            // target: target_scheme + '://' + target_host + ':' + target_port,
             target: target_scheme + '://' + target_service,
             targetPath: target_path,
 
