@@ -59,6 +59,7 @@ var target_scheme = process.env.ZITI_AGENT_TARGET_SCHEME;
 if (typeof target_scheme === 'undefined') { target_scheme = 'https'; }
 var target_host = process.env.ZITI_AGENT_TARGET_HOST;
 var target_port = process.env.ZITI_AGENT_TARGET_PORT;
+var target_service = process.env.ZITI_AGENT_TARGET_SERVICE;
 
 /**
  * 
@@ -262,7 +263,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
+<script id="from-ziti-http-agent" type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
@@ -591,7 +592,7 @@ const startAgent = ( logger ) => {
             ziti: ziti,
             logger: logger,
             changeOrigin: true,
-            target: target_scheme + '://' + target_host + ':' + target_port,
+            target: target_scheme + '://' + target_service,
             targetPath: target_path,
 
             // Set up to rewrite 'Location' headers on redirects
