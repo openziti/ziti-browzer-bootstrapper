@@ -370,9 +370,10 @@ const startAgent = ( logger ) => {
      *  HTTP Header middleware
      */
     //  app.use(helmet.contentSecurityPolicy());
-     app.use(helmet.crossOriginEmbedderPolicy());
-     app.use(helmet.crossOriginOpenerPolicy());
-     app.use(helmet.crossOriginResourcePolicy());
+    //  app.use(helmet({ crossOriginEmbedderPolicy: false }));
+    //  app.use(helmet.crossOriginOpenerPolicy());
+    //  app.use(helmet.crossOriginResourcePolicy());
+    //  app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
      app.use(helmet.dnsPrefetchControl());
      app.use(helmet.expectCt());
      app.use(helmet.frameguard());
