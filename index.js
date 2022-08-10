@@ -397,6 +397,7 @@ const startAgent = ( logger ) => {
             authRequired:   true,
 
             clientID:       process.env.IDP_CLIENT_ID,
+            clientSecret:   process.env.IDP_CLIENT_SECRET,
             issuerBaseURL:  process.env.IDP_ISSUER_BASE_URL,
 
             secret:         crypto.randomBytes(32).toString('hex'),
@@ -404,8 +405,8 @@ const startAgent = ( logger ) => {
             baseURL:        'https://' + process.env.ZITI_AGENT_HOST,
             
             authorizationParams: {  // we need this in oder to acquire the User's externalId (claimsProperty) from the IdP
-                response_type:  'id_token',
-                scope:          'openid ' + process.env.IDP_CLAIMS_PROPERTY,
+                response_type:  'code id_token',
+                scope:          'openid ' + process.env.IDP_CLAIMS_PROPERTY + ' offline_access ',
                 audience:       'https://' + process.env.ZITI_AGENT_HOST,
             },          
         }),
