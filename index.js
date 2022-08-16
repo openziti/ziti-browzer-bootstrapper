@@ -363,7 +363,6 @@ const startAgent = ( logger ) => {
     selects.push(formselect);
     /** -------------------------------------------------------------------------------------------------- */
 
-    // var app = connect();
     var app = express();
 
     /** --------------------------------------------------------------------------------------------------
@@ -395,6 +394,8 @@ const startAgent = ( logger ) => {
         auth({
 
             authRequired:   true,
+
+            attemptSilentLogin: true,
 
             clientID:       process.env.IDP_CLIENT_ID,
             clientSecret:   process.env.IDP_CLIENT_SECRET,
