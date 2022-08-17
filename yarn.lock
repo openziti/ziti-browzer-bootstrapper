@@ -327,10 +327,10 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@^0.16.1":
-  version "0.16.1"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.16.1.tgz#05c1eb2fc3406016edadc7e3f83eb740024f3edf"
-  integrity sha512-0KIPVDK9s41AuEX8yFIthgoZLdEz+AShg4bChvnkcDTeTFBdzoQyAnvEPwVdEloggx2XBQZj2JS7uVH71/WyNg==
+"@openziti/ziti-browzer-runtime@^0.17.0":
+  version "0.17.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.17.0.tgz#31f3bdb9bac718ffc1644b1749252d0509ec13b4"
+  integrity sha512-DA8M7RNTMreORV2v5hpo7cXIUwMXIWCCejCJMaWDMJhPas1qEhebeIwE/jBvpJwFk8KjcSncFcv51UUbyJi5zw==
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@openziti/ziti-browzer-core" "^0.16.8"

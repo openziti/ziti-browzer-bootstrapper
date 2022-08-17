@@ -19,7 +19,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@greenlock/manager": "^3.1.0",
-    "@openziti/ziti-browzer-runtime": "^0.16.1",
+    "@openziti/ziti-browzer-runtime": "^0.17.0",
     "@openziti/ziti-browzer-sw": "^0.12.0",
     "acme-http-01-standalone": "^3.0.5",
     "connect": "^3.7.0",
