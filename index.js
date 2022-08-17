@@ -45,36 +45,27 @@ var logger;     // for ziti-http-agent
 
 var uuid;       // for API authn
 
-var ziti;
-
 /**
  * 
  */
-var ziti_sdk_js_src = process.env.ZITI_SDK_JS_SRC;
-
-/**
- * 
- */
-var target_scheme = process.env.ZITI_AGENT_TARGET_SCHEME;
-if (typeof target_scheme === 'undefined') { target_scheme = 'https'; }
-var target_host = process.env.ZITI_AGENT_TARGET_HOST;
-var target_port = process.env.ZITI_AGENT_TARGET_PORT;
 var target_service = process.env.ZITI_AGENT_TARGET_SERVICE;
+if (typeof target_service === 'undefined') { throw new Error('ZITI_AGENT_TARGET_SERVICE value not specified'); }
+if (typeof target_service !== 'string') { throw new Error('ZITI_AGENT_TARGET_SERVICE value is not a string'); }
 
 /**
  * 
  */
 var agent_host = process.env.ZITI_AGENT_HOST;
+if (typeof agent_host === 'undefined') { throw new Error('ZITI_AGENT_HOST value not specified'); }
+if (typeof agent_host !== 'string') { throw new Error('ZITI_AGENT_HOST value is not a string'); }
+
+var zbr_src = `${agent_host}/ziti-browzer-runtime.js`;
+
 var agent_http_port = process.env.ZITI_AGENT_HTTP_PORT;
 if (typeof agent_http_port === 'undefined') { agent_http_port = 8080; }
 var agent_https_port = process.env.ZITI_AGENT_HTTPS_PORT;
 if (typeof agent_https_port === 'undefined') { agent_https_port = 8443; }
 
-
-/**
- * 
- */
-var agent_identity_path = process.env.ZITI_AGENT_IDENTITY_PATH;
 
 /**
  *  These are the supported values for loglevel
@@ -205,31 +196,6 @@ const createLogger = () => {
 var selects = [];
 
 
-/** --------------------------------------------------------------------------------------------------
- *  Initialize the Ziti NodeJS SDK 
- */
-const zitiInit = () => {
-
-    return new Promise((resolve, reject) => {
-
-        var rc = ziti.ziti_init( agent_identity_path , ( init_rc ) => {
-            if (init_rc === -30) {
-                logger.trace('ignoring PARTIALLY_AUTHENTICATED event from controller');
-                return;
-            }
-            else if (init_rc < 0) {
-                return reject('ziti_init failed');
-            }
-            return resolve();
-        });
-
-        if (rc < 0) {
-            return reject('ziti_init failed');
-        }
-
-    });
-};
-
 
 /** --------------------------------------------------------------------------------------------------
  *  Start the agent
@@ -263,7 +229,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script id="from-ziti-http-agent" type="text/javascript" src="https://${ziti_sdk_js_src}"></script>
+<script id="from-ziti-http-agent" type="text/javascript" src="https://${zbr_src}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
@@ -294,7 +260,7 @@ const startAgent = ( logger ) => {
                 var content = node.getAttribute('content');
                 if (typeof content !== 'undefined') {
 
-                    content += ' * ' + ziti_sdk_js_src + "/ 'unsafe-inline' 'unsafe-eval' 'wasm-eval'";
+                    content += ' * ' + zbr_src + "/ 'unsafe-inline' 'unsafe-eval' 'wasm-eval'";
 
                     node.setAttribute('content', content);
                 }
@@ -337,25 +303,6 @@ const startAgent = ( logger ) => {
                 let host = actionUrl.host;
                 logger.debug('actionUrl.host is: %o', host);
 
-                // If we need to adjust
-                if (host === target_host) {
-
-                    actionUrl.href  =  actionUrl.href.replace(host, agent_host);
-                    actionUrl.href  =  actionUrl.href.replace('http:', 'https:');
-                    actionUrl.origin  =  actionUrl.origin.replace(host, agent_host);
-                    actionUrl.origin  =  actionUrl.origin.replace('http:', 'https:');
-                    actionUrl.protocol  =  actionUrl.protocol.replace('http:', 'https:');
-                    actionUrl.host  =  actionUrl.host.replace(host, agent_host);
-                    actionUrl.hostname  =  actionUrl.hostname.replace(host, agent_host);
-
-                    logger.debug('new action URL is: %o', actionUrl.toString());
-
-                    node.setAttribute('action', actionUrl.toString());
-
-                    action = node.getAttribute('action');
-
-                    logger.debug('action is: %o', action);
-                }
             }
         }
     }
@@ -592,10 +539,9 @@ const startAgent = ( logger ) => {
         logger.info(`httpsWorker starting`);
 
         var proxy = httpProxy.createProxyServer({
-            ziti: ziti,
             logger: logger,
             changeOrigin: true,
-            target: target_scheme + '://' + target_service,
+            target: 'https://' + target_service,
             targetPath: target_path,
 
             // Set up to rewrite 'Location' headers on redirects
@@ -658,18 +604,6 @@ const main = async () => {
     logger.info(`ziti-http-agent version ${pjson.version} starting at ${new Date()}`);
 
     logger.info(`ziti-http-agent uuid to auth API is: ${uuid}`);
-
-    ziti = require('ziti-sdk-nodejs');
-    require('assert').strictEqual(ziti.ziti_hello(),"ziti");
-
-    zitiInit().then( () =>  {
-        logger.info('zitiInit() completed');
-    } ).catch((err) => {
-        logger.error('FAILURE: (%s)', err);
-        setTimeout(function(){  
-            process.exit(-1);
-        }, 1000);
-    });
 
 
     // Now start the Ziti HTTP Agent
