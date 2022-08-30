@@ -367,7 +367,7 @@ const startAgent = ( logger ) => {
                 absoluteDuration: process.env.IDP_TOKEN_DURATION,
                 rolling: false,
                 cookie: {
-                    // httpOnly: false,
+                    httpOnly: false,    // ZBR needs to access this
                     domain: `${process.env.ZITI_AGENT_HOST}`
                 }
             }
