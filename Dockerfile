@@ -26,8 +26,10 @@ COPY --chown=node:node yarn.lock ./
 
 # Install the dependencies for the Ziti HTTP Agent according to package-lock.json (ci) without
 # devDepdendencies (--production), then uninstall npm which isn't needed.
-RUN npm install --global yarn \
- && yarn install \
+# RUN npm install --global yarn \
+#  && yarn install \
+#  && npm cache clean --force --loglevel=error 
+RUN yarn install \
  && npm cache clean --force --loglevel=error 
 
 RUN chown -R node:node .
