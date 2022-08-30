@@ -342,21 +342,35 @@ const startAgent = ( logger ) => {
 
             authRequired:   true,
 
-            attemptSilentLogin: true,
+            idpLogout:      true,
+
+            attemptSilentLogin: false,
 
             clientID:       process.env.IDP_CLIENT_ID,
-            clientSecret:   process.env.IDP_CLIENT_SECRET,
             issuerBaseURL:  process.env.IDP_ISSUER_BASE_URL,
 
             secret:         crypto.randomBytes(32).toString('hex'),
 
             baseURL:        'https://' + process.env.ZITI_AGENT_HOST,
+            // baseURL:        `https://${process.env.ZITI_AGENT_HOST}${process.env.ZITI_AGENT_TARGET_PATH}`,
             
             authorizationParams: {  // we need this in oder to acquire the User's externalId (claimsProperty) from the IdP
-                response_type:  'code id_token',
-                scope:          'openid ' + process.env.IDP_CLAIMS_PROPERTY + ' offline_access ',
+                response_type:  'id_token',
+                scope:          'openid ' + process.env.IDP_CLAIMS_PROPERTY,
                 audience:       'https://' + process.env.ZITI_AGENT_HOST,
-            },          
+                
+                prompt:         'login',
+            },
+
+            session: {
+                name: 'browZerSession',
+                absoluteDuration: process.env.IDP_TOKEN_DURATION,
+                rolling: false,
+                cookie: {
+                    // httpOnly: false,
+                    domain: `${process.env.ZITI_AGENT_HOST}`
+                }
+            }
         }),
 
     );
