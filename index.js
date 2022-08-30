@@ -354,7 +354,7 @@ const startAgent = ( logger ) => {
             baseURL:        'https://' + process.env.ZITI_AGENT_HOST,
             // baseURL:        `https://${process.env.ZITI_AGENT_HOST}${process.env.ZITI_AGENT_TARGET_PATH}`,
             
-            authorizationParams: {  // we need this in oder to acquire the User's externalId (claimsProperty) from the IdP
+            authorizationParams: {  // we need this in order to acquire the User's externalId (claimsProperty) from the IdP
                 response_type:  'id_token',
                 scope:          'openid ' + process.env.IDP_CLAIMS_PROPERTY,
                 audience:       'https://' + process.env.ZITI_AGENT_HOST,
