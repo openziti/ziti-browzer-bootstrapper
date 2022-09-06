@@ -229,7 +229,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script id="from-ziti-http-agent" type="text/javascript" src="https://${zbr_src}"></script>
+<script id="from-ziti-http-agent" type="text/javascript" src="https://${agent_host}/${common.getZBRname()}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
@@ -364,7 +364,7 @@ const startAgent = ( logger ) => {
 
             session: {
                 name: 'browZerSession',
-                absoluteDuration: process.env.IDP_TOKEN_DURATION,
+                absoluteDuration: process.env.IDP_TOKEN_DURATION ? process.env.IDP_TOKEN_DURATION : 28800,
                 rolling: false,
                 cookie: {
                     httpOnly: false,    // ZBR needs to access this

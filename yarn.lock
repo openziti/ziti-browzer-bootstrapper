@@ -312,10 +312,10 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@^0.20.0":
-  version "0.20.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.20.0.tgz#355393445fcd9a60300fc5de1c861e4e0a106e6e"
-  integrity sha512-ri4HUWCNoQIrxg50nPOfOLohTn0+oxrisozJ35xwDFbOop6ptsbSZ7ehO82FFtmMRIfP1c7S8PMp3VCHZiFI0g==
+"@openziti/ziti-browzer-runtime@^0.21.1":
+  version "0.21.1"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.21.1.tgz#b14a5ff630208bc3e54a24013bc81ec101ff330d"
+  integrity sha512-0JT6628xuxiGRv2ai+T5QX3rVNWUWcJUtzbBjvrugB412Ca82ff60MMgsRvOrhCOmut5LVnI67kEyKdliyUosQ==
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@openziti/ziti-browzer-core" "^0.16.9"
@@ -323,14 +323,15 @@
     core-js "^3.22.8"
     js-base64 "^3.7.2"
     jwt-decode "^3.1.2"
+    localforage "^1.10.0"
     lodash-es "^4.17.21"
     uuid "^8.3.2"
     workbox-window "^6.5.3"
 
-"@openziti/ziti-browzer-sw-workbox-strategies@^0.17.0":
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.17.0.tgz#646cade9f93528d652b0228af85a7b31d7440c26"
-  integrity sha512-4D17dokwmBA19/iAsF86Lms1ROTel19pDFO0ZacBPua6oAYa/wHItP4shIa/0pKS7+Q49PB/EcW7hKcCGGZcXA==
+"@openziti/ziti-browzer-sw-workbox-strategies@^0.18.0":
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.18.0.tgz#fa8a77c06c411b4ec1be29abc591b8a5393a3265"
+  integrity sha512-Tso895EOYHdj/AzEiyecNBKh9DTNQSb2QSZxOuAf1Wxmbz1sh14k43LpnTBO4/kMNsBNw+S/gX9QbqM68hcBCA==
   dependencies:
     "@openziti/ziti-browzer-core" "^0.16.9"
     async-mutex "^0.3.2"
@@ -342,12 +343,12 @@
     workbox-expiration "^6.5.3"
     workbox-strategies "^6.5.3"
 
-"@openziti/ziti-browzer-sw@^0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.14.0.tgz#e94a27d5ad4b5bfd5ea8932124e710a580bf09d6"
-  integrity sha512-zwKi+BxcqPP8aqVeWhF+OiTkPqdk+00AKZPdSVwdtMw1yT5mXFVx13TwEi9nhidWrq+hG+10bHlwrMkpnaq7MQ==
+"@openziti/ziti-browzer-sw@^0.15.0":
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.15.0.tgz#5d6745fd57807c2e11e480aea58137b4c05413b0"
+  integrity sha512-Y0DBUSfFoCBkU4mUwY4AqOGXcynfgSA6ZQcVuDzGuaJSsNgXIYi3OHZ14Ja+5gEUzeD/KHhjpCjXfNytyIpdiA==
   dependencies:
-    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.17.0"
+    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.18.0"
     "@types/lodash-es" "^4.17.6"
     workbox-core "^6.5.3"
     workbox-expiration "^6.5.0"
@@ -2000,6 +2001,11 @@ ieee754@^1.2.1:
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
+immediate@~3.0.5:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/immediate/-/immediate-3.0.6.tgz#9db1dbd0faf8de6fbe0f5dd5e56bb606280de69b"
+  integrity sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==
+
 imurmurhash@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
@@ -2453,6 +2459,20 @@ libsodium@^0.7.0:
   version "0.7.10"
   resolved "https://registry.yarnpkg.com/libsodium/-/libsodium-0.7.10.tgz#c2429a7e4c0836f879d701fec2c8a208af024159"
   integrity sha512-eY+z7hDrDKxkAK+QKZVNv92A5KYkxfvIshtBJkmg5TSiCnYqZP3i9OO9whE79Pwgm4jGaoHgkM4ao/b9Cyu4zQ==
+
+lie@3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/lie/-/lie-3.1.1.tgz#9a436b2cc7746ca59de7a41fa469b3efb76bd87e"
+  integrity sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==
+  dependencies:
+    immediate "~3.0.5"
+
+localforage@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/localforage/-/localforage-1.10.0.tgz#5c465dc5f62b2807c3a84c0c6a1b1b3212781dd4"
+  integrity sha512-14/H1aX7hzBBmmh7sGPd+AOMkkIrHM3Z1PAyGgZigA1H1p5O5ANnMyWzvpAETtG68/dC4pC0ncy3+PPGzXZHPg==
+  dependencies:
+    lie "3.1.1"
 
 locate-path@^5.0.0:
   version "5.0.0"
