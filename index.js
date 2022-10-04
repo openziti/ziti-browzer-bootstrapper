@@ -18,8 +18,8 @@ limitations under the License.
 // SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const path      = require('path');
+const https     = require("https");
 const fs        = require('fs');
-const requestIp = require('request-ip');
 const express   = require("express");
 const crypto    = require('crypto');
 const httpProxy = require('./lib/http-proxy');
@@ -30,20 +30,28 @@ const terminate = require('./lib/terminate');
 const pjson     = require('./package.json');
 const winston   = require('winston');
 const { v4: uuidv4 } = require('uuid');
-// const Rest      = require('connect-rest');
-// const serveStatic = require('serve-static');
-// const heapdump  = require('heapdump');
-const greenlock_express = require("greenlock-express");
-const pkg       = require('./package.json');
 
 const { auth }  = require('express-openid-connect');
 const helmet    = require("helmet");
 
 
-
 var logger;     // for ziti-http-agent
 
 var uuid;       // for API authn
+
+/**
+ * 
+ */
+ var certificate_path = process.env.ZITI_AGENT_CERTIFICATE_PATH;
+ if (typeof certificate_path === 'undefined') { throw new Error('ZITI_AGENT_CERTIFICATE_PATH value not specified'); }
+ if (typeof certificate_path !== 'string') { throw new Error('ZITI_AGENT_CERTIFICATE_PATH value is not a string'); }
+ 
+/**
+ * 
+ */
+ var key_path = process.env.ZITI_AGENT_KEY_PATH;
+ if (typeof key_path === 'undefined') { throw new Error('ZITI_AGENT_KEY_PATH value not specified'); }
+ if (typeof key_path !== 'string') { throw new Error('ZITI_AGENT_KEY_PATH value is not a string'); }
 
 /**
  * 
@@ -61,8 +69,6 @@ if (typeof agent_host !== 'string') { throw new Error('ZITI_AGENT_HOST value is 
 
 var zbr_src = `${agent_host}/ziti-browzer-runtime.js`;
 
-var agent_http_port = process.env.ZITI_AGENT_HTTP_PORT;
-if (typeof agent_http_port === 'undefined') { agent_http_port = 8080; }
 var agent_https_port = process.env.ZITI_AGENT_HTTPS_PORT;
 if (typeof agent_https_port === 'undefined') { agent_https_port = 8443; }
 
@@ -82,13 +88,6 @@ if (typeof agent_https_port === 'undefined') { agent_https_port = 8443; }
 var ziti_agent_loglevel = process.env.ZITI_AGENT_LOGLEVEL;
 if (typeof ziti_agent_loglevel === 'undefined') { ziti_agent_loglevel = 'info'; }
 ziti_agent_loglevel = ziti_agent_loglevel.toLowerCase();
-
-/**
- * 
- */
-var ziti_agent_acme_maintainerEmail = process.env.ZITI_AGENT_ACME_MAINTAINER_EMAIL;
-if (typeof ziti_agent_acme_maintainerEmail === 'undefined') { ziti_agent_acme_maintainerEmail = 'openziti@netfoundry.io'; }
-
 
 /**
  *  DDoS protection (request-rate limiting) variables
@@ -175,27 +174,10 @@ const createLogger = () => {
         exitOnError: false,     // Don't die if we encounter an uncaught exception or promise rejection
     });
     
-    // // If we're not in production then log to the `console` with the format:
-    // //  `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
-    if ((typeof process.env.NODE_ENV === 'undefined') || (process.env.NODE_ENV === 'undefined') || (process.env.NODE_ENV !== 'production')) {
-        console.log(`-------> createLogger() adding winston.transports.Console`);
-
-        logger.add(new winston.transports.Console({
-            format: combine(
-                timestamp(),
-                logFormat
-            ),
-        }));
-    }
-
     return( logger );
 }
 
-
-
 var selects = [];
-
-
 
 /** --------------------------------------------------------------------------------------------------
  *  Start the agent
@@ -352,7 +334,6 @@ const startAgent = ( logger ) => {
             secret:         crypto.randomBytes(32).toString('hex'),
 
             baseURL:        'https://' + process.env.ZITI_AGENT_HOST,
-            // baseURL:        `https://${process.env.ZITI_AGENT_HOST}${process.env.ZITI_AGENT_TARGET_PATH}`,
             
             authorizationParams: {  // we need this in order to acquire the User's externalId (claimsProperty) from the IdP
                 response_type:  'id_token',
@@ -374,56 +355,6 @@ const startAgent = ( logger ) => {
         }),
 
     );
-    /** -------------------------------------------------------------------------------------------------- */
-
-
-    /** --------------------------------------------------------------------------------------------------
-     *  Set up /ziti API handler
-     */
-    //  var rest = Rest.create(
-    //     {
-    //         context: '/ziti',
-    //         'logger': 'connect-rest',
-    //         apiKeys: [ uuid ],
-    //     }    
-    // );
-
-    // app.use( rest.processRequest() )
-
-    // function mapEntriesToString(entries) {
-    //     return Array
-    //       .from(entries, ([k, v]) => `${k}:${v}, `)
-    //       .join("") + "";
-    // }
-
-    // rest.post('/loglevel/:client/:level', async function( req ) {
-
-    //     const client = req.parameters.client;
-    //     const level = req.parameters.level;
-
-    //     common.logLevelSet(client, level);
-
-    //     return { 
-    //         result: {
-    //             logLevel: common.logLevelGet()
-    //         }, 
-    //         options: { 
-    //             statusCode: 200
-    //         } 
-    //     }
-    // });
-
-    // rest.get('/loglevel', async function( req ) {
-        
-    //     return { 
-    //         result: {
-    //             logLevel: common.logLevelGet()
-    //         }, 
-    //         options: { 
-    //             statusCode: 200
-    //         } 
-    //     }
-    // });
     /** -------------------------------------------------------------------------------------------------- */
 
 
@@ -479,128 +410,35 @@ const startAgent = ( logger ) => {
     /** -------------------------------------------------------------------------------------------------- */
 
     logger.info('target path: %o', target_path);
-
-    /** --------------------------------------------------------------------------------------------------
-     *  Set up the Let's Encrypt infra.  
-     *  The configured 'agent_host' will be used when auto-generating the TLS certs.
-     */
-
-    try {
-
-        // Let's Encrypt staging API
-        var acme_server =  'https://acme-staging-v02.api.letsencrypt.org/directory';
-        // Let's Encrypt production API
-        // var acme_server =  'https://acme-v02.api.letsencrypt.org/directory';
-            
-        var configDir;
-        if (fs.existsSync('/ziti')) {
-            configDir = '/ziti/greenlock.d';                        // running in a container w/ziti volume mounted to host
-        } else {
-            configDir = './greenlock.d';                            // running on dev box with just node
-        }
-
-        var gle = greenlock_express.init({
-            version: 'draft-12'                                     // 'draft-12' or 'v01'
-                                                                    // 'draft-12' is for Let's Encrypt v2 otherwise known as ACME draft 12
-                                                                    // 'v02' is an alias for 'draft-12'
-                                                                    // 'v01' is for the pre-spec Let's Encrypt v1
-          , server: acme_server
-
-          , subject: agent_host
-          , altnames: [agent_host]
-                      
-          , maintainerEmail: ziti_agent_acme_maintainerEmail
-
-          , packageRoot: __dirname
-          , configDir: configDir
-          , packageAgent: pkg.name + '/' + pkg.version
-
-          , challengeType: 'http-01'                                // default to this challenge type
-          , agreeToTerms: true                                      // hook to allow user to view and accept LE TOS
-           
-                                                                    // renewals happen at a random time within this window
-          , renewWithin: 14 * 24 * 60 * 60 * 1000                   // certificate renewal may begin at this time
-          , renewBy:     10 * 24 * 60 * 60 * 1000                   // certificate renewal should happen by this time
-           
-          , debug: true
-          , log: function (debug) {
-              logger.debug('greenlock, log() entered: %o', debug);
-            } 
-
-          , serverKeyType: "RSA-4096"
-
-          , cluster: false
           
-          , notify: function(event, details) {
-                logger.info('greenlock event: %o, details: %o', event, details);
-            }    
-        });
-
-        gle.ready(httpsWorker);
-
-    } catch (e) {
-        logger.error('exception: %o', e);
-    }
-    /** -------------------------------------------------------------------------------------------------- */
-
-      
 
     /** --------------------------------------------------------------------------------------------------
-     *  Initiate the proxy and engage the content injectors.
+     *  Crank up the web server.  The 'agent_https_port' value can be arbitrary since it is used
+     *  inside the container.  Port 443 is typically mapped onto the 'agent_http_port' e.g. 443->8443
      */
-    function httpsWorker( glx ) {
+    var proxy = httpProxy.createProxyServer({
+        logger: logger,
+        changeOrigin: true,
+        target: 'https://' + target_service,
+        targetPath: target_path,
 
-        logger.info(`httpsWorker starting`);
-
-        var proxy = httpProxy.createProxyServer({
-            logger: logger,
-            changeOrigin: true,
-            target: 'https://' + target_service,
-            targetPath: target_path,
-
-            // Set up to rewrite 'Location' headers on redirects
-            hostRewrite: agent_host,
-            autoRewrite: true,
-        });
-        
-        app.use(require('./lib/inject')([], selects));
+        // Set up to rewrite 'Location' headers on redirects
+        hostRewrite: agent_host,
+        autoRewrite: true,
+    });
     
-        app.use(function (req, res) {
-            proxy.web(req, res);
-        })
-    /** -------------------------------------------------------------------------------------------------- */
-    
+    app.use(require('./lib/inject')([], selects));
 
-    /** --------------------------------------------------------------------------------------------------
-     *  Crank up the web server (which will do all the magic regarding cert acquisition, refreshing, etc)
-     *  The 'agent_http_port' and 'agent_https_port' values can be arbitrary values since they are used
-     *  inside the container.  The ports 80/443 are typically mapped onto the 'agent_http_port' and 
-     *  'agent_https_port' values.  e.g.  80->8080 & 443->8443
-     */
-        // Start a TLS-based listener on the configured port
-        const httpsServer = glx.httpsServer(null, app);
-        
-        httpsServer.on('error', function (e) {
-            logger.info('err: %o', e);
-        });
-            
-        httpsServer.listen( agent_https_port, "0.0.0.0", function() {
-            logger.info('Listening on %o', httpsServer.address());
-        });
+    app.use(function (req, res) {
+        proxy.web(req, res);
+    })
 
-        // ALSO listen on port 80 for ACME HTTP-01 Challenges
-        // (the ACME and http->https middleware are loaded by glx.httpServer)
-        var httpServer = glx.httpServer();
-
-        httpServer.on('error', function (e) {
-            logger.info('err: %o', e);
-        });
-
-        httpServer.listen( agent_http_port, "0.0.0.0", function() {
-            logger.info('Listening on %o', httpServer.address());
-        });
-
-    }
+    https.createServer({
+        cert: fs.readFileSync(certificate_path),
+        key: fs.readFileSync(key_path),
+    }, app).listen(agent_https_port, "0.0.0.0", function() {
+        logger.info('Listening on %o', agent_https_port);
+    });
     /** -------------------------------------------------------------------------------------------------- */
     
 };
