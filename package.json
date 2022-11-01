@@ -33,7 +33,7 @@
     "hotkeys-js": "^3.10.0",
     "http-proxy": "^1.18.1",
     "hystmodal": "^0.5.1",
-    "ip-cidr": "^3.0.7",
+    "ip-cidr": "^3.0.10",
     "js-base64": "^3.7.2",
     "jsonwebtoken": "^8.5.1",
     "le-challenge-fs": "^2.0.9",
