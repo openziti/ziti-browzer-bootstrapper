@@ -259,13 +259,13 @@
     "@types/emscripten" "^1.39.6"
     "@wasmer/wasi" "^1.0.2"
 
-"@openziti/ziti-browzer-core@^0.16.12":
-  version "0.16.12"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-core/-/ziti-browzer-core-0.16.12.tgz#e53441370e36e17c45fc952992b393ff70304b36"
-  integrity sha512-8KsZDiG65uyShMpx/FFzAPsL6y+FddC+R7DT+zipVIiG/CvKIRh//RiHLDIZEU0z09PzgnFFyV+Ja1nDXrNUrQ==
+"@openziti/ziti-browzer-core@^0.16.13":
+  version "0.16.13"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-core/-/ziti-browzer-core-0.16.13.tgz#b05d218b0200f92cde529eaca30878af8a4e934f"
+  integrity sha512-M0Cw9bQt8ZZLWDs2uxkps7iYNQsq8wNCFPhVOdCuqT9/mZswmr93kPMgEgkl7YM2bPCuhaNSlBeg8ew60SznPA==
   dependencies:
     "@openziti/libcrypto-js" "^0.9.0"
-    "@openziti/ziti-browzer-edge-client" "^0.2.0"
+    "@openziti/ziti-browzer-edge-client" "^0.6.0"
     asn1js "^2.4.0"
     assert "^2.0.0"
     async-mutex "^0.3.2"
@@ -298,20 +298,20 @@
     util "^0.12.4"
     uuid "^8.3.2"
 
-"@openziti/ziti-browzer-edge-client@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-edge-client/-/ziti-browzer-edge-client-0.2.0.tgz#9f414de6db431fc4978ae937cdf24295afe8b892"
-  integrity sha512-KBKgA/VkLXVjIlgRre67dpnTF8qJcCjWJySxYX2KhU1tvFNWAb7UXdoFJDy7RoVs65cxo8vfSEco/tmDLs2BGA==
+"@openziti/ziti-browzer-edge-client@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-edge-client/-/ziti-browzer-edge-client-0.6.0.tgz#789993e3772654c14ff613d6757909e3ded41aa2"
+  integrity sha512-ZsIIxxtqaf+HoIF92mLXR9x4tUnZmkqsY0Yqqw+0hsjfy/KaSZvuee9VLySkr0FKxPnpQtslFlZjrvxgJs80vA==
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@^0.22.0":
-  version "0.22.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.22.0.tgz#e67f86b4e90ce902782b719c4bda7acac77bc0c5"
-  integrity sha512-ypdlqlacO/JhApKE86qbekAQvB9RGXrbIHifBcsGGyUNgv+NyIEOAbKnYQ/zlEKaWs42Itoogrbes8FO7uhugg==
+"@openziti/ziti-browzer-runtime@^0.23.0":
+  version "0.23.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.23.0.tgz#15683510ee338bb728c0ce8a24828743c79bcfb1"
+  integrity sha512-3a2IdORaDpxVzSFexTVMLpVXCkuaX8Z6zyzNUd7w0KFWaUI4Q5Q3+u7ZecgKcA+qbXanXvnzc+9L1RWOmx0whA==
   dependencies:
     "@babel/runtime" "^7.17.9"
-    "@openziti/ziti-browzer-core" "^0.16.12"
+    "@openziti/ziti-browzer-core" "^0.16.13"
     cookie-interceptor "^1.0.0"
     core-js "^3.22.8"
     js-base64 "^3.7.2"
@@ -321,12 +321,12 @@
     uuid "^8.3.2"
     workbox-window "^6.5.3"
 
-"@openziti/ziti-browzer-sw-workbox-strategies@^0.19.0":
-  version "0.19.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.19.0.tgz#51613a50d2d697b9c6ed70d6f66b5e57318ccd25"
-  integrity sha512-JAi0BTzEeITIp+pcuFtxcBeZG1GLH2mCj9+IvSIDSoP08TKhQqrIzOwe4NG5bZlBpzQReUA/S5RrcKAdsRfxBg==
+"@openziti/ziti-browzer-sw-workbox-strategies@^0.20.0":
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.20.0.tgz#1c0b3303a3a7b5ca8c38b20e81c25914d4508776"
+  integrity sha512-j3Sa4wagRbbeG5z4n9h68E76EJMkkOd27LpKBdVXCXOHr2ZHssswx8hpkNNTca1ter9BcO4nr1rpKrR/vE+DvQ==
   dependencies:
-    "@openziti/ziti-browzer-core" "^0.16.12"
+    "@openziti/ziti-browzer-core" "^0.16.13"
     async-mutex "^0.3.2"
     cheerio "^1.0.0-rc.12"
     jwt-decode "^3.1.2"
@@ -336,12 +336,12 @@
     workbox-expiration "^6.5.3"
     workbox-strategies "^6.5.3"
 
-"@openziti/ziti-browzer-sw@^0.16.0":
-  version "0.16.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.16.0.tgz#96b7e43e2c777d1fcb293cc030542fc833bc6d78"
-  integrity sha512-+N+9qPRa+fVE/GqPHUFcvy6f5+jmZiOm2QnX+AFn0msu347FpkBpNr5kME7B986Hgz1pw8nfdekoMZK5uPzHZA==
+"@openziti/ziti-browzer-sw@^0.17.0":
+  version "0.17.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.17.0.tgz#e107f7f9e010917fca5a4a7386fbd5d8791e1f5c"
+  integrity sha512-rLZIS+Y880RrWO2Hfg8vgC1MkpyAEkRh0hc70/yuR+xN/AbcsNVNAu48J45v46g1IE28C7Fzn4jLJy673BuI/A==
   dependencies:
-    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.19.0"
+    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.20.0"
     "@types/lodash-es" "^4.17.6"
     workbox-core "^6.5.3"
     workbox-expiration "^6.5.0"
@@ -1006,10 +1006,23 @@ cookie-interceptor@^1.0.0:
   resolved "https://registry.yarnpkg.com/cookie-interceptor/-/cookie-interceptor-1.0.0.tgz#330a4bfdc774197731b4a143965decb4626e566c"
   integrity sha512-RY2mNyzyXSi+dtyE/WGQ0e56DUkPs0/2QF3Y0xTGLBW8FpVwnFlj2klOgFemCPM0iL+NGCZvjvdAFgMbVEV4Ng==
 
+cookie-parser@^1.4.6:
+  version "1.4.6"
+  resolved "https://registry.yarnpkg.com/cookie-parser/-/cookie-parser-1.4.6.tgz#3ac3a7d35a7a03bbc7e365073a26074824214594"
+  integrity sha512-z3IzaNjdwUC2olLIB5/ITd0/setiaFMLYiZJle7xg5Fe9KWAceil7xszYfHHBtDFYLSgJduS2Ty0P1uJdPDJeA==
+  dependencies:
+    cookie "0.4.1"
+    cookie-signature "1.0.6"
+
 cookie-signature@1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/cookie-signature/-/cookie-signature-1.0.6.tgz#e303a882b342cc3ee8ca513a79999734dab3ae2c"
   integrity sha1-4wOogrNCzD7oylE6eZmXNNqzriw=
+
+cookie@0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.4.1.tgz#afd713fe26ebd21ba95ceb61f9a8116e50a537d1"
+  integrity sha512-ZwrFkGJxUR3EIoXtO+yVE69Eb7KlixbaeAWfBQB9vVsNn/o+Yw69gBWSSDK825hQNdN+wF8zELf3dFNl/kxkUA==
 
 cookie@0.5.0, cookie@^0.5.0:
   version "0.5.0"
@@ -2277,6 +2290,11 @@ json5@^2.2.1:
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.1.tgz#655d50ed1e6f95ad1a3caababd2b0efda10b395c"
   integrity sha512-1hqLFMSrGHRHxav9q9gNjJ5EXznIxGVO09xQRrwplcS8qs28pZ8s8hupZAmqDwZUmVZ2Qb2jnyPOWcDH8m8dlA==
 
+jsonschema@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/jsonschema/-/jsonschema-1.4.1.tgz#cc4c3f0077fb4542982973d8a083b6b34f482dab"
+  integrity sha512-S6cATIPVv1z0IlxdN+zUk5EPjkGCdnhN4wVSBlvoUO1tOLJootbo9CquNJmbIh4yikWHiUedhRYrNPn1arpEmQ==
+
 jsonwebtoken@^8.5.1:
   version "8.5.1"
   resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-8.5.1.tgz#00e71e0b8df54c2121a1f26137df2280673bcc0d"
@@ -2388,6 +2406,11 @@ lodash-es@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.21.tgz#43e626c46e6591b7750beb2b50117390c609e3ee"
   integrity sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==
+
+lodash.find@^4.6.0:
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/lodash.find/-/lodash.find-4.6.0.tgz#cb0704d47ab71789ffa0de8b97dd926fb88b13b1"
+  integrity sha512-yaRZoAV3Xq28F1iafWN1+a0rflOej93l1DQUejs3SZ41h2O9UJBoS9aueGjPDgAl4B6tPC0NuuchLKaDQQ3Isg==
 
 lodash.flattendeep@^4.4.0:
   version "4.4.0"
