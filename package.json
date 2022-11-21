@@ -1,6 +1,6 @@
 {
   "name": "ziti-http-agent",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "description": "HTTP proxying over Ziti network into Dark web server",
   "main": "index.js",
   "scripts": {
@@ -18,8 +18,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@openziti/ziti-browzer-runtime": "^0.23.0",
-    "@openziti/ziti-browzer-sw": "^0.17.0",
+    "@openziti/ziti-browzer-runtime": "^0.23.1",
+    "@openziti/ziti-browzer-sw": "^0.17.1",
     "acme-http-01-standalone": "^3.0.5",
     "connect": "^3.7.0",
     "cookie": "^0.5.0",
@@ -31,6 +31,7 @@
     "follow-redirects": "^1.15.1",
     "heapdump": "^0.3.15",
     "helmet": "^5.1.0",
+    "hotkeys": "^1.0.0",
     "hotkeys-js": "^3.10.0",
     "http-proxy": "^1.18.1",
     "hystmodal": "^0.5.1",

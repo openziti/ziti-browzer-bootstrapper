@@ -95,6 +95,11 @@ var agent_host = process.env.ZITI_AGENT_HOST;
 if (typeof agent_host === 'undefined') { throw new Error('ZITI_AGENT_HOST value not specified'); }
 if (typeof agent_host !== 'string') { throw new Error('ZITI_AGENT_HOST value is not a string'); }
 
+var ziti_controller_host = process.env.ZITI_CONTROLLER_HOST;
+if (typeof ziti_controller_host === 'undefined') { throw new Error('ZITI_CONTROLLER_HOST value not specified'); }
+if (typeof ziti_controller_host !== 'string') { throw new Error('ZITI_CONTROLLER_HOST value is not a string'); }
+if (ziti_controller_host === agent_host) { throw new Error('ZITI_CONTROLLER_HOST value and ZITI_AGENT_HOST value cannot be the same'); }
+
 var zbr_src = `${agent_host}/ziti-browzer-runtime.js`;
 
 var agent_https_port = process.env.ZITI_AGENT_HTTPS_PORT;
@@ -384,12 +389,6 @@ const startAgent = ( logger ) => {
                 }
             },
 
-            // afterCallback: (req, res, session) => {
-
-            //     console.log('afterCallback(), Cookies: ', req.cookies);
-
-            //     return session;
-            // },
         }),
 
     );
