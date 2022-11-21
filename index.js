@@ -24,20 +24,48 @@ const express   = require("express");
 const crypto    = require('crypto');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
-const whiteListFilter = require('./lib/white-list-filter');
-const rateLimiter = require('./lib/rate-limiter');
-const terminate = require('./lib/terminate');
 const pjson     = require('./package.json');
 const winston   = require('winston');
 const { v4: uuidv4 } = require('uuid');
-
-const { auth }  = require('express-openid-connect');
+var Validator   = require('jsonschema').Validator;
+var jsonschemaValidator = new Validator();
+var cookieParser = require('cookie-parser')
+const { auth, requiresAuth } = require('express-openid-connect');
 const helmet    = require("helmet");
 
 
 var logger;     // for ziti-http-agent
 
-var uuid;       // for API authn
+/**
+ * 
+ */
+ var targets = process.env.ZITI_AGENT_TARGETS;
+ if (typeof targets === 'undefined') { throw new Error('ZITI_AGENT_TARGETS value not specified'); }
+ var jsonTargetArray = JSON.parse(targets);
+
+ var targetsSchema = {
+    "id": "/Targets",
+    "type": "object",
+    "properties": {
+        "targetArray": {
+            "type": "array",
+            "items": {
+                "properties": {
+                    "wildcard": {"type": "string"},
+                    "service": {"type": "string"},
+                    "port": {"type": "number"},
+                    "path": {"type": "string"}
+                },
+                "required": ["wildcard", "service", "port", "path"]
+            }        
+        },
+    },
+    "required": ["targetArray"]
+};
+var arraySchema = {
+    "type": "array",
+    "uniqueItems": true
+}   
 
 /**
  * 
@@ -166,10 +194,10 @@ const createLogger = () => {
             new winston.transports.Console({format: combine( timestamp(), logFormat ), }),
         ],
         exceptionHandlers: [    // handle Uncaught exceptions
-            new winston.transports.File({ filename: path.join(__dirname, logDir, '/ziti-http-agent-uncaught-exceptions.log' ) })
+            new winston.transports.Console({format: combine( timestamp(), logFormat ), }),
         ],
         rejectionHandlers: [    // handle Uncaught Promise Rejections
-            new winston.transports.File({ filename: path.join(__dirname, logDir, '/ziti-http-agent-uncaught-promise-rejections.log' ) })
+            new winston.transports.Console({format: combine( timestamp(), logFormat ), }),
         ],
         exitOnError: false,     // Don't die if we encounter an uncaught exception or promise rejection
     });
@@ -313,6 +341,8 @@ const startAgent = ( logger ) => {
      app.use(helmet.permittedCrossDomainPolicies());
      app.use(helmet.referrerPolicy());
      app.use(helmet.xssFilter());
+
+     app.use(cookieParser())
     /** -------------------------------------------------------------------------------------------------- */
 
     /** --------------------------------------------------------------------------------------------------
@@ -323,6 +353,7 @@ const startAgent = ( logger ) => {
         auth({
 
             authRequired:   true,
+            // authRequired:   false,
 
             idpLogout:      true,
 
@@ -351,72 +382,48 @@ const startAgent = ( logger ) => {
                     httpOnly: false,    // ZBR needs to access this
                     domain: `${process.env.ZITI_AGENT_HOST}`
                 }
-            }
+            },
+
+            // afterCallback: (req, res, session) => {
+
+            //     console.log('afterCallback(), Cookies: ', req.cookies);
+
+            //     return session;
+            // },
         }),
 
     );
+
+    // app.get('/', requiresAuth(), (req, res, next) => {
+
+    //     var host = req.get('host');
+    //     console.log('Host: ', host);
+
+    //     var browZerSession = req.cookies.browZerSession;
+    //     logger.info(`browZerSession is: [${browZerSession}]`);
+
+
+    //     // console.log('Cookies: ', req.cookies);
+
+    //     var browZerTarget = req.cookies.browZerTarget;
+    //     logger.info(`browZerTarget is: [${browZerTarget}]`);
+
+
+    //     // res.cookie('browZerTarget', 'jenkins-service');
+
+    //     next();
+    // });
+        
     /** -------------------------------------------------------------------------------------------------- */
 
-
-    /** --------------------------------------------------------------------------------------------------
-     *  Set up the White List filter
-     */
-    app.use(
-        whiteListFilter(
-            {
-                logger: logger,
-
-                cidrList: cidr_whitelist_array, // By default all clients are allowed in
-
-            }
-        )
-    );
-    /** -------------------------------------------------------------------------------------------------- */
-
-    
-    /** --------------------------------------------------------------------------------------------------
-     *  Set up the DDoS limiter
-     */
-    app.use(
-        rateLimiter(
-            {
-                logger: logger,
-
-                end: ratelimit_terminate_on_exceed,   // Whether to terminate the request if rate-limit exceeded
-
-                whitelist: ratelimit_whitelist_array, // By default client names in the whitelist will be subject to 4000 requests per hour
-
-                blacklist: ratelimit_blacklist_array, // By default client names in the blacklist will be subject to 0 requests per 0 time. In other words they will always be exceding the rate limit
-
-                categories: {
-
-                    normal: {
-                        totalRequests:  ratelimit_reqs_per_minute,
-                        every:          (60 * 1000)
-                    },
-
-                    whitelist: {
-                        every:          (60 * 60 * 1000)
-                    },
-
-                    blacklist: {
-                        totalRequests:  0,
-                        every:          0 
-                    }
-                }
-            }
-        )
-    );
-    /** -------------------------------------------------------------------------------------------------- */
-
-    logger.info('target path: %o', target_path);
+    logger.info('configured target service(s): %o', JSON.parse(targets));
           
 
     /** --------------------------------------------------------------------------------------------------
      *  Crank up the web server.  The 'agent_https_port' value can be arbitrary since it is used
      *  inside the container.  Port 443 is typically mapped onto the 'agent_http_port' e.g. 443->8443
      */
-    var proxy = httpProxy.createProxyServer({
+    var options = {
         logger: logger,
         changeOrigin: true,
         target: 'https://' + target_service,
@@ -425,9 +432,14 @@ const startAgent = ( logger ) => {
         // Set up to rewrite 'Location' headers on redirects
         hostRewrite: agent_host,
         autoRewrite: true,
-    });
+
+        // Pass in the dark web app target array
+        targetArray: jsonTargetArray.targetArray,
+    };
+
+    var proxy = httpProxy.createProxyServer(options);
     
-    app.use(require('./lib/inject')([], selects));
+    app.use(require('./lib/inject')(options, [], selects));
 
     app.use(function (req, res) {
         proxy.web(req, res);
@@ -455,7 +467,26 @@ const main = async () => {
 
     logger.info(`ziti-http-agent version ${pjson.version} starting at ${new Date()}`);
 
-    logger.info(`ziti-http-agent uuid to auth API is: ${uuid}`);
+    let validationResult = jsonschemaValidator.validate(jsonTargetArray, targetsSchema, {
+        allowUnknownAttributes: false,
+        nestedErrors: true
+    });
+    if (!validationResult.valid) {
+        validationResult.errors.map(function(err) {
+            logger.error(`ZITI_AGENT_TARGETS error: ${err}`);
+        });          
+        process.exit(-1);
+    }   
+    validationResult = jsonschemaValidator.validate(jsonTargetArray.targetArray, arraySchema, {
+        allowUnknownAttributes: false,
+        nestedErrors: true
+    });
+    if (!validationResult.valid) {
+        validationResult.errors.map(function(err) {
+            logger.error(`ZITI_AGENT_TARGETS error: ${err}`);
+        });          
+        process.exit(-1);
+    }   
 
 
     // Now start the Ziti HTTP Agent
