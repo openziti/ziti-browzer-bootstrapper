@@ -18,8 +18,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@openziti/ziti-browzer-runtime": "^0.24.0",
-    "@openziti/ziti-browzer-sw": "^0.18.0",
+    "@openziti/ziti-browzer-runtime": "^0.24.1",
+    "@openziti/ziti-browzer-sw": "^0.18.1",
     "acme-http-01-standalone": "^3.0.5",
     "connect": "^3.7.0",
     "cookie": "^0.5.0",
