@@ -1965,10 +1965,10 @@ ip-address@^7.1.0:
     jsbn "1.1.0"
     sprintf-js "1.1.2"
 
-ip-cidr@^3.0.7:
-  version "3.0.7"
-  resolved "https://registry.yarnpkg.com/ip-cidr/-/ip-cidr-3.0.7.tgz#22708dd4f2d3f6397c0fb7d647b44e3c565937e9"
-  integrity sha512-0cBBICDnmmpAdULMbMVdi4f0mSG+VWY/QBPL/OIIjuom14x7Y63VhpS/uSAOycasXOeGXah5y0eu//PDU51aNw==
+ip-cidr@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/ip-cidr/-/ip-cidr-3.1.0.tgz#db284bbd2bdac0b137a2cd4fe1ba9a6cca2f8b04"
+  integrity sha512-HUCn4snshEX1P8cja/IyU3qk8FVDW8T5zZcegDFbu4w7NojmAhk5NcOgj3M8+0fmumo1afJTPDtJlzsxLdOjtg==
   dependencies:
     ip-address "^7.1.0"
     jsbn "^1.1.0"
