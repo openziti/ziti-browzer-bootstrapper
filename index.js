@@ -51,12 +51,27 @@ var logger;     // for ziti-http-agent
             "type": "array",
             "items": {
                 "properties": {
-                    "wildcard": {"type": "string"},
-                    "service": {"type": "string"},
-                    "port": {"type": "number"},
-                    "path": {"type": "string"}
+                    "wildcard": {
+                        "type": "string"
+                    },
+                    "service": {
+                        "type": "string"
+                    },
+                    "port": {
+                        "type": "number"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "scheme": {
+                        "type": "string",
+                        "enum": [
+                            "http", 
+                            "https"
+                        ]
+                    }
                 },
-                "required": ["wildcard", "service", "port", "path"]
+                "required": ["wildcard", "service", "port", "path", "scheme"],            
             }        
         },
     },

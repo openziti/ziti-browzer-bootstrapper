@@ -259,10 +259,10 @@
     "@types/emscripten" "^1.39.6"
     "@wasmer/wasi" "^1.0.2"
 
-"@openziti/ziti-browzer-core@^0.16.13":
-  version "0.16.13"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-core/-/ziti-browzer-core-0.16.13.tgz#b05d218b0200f92cde529eaca30878af8a4e934f"
-  integrity sha512-M0Cw9bQt8ZZLWDs2uxkps7iYNQsq8wNCFPhVOdCuqT9/mZswmr93kPMgEgkl7YM2bPCuhaNSlBeg8ew60SznPA==
+"@openziti/ziti-browzer-core@^0.18.0":
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-core/-/ziti-browzer-core-0.18.0.tgz#6dff8796c506d6e3e70ac0df5876c98655362563"
+  integrity sha512-1OLuE1e0D4MPb1grL/SxBX9IGbJ8KSOWcygsP6tGnq4e855umCOjZHQYGjfOjLf6HKCQuPljdcAxFqjO7pNX1w==
   dependencies:
     "@openziti/libcrypto-js" "^0.9.0"
     "@openziti/ziti-browzer-edge-client" "^0.6.0"
@@ -274,6 +274,7 @@
     bufferutil "^4.0.6"
     chnl "^1.2.0"
     events "^3.3.0"
+    fast-memoize "^2.5.2"
     format-message "^6.2.4"
     from2 "^2.3.0"
     js-cookie "^3.0.1"
@@ -305,13 +306,13 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@^0.23.1":
-  version "0.23.1"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.23.1.tgz#a4f97018813538255786a11d2502a0d2c19fa567"
-  integrity sha512-WpqZPHW1gtun9gTukhD01TJlCzXZJRbhQNmWc1whIIVaZiF8THes1zFj2xk33ciIstTl8xVR6WzVkSbXLtAaGA==
+"@openziti/ziti-browzer-runtime@^0.25.0":
+  version "0.25.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.25.0.tgz#968683eb27ac235608ab702457eff8b1fc6159f2"
+  integrity sha512-93QTZI0LSZ0pwHHNR3wydDkPWjPFfIikoGjd7H9zeRfKJmrni/2kOomPAXhkgshhXv0DqsAfvrWWV5QeZ11bFg==
   dependencies:
     "@babel/runtime" "^7.17.9"
-    "@openziti/ziti-browzer-core" "^0.16.13"
+    "@openziti/ziti-browzer-core" "^0.18.0"
     cookie-interceptor "^1.0.0"
     core-js "^3.22.8"
     js-base64 "^3.7.2"
@@ -321,12 +322,12 @@
     uuid "^8.3.2"
     workbox-window "^6.5.3"
 
-"@openziti/ziti-browzer-sw-workbox-strategies@^0.20.2":
-  version "0.20.2"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.20.2.tgz#9dc103c0c06055bb23d948a543f0cf0e24890e0f"
-  integrity sha512-tYJaxYTLQSOBVz1fWVIMUjPOflq90h3D2vWpGpHj7YDlLllMuvVi07JpW/I4TeavUC6EdyAtZ/PObBXsF9SYZg==
+"@openziti/ziti-browzer-sw-workbox-strategies@^0.22.0":
+  version "0.22.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.22.0.tgz#1f7519e227f2df58f4c89689628dbc5d19bb3d6a"
+  integrity sha512-e++NSb0YiOctaoZ0cAPYU1wIO3TXjh6zP1LuKCS1xIMJ0XHmA0bSL9TMoZn244Pt+6dNx3gkcbNnKfJlzMocaQ==
   dependencies:
-    "@openziti/ziti-browzer-core" "^0.16.13"
+    "@openziti/ziti-browzer-core" "^0.18.0"
     async-mutex "^0.3.2"
     cheerio "^1.0.0-rc.12"
     jwt-decode "^3.1.2"
@@ -336,12 +337,12 @@
     workbox-expiration "^6.5.3"
     workbox-strategies "^6.5.3"
 
-"@openziti/ziti-browzer-sw@^0.17.2":
-  version "0.17.2"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.17.2.tgz#38529e7b2784c02a6723ac200ee5396bff53b7cf"
-  integrity sha512-zsXpls2eSYcuKFeOD2/a+NrkdBKqE5vdQeoAiw5ROkso0eDdvJBPoKAOmRYo/ei0dZ7g2/DQhcuuYI3G4q4KOg==
+"@openziti/ziti-browzer-sw@^0.19.0":
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.19.0.tgz#58ff22c77947cd7ef9a39a71047c3b53db856b3d"
+  integrity sha512-Wlt4bfu0VxgI9+g8Pm6jXrIIyWC6rB+S0tYyAsPTUmS4ow5QKstc5vLL2crF8avLxQxf+awHiwN1EG5DiEiMeQ==
   dependencies:
-    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.20.2"
+    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.22.0"
     "@types/lodash-es" "^4.17.6"
     workbox-core "^6.5.3"
     workbox-expiration "^6.5.0"
@@ -1431,6 +1432,11 @@ express@^4.18.1:
     type-is "~1.6.18"
     utils-merge "1.0.1"
     vary "~1.1.2"
+
+fast-memoize@^2.5.2:
+  version "2.5.2"
+  resolved "https://registry.yarnpkg.com/fast-memoize/-/fast-memoize-2.5.2.tgz#79e3bb6a4ec867ea40ba0e7146816f6cdce9b57e"
+  integrity sha512-Ue0LwpDYErFbmNnZSF0UH6eImUwDmogUO1jyE+JbN2gsQz/jICm1Ve7t9QT0rNSsfJt+Hs4/S3GnsDVjL4HVrw==
 
 fast-safe-stringify@^2.1.1:
   version "2.1.1"
