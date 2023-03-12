@@ -18,6 +18,7 @@ limitations under the License.
 // SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const path      = require('path');
+const http      = require("http");
 const https     = require("https");
 const fs        = require('fs');
 const express   = require("express");
@@ -32,6 +33,9 @@ var jsonschemaValidator = new Validator();
 var cookieParser = require('cookie-parser')
 const { auth, requiresAuth } = require('express-openid-connect');
 const helmet    = require("helmet");
+const vhost     = require('vhost');
+const find      = require('lodash.find');
+const forEach   = require('lodash.foreach');
 
 
 var logger;     // for ziti-http-agent
@@ -69,9 +73,23 @@ var logger;     // for ziti-http-agent
                             "http", 
                             "https"
                         ]
-                    }
+                    },
+                    "idp_issuer_base_url": {
+                        "type": "string"
+                    },
+                    "idp_client_id": {
+                        "type": "string"
+                    },
+                    "idp_token_duration": {
+                        "type": "number"
+                    },
+                    "idp_claims_property": {
+                        "type": "string"
+                    },
                 },
-                "required": ["wildcard", "service", "port", "path", "scheme"],            
+                "required": [
+                    "wildcard", "service", "port", "path", "scheme", "idp_issuer_base_url", "idp_client_id", "idp_token_duration", "idp_claims_property"
+                ],
             }        
         },
     },
@@ -85,23 +103,32 @@ var arraySchema = {
 /**
  * 
  */
- var certificate_path = process.env.ZITI_AGENT_CERTIFICATE_PATH;
- if (typeof certificate_path === 'undefined') { throw new Error('ZITI_AGENT_CERTIFICATE_PATH value not specified'); }
- if (typeof certificate_path !== 'string') { throw new Error('ZITI_AGENT_CERTIFICATE_PATH value is not a string'); }
+var agent_scheme = process.env.ZITI_AGENT_SCHEME;
+if (typeof agent_scheme === 'undefined') { 
+    agent_scheme = 'http'; 
+}
+if (typeof agent_scheme !== 'string') { throw new Error('ZITI_AGENT_SCHEME value is not a string'); }
+if (agent_scheme !== 'http' && agent_scheme !== 'https') { throw new Error(`ZITI_AGENT_SCHEME value [${agent_scheme}] is invalid`); }
  
 /**
  * 
  */
- var key_path = process.env.ZITI_AGENT_KEY_PATH;
- if (typeof key_path === 'undefined') { throw new Error('ZITI_AGENT_KEY_PATH value not specified'); }
- if (typeof key_path !== 'string') { throw new Error('ZITI_AGENT_KEY_PATH value is not a string'); }
-
+var certificate_path;
+if (agent_scheme === 'https') {
+    certificate_path = process.env.ZITI_AGENT_CERTIFICATE_PATH;
+    if (typeof certificate_path === 'undefined') { throw new Error('ZITI_AGENT_CERTIFICATE_PATH value not specified'); }
+    if (typeof certificate_path !== 'string') { throw new Error('ZITI_AGENT_CERTIFICATE_PATH value is not a string'); }
+}
+ 
 /**
  * 
  */
-var target_service = process.env.ZITI_AGENT_TARGET_SERVICE;
-if (typeof target_service === 'undefined') { throw new Error('ZITI_AGENT_TARGET_SERVICE value not specified'); }
-if (typeof target_service !== 'string') { throw new Error('ZITI_AGENT_TARGET_SERVICE value is not a string'); }
+var key_path;
+if (agent_scheme === 'https') {
+    key_path = process.env.ZITI_AGENT_KEY_PATH;
+    if (typeof key_path === 'undefined') { throw new Error('ZITI_AGENT_KEY_PATH value not specified'); }
+    if (typeof key_path !== 'string') { throw new Error('ZITI_AGENT_KEY_PATH value is not a string'); }
+}
 
 /**
  * 
@@ -117,8 +144,18 @@ if (ziti_controller_host === agent_host) { throw new Error('ZITI_CONTROLLER_HOST
 
 var zbr_src = `${agent_host}/ziti-browzer-runtime.js`;
 
-var agent_https_port = process.env.ZITI_AGENT_HTTPS_PORT;
-if (typeof agent_https_port === 'undefined') { agent_https_port = 8443; }
+var agent_listen_port = process.env.ZITI_AGENT_LISTEN_PORT;
+if (typeof agent_listen_port === 'undefined') {
+    if (agent_scheme === 'http') {
+        agent_listen_port = 80;
+    }
+    else if (agent_scheme === 'https') {
+        agent_listen_port = 443;
+    }
+    else {
+        throw new Error('ZITI_AGENT_LISTEN_PORT cannot be set');
+    }
+}
 
 
 /**
@@ -259,7 +296,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script id="from-ziti-http-agent" type="text/javascript" src="https://${agent_host}/${common.getZBRname()}"></script>
+<script id="from-ziti-http-agent" type="text/javascript" src="${req.ziti_agent_scheme}://${req.ziti_wildcard}/${common.getZBRname()}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
@@ -340,7 +377,92 @@ const startAgent = ( logger ) => {
     selects.push(formselect);
     /** -------------------------------------------------------------------------------------------------- */
 
-    var app = express();
+    /** --------------------------------------------------------------------------------------------------
+     *  Crank up the web server.  The 'agent_listen_port' value can be arbitrary since it is used
+     *  inside the container.  Port 443|80 is typically mapped onto the 'agent_listen_port' e.g. 443->8443
+     */
+    var options = {
+        logger: logger,
+
+        // Set up to rewrite 'Location' headers on redirects
+        hostRewrite: agent_host,
+        autoRewrite: true,
+
+        // Pass in the dark web app target array
+        targetArray: jsonTargetArray.targetArray,
+    };
+    
+    var app                     = express();
+    var target_apps             = new Map();
+    var target_app_to_target    = new Map();
+
+    forEach(jsonTargetArray.targetArray, function(target) {
+
+        target_apps.set(target.wildcard, express());
+
+        var target_app = target_apps.get(target.wildcard);
+
+        target_app_to_target.set(target_app, target);
+
+        /** --------------------------------------------------------------------------------------------------
+         *  Engage the OpenID Connect middleware for the target app
+         */
+        target_app.use(
+
+            auth({
+
+                authRequired:   true,
+
+                idpLogout:      true,
+
+                attemptSilentLogin: false,
+
+                clientID:       target.idp_client_id,
+                issuerBaseURL:  target.idp_issuer_base_url,
+
+                secret:         crypto.randomBytes(32).toString('hex'),
+
+                baseURL:        agent_scheme + '://' + target.wildcard,
+                
+                authorizationParams: {  // we need this in order to acquire the User's externalId (claimsProperty) from the IdP
+                    response_type:  'id_token',
+                    scope:          'openid ' + target.idp_claims_property,
+                    audience:       agent_scheme + '://' + target.wildcard,
+                    
+                    prompt:         'login',
+                },
+
+                session: {
+                    name: 'browZerSession',
+                    absoluteDuration: target.idp_token_duration ? target.idp_token_duration : 28800,
+                    rolling: false,
+                    cookie: {
+                        httpOnly: false,    // ZBR needs to access this
+                        domain: `${target.wildcard}`
+                    }
+                },
+            })
+        );
+
+        target_app.use(function (req, res, next) {
+
+            var target = target_app_to_target.get(target_app);
+
+
+            req.ziti_wildcard        = target.wildcard;
+            req.ziti_target_service  = target.service;
+            req.ziti_target_port     = target.port;
+            req.ziti_target_path     = target.path;
+            req.ziti_target_scheme   = target.scheme;
+            req.ziti_agent_scheme    = agent_scheme;
+
+            next();
+        });  
+
+        target_app.use(require('./lib/inject')(options, [], selects));
+
+    });
+      
 
     /** --------------------------------------------------------------------------------------------------
      *  HTTP Header middleware
@@ -365,106 +487,48 @@ const startAgent = ( logger ) => {
      app.use(cookieParser())
     /** -------------------------------------------------------------------------------------------------- */
 
-    /** --------------------------------------------------------------------------------------------------
-     *  Engage the OpenID Connect middleware.
-     */
-     app.use(
-
-        auth({
-
-            authRequired:   true,
-            // authRequired:   false,
-
-            idpLogout:      true,
-
-            attemptSilentLogin: false,
-
-            clientID:       process.env.IDP_CLIENT_ID,
-            issuerBaseURL:  process.env.IDP_ISSUER_BASE_URL,
-
-            secret:         crypto.randomBytes(32).toString('hex'),
-
-            baseURL:        'https://' + process.env.ZITI_AGENT_HOST,
-            
-            authorizationParams: {  // we need this in order to acquire the User's externalId (claimsProperty) from the IdP
-                response_type:  'id_token',
-                scope:          'openid ' + process.env.IDP_CLAIMS_PROPERTY,
-                audience:       'https://' + process.env.ZITI_AGENT_HOST,
-                
-                prompt:         'login',
-            },
-
-            session: {
-                name: 'browZerSession',
-                absoluteDuration: process.env.IDP_TOKEN_DURATION ? process.env.IDP_TOKEN_DURATION : 28800,
-                rolling: false,
-                cookie: {
-                    httpOnly: false,    // ZBR needs to access this
-                    domain: `${process.env.ZITI_AGENT_HOST}`
-                }
-            },
-
-        }),
-
-    );
-
-    // app.get('/', requiresAuth(), (req, res, next) => {
-
-    //     var host = req.get('host');
-    //     console.log('Host: ', host);
-
-    //     var browZerSession = req.cookies.browZerSession;
-    //     logger.info(`browZerSession is: [${browZerSession}]`);
-
-
-    //     // console.log('Cookies: ', req.cookies);
-
-    //     var browZerTarget = req.cookies.browZerTarget;
-    //     logger.info(`browZerTarget is: [${browZerTarget}]`);
-
-
-    //     // res.cookie('browZerTarget', 'jenkins-service');
-
-    //     next();
-    // });
-        
-    /** -------------------------------------------------------------------------------------------------- */
 
     logger.info('configured target service(s): %o', JSON.parse(targets));
           
 
-    /** --------------------------------------------------------------------------------------------------
-     *  Crank up the web server.  The 'agent_https_port' value can be arbitrary since it is used
-     *  inside the container.  Port 443 is typically mapped onto the 'agent_http_port' e.g. 443->8443
-     */
-    var options = {
-        logger: logger,
-        changeOrigin: true,
-        target: 'https://' + target_service,
-        targetPath: target_path,
-
-        // Set up to rewrite 'Location' headers on redirects
-        hostRewrite: agent_host,
-        autoRewrite: true,
-
-        // Pass in the dark web app target array
-        targetArray: jsonTargetArray.targetArray,
-    };
-
     var proxy = httpProxy.createProxyServer(options);
-    
-    app.use(require('./lib/inject')(options, [], selects));
+
+    /**
+     *  Loop through the target app array and set up
+     */
+    forEach(jsonTargetArray.targetArray, function(target) {
+
+        var target_app = target_apps.get(target.wildcard);
+
+        app.use(vhost(target.wildcard, target_app));
+    });
+
 
     app.use(function (req, res) {
         proxy.web(req, res);
-    })
-
-    https.createServer({
-        cert: fs.readFileSync(certificate_path),
-        key: fs.readFileSync(key_path),
-    }, app).listen(agent_https_port, "0.0.0.0", function() {
-        logger.info('Listening on %o', agent_https_port);
     });
+
+    /**
+     * 
+     */
+    if (agent_scheme === 'https') {
+
+        https.createServer({
+            cert: fs.readFileSync(certificate_path),
+            key: fs.readFileSync(key_path),
+        }, app).listen(agent_listen_port, "0.0.0.0", function() {
+            logger.info(`Listening on ${agent_scheme} port ${agent_listen_port}`);
+        });
+
+    }
+    else {
+
+        http.createServer({
+        }, app).listen(agent_listen_port, "0.0.0.0", function() {
+            logger.info(`Listening on ${agent_scheme} port ${agent_listen_port}`);
+        });
+
+    }
     /** -------------------------------------------------------------------------------------------------- */
     
 };
