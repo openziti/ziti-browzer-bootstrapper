@@ -455,6 +455,7 @@ const startAgent = ( logger ) => {
             req.ziti_target_path     = target.path;
             req.ziti_target_scheme   = target.scheme;
             req.ziti_agent_scheme    = agent_scheme;
+            req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
 
             next();
         });  
