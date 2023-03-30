@@ -78,15 +78,9 @@ var logger;     // for ziti-http-agent
                     "idp_client_id": {
                         "type": "string"
                     },
-                    "idp_token_duration": {
-                        "type": "number"
-                    },
-                    "idp_claims_property": {
-                        "type": "string"
-                    },
                 },
                 "required": [
-                    "wildcard", "service", "port", "path", "scheme", "idp_issuer_base_url", "idp_client_id", "idp_token_duration", "idp_claims_property"
+                    "wildcard", "service", "port", "path", "scheme", "idp_issuer_base_url", "idp_client_id"
                 ],
             }        
         },
