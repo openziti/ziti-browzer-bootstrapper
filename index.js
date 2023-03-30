@@ -31,10 +31,8 @@ const { v4: uuidv4 } = require('uuid');
 var Validator   = require('jsonschema').Validator;
 var jsonschemaValidator = new Validator();
 var cookieParser = require('cookie-parser')
-const { auth, requiresAuth } = require('express-openid-connect');
 const helmet    = require("helmet");
 const vhost     = require('vhost');
-const find      = require('lodash.find');
 const forEach   = require('lodash.foreach');
 
 
@@ -404,46 +402,6 @@ const startAgent = ( logger ) => {
 
         target_app_to_target.set(target_app, target);
 
-        /** --------------------------------------------------------------------------------------------------
-         *  Engage the OpenID Connect middleware for the target app
-         */
-        target_app.use(
-
-            auth({
-
-                authRequired:   true,
-
-                idpLogout:      true,
-
-                attemptSilentLogin: false,
-
-                clientID:       target.idp_client_id,
-                issuerBaseURL:  target.idp_issuer_base_url,
-
-                secret:         crypto.randomBytes(32).toString('hex'),
-
-                baseURL:        agent_scheme + '://' + target.wildcard,
-                
-                authorizationParams: {  // we need this in order to acquire the User's externalId (claimsProperty) from the IdP
-                    response_type:  'id_token',
-                    scope:          'openid ' + target.idp_claims_property,
-                    audience:       agent_scheme + '://' + target.wildcard,
-                    
-                    prompt:         'login',
-                },
-
-                session: {
-                    name: 'browZerSession',
-                    absoluteDuration: target.idp_token_duration ? target.idp_token_duration : 28800,
-                    rolling: false,
-                    cookie: {
-                        httpOnly: false,    // ZBR needs to access this
-                        domain: `${target.wildcard}`
-                    }
-                },
-            })
-        );
-
         target_app.use(function (req, res, next) {
 
             var target = target_app_to_target.get(target_app);
@@ -456,6 +414,7 @@ const startAgent = ( logger ) => {
             req.ziti_target_scheme   = target.scheme;
             req.ziti_agent_scheme    = agent_scheme;
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
+            req.ziti_idp_client_id   = target.idp_client_id;
 
             next();
         });  
