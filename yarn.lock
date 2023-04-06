@@ -311,10 +311,10 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@0.27.1-beta.9":
-  version "0.27.1-beta.9"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.27.1-beta.9.tgz#035ce6856087b522b5940f4ab2f5277dce39d429"
-  integrity sha512-cYFqwfYM/UwfOFilKfI3D3y8xq0BFIr3Knut/dmG7VLdZ0rkqpyyj9T98YwN4DZJ0FGS94j07hV4Vhyfes0ihw==
+"@openziti/ziti-browzer-runtime@0.27.1-beta.10":
+  version "0.27.1-beta.10"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.27.1-beta.10.tgz#b03c037db912125fd0911732c1d4ea047ddf596c"
+  integrity sha512-qcSMLpt5jCeAswdbgn23apGjw+tLgx38ij0wAOJkI2zY1TgvTHfDpBi5PSM+zwLkNe4EjHPO99L8FOgXpGaP3A==
   dependencies:
     "@auth0/auth0-spa-js" "^2.0.4"
     "@babel/runtime" "^7.17.9"
