@@ -311,14 +311,15 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@0.28.0":
-  version "0.28.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.28.0.tgz#d318d7c96a911f65f86dbfd87917266058d13065"
-  integrity sha512-bsGdN42eH4By0UFdwVam0Ut6zqEopgHa6HZYH4H3uCSox4UqrNL1fa6WWFLVz9EGJVv8zxj0GRG5kK+775exDA==
+"@openziti/ziti-browzer-runtime@0.28.1-beta.1":
+  version "0.28.1-beta.1"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.28.1-beta.1.tgz#604fa1d3bb8e066369b0ece59702c58a94fadb77"
+  integrity sha512-7ElCkFFYcz1CZxxwREiEknVfGy8mpwjq6y6t5dpzkk716DzmNNA1ki2cNbLR3+6HzsGXaK6bWiu2Isx+wGNy3A==
   dependencies:
     "@auth0/auth0-spa-js" "^2.0.4"
     "@babel/runtime" "^7.17.9"
     "@openziti/ziti-browzer-core" "^0.20.1"
+    bowser "^2.11.0"
     cookie-interceptor "^1.0.0"
     core-js "^3.22.8"
     js-base64 "^3.7.2"
@@ -659,6 +660,11 @@ boolbase@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"
   integrity sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==
+
+bowser@^2.11.0:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/bowser/-/bowser-2.11.0.tgz#5ca3c35757a7aa5771500c70a73a9f91ef420a8f"
+  integrity sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
