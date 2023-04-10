@@ -18,7 +18,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@openziti/ziti-browzer-runtime": "0.27.1-beta.10",
+    "@openziti/ziti-browzer-runtime": "0.28.0",
     "@openziti/ziti-browzer-sw": "^0.21.1",
     "acme-http-01-standalone": "^3.0.5",
     "connect": "^3.7.0",
