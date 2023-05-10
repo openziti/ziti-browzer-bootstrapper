@@ -53,14 +53,11 @@ var logger;     // for ziti-http-agent
             "type": "array",
             "items": {
                 "properties": {
-                    "wildcard": {
+                    "vhost": {
                         "type": "string"
                     },
                     "service": {
                         "type": "string"
-                    },
-                    "port": {
-                        "type": "number"
                     },
                     "path": {
                         "type": "string"
@@ -80,7 +77,7 @@ var logger;     // for ziti-http-agent
                     },
                 },
                 "required": [
-                    "wildcard", "service", "port", "path", "scheme", "idp_issuer_base_url", "idp_client_id"
+                    "vhost", "service", "idp_issuer_base_url", "idp_client_id"
                 ],
             }        
         },
@@ -208,9 +205,6 @@ if (typeof cidr_whitelist !== 'undefined') {
     cidr_whitelist_array = cidr_whitelist.split(',');
 }
 
-var target_path = process.env.ZITI_AGENT_TARGET_PATH;
-if (typeof target_path === 'undefined') { target_path = '/'; }
-
 /** --------------------------------------------------------------------------------------------------
  *  Create logger 
  */
@@ -288,7 +282,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script id="from-ziti-http-agent" type="text/javascript" src="${req.ziti_agent_scheme}://${req.ziti_wildcard}/${common.getZBRname()}"></script>
+<script id="from-ziti-http-agent" type="text/javascript" src="${req.ziti_agent_scheme}://${req.ziti_vhost}/${common.getZBRname()}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
@@ -390,9 +384,9 @@ const startAgent = ( logger ) => {
 
     forEach(jsonTargetArray.targetArray, function(target) {
 
-        target_apps.set(target.wildcard, express());
+        target_apps.set(target.vhost, express());
 
-        var target_app = target_apps.get(target.wildcard);
+        var target_app = target_apps.get(target.vhost);
 
         target_app_to_target.set(target_app, target);
 
@@ -401,11 +395,10 @@ const startAgent = ( logger ) => {
             var target = target_app_to_target.get(target_app);
 
 
-            req.ziti_wildcard        = target.wildcard;
+            req.ziti_vhost           = target.vhost;
             req.ziti_target_service  = target.service;
-            req.ziti_target_port     = target.port;
-            req.ziti_target_path     = target.path;
-            req.ziti_target_scheme   = target.scheme;
+            req.ziti_target_path     = (target.path ? target.path : '/');
+            req.ziti_target_scheme   = (target.scheme ? target.scheme : 'http');
             req.ziti_agent_scheme    = agent_scheme;
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
@@ -452,9 +445,9 @@ const startAgent = ( logger ) => {
      */
     forEach(jsonTargetArray.targetArray, function(target) {
 
-        var target_app = target_apps.get(target.wildcard);
+        var target_app = target_apps.get(target.vhost);
 
-        app.use(vhost(target.wildcard, target_app));
+        app.use(vhost(target.vhost, target_app));
     });
 
 
