@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ -z ${ZITI_AGENT_LOG_PATH} ]; then
     echo "no ZITI_AGENT_LOG_PATH var was found"
