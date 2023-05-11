@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [[ -z ${ZITI_AGENT_LOG_PATH} ]]; then
+if [ -z ${ZITI_AGENT_LOG_PATH} ]; then
     echo "no ZITI_AGENT_LOG_PATH var was found"
     node index.js
 else
