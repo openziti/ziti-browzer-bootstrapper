@@ -1,7 +1,9 @@
 #!/bin/sh
 
 if [[ -z "${ZITI_AGENT_LOG_PATH}" ]]; then
+    echo "no ZITI_AGENT_LOG_PATH var was found"
     node index.js
 else
-    node index.js >> "$ZITI_AGENT_LOG_PATH" 2>&1
+    echo "the ZITI_AGENT_LOG_PATH var was found: '${ZITI_AGENT_LOG_PATH}'"
+    node index.js >> "${ZITI_AGENT_LOG_PATH}" 2>&1
 fi
