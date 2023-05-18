@@ -216,7 +216,7 @@ const createLogger = () => {
         fs.mkdirSync( logDir );
     }
 
-    const { combine, timestamp, label, printf, splat } = winston.format;
+    const { combine, timestamp, label, printf, splat, json } = winston.format;
 
     const logFormat = printf(({ level, message, durationMs, timestamp }) => {
         if (typeof durationMs !== 'undefined') {
@@ -234,7 +234,7 @@ const createLogger = () => {
             logFormat
         ),
         transports: [
-            new winston.transports.Console({format: combine( timestamp(), logFormat ), }),
+            new winston.transports.Console({format: combine( timestamp(), logFormat, json() ), }),
         ],
         exceptionHandlers: [    // handle Uncaught exceptions
             new winston.transports.Console({format: combine( timestamp(), logFormat ), }),
@@ -342,19 +342,14 @@ const startAgent = ( logger ) => {
             if ((actionUrl.protocol === 'http:') || (actionUrl.protocol === 'https:')) {
 
                 let href = actionUrl.href;
-                logger.debug('actionUrl.href is: %o', href);
 
                 let origin = actionUrl.origin;
-                logger.debug('actionUrl.origin is: %o', origin);
 
                 let protocol = actionUrl.protocol;
-                logger.debug('actionUrl.protocol is: %o', protocol);
 
                 let hostname = actionUrl.hostname;
-                logger.debug('actionUrl.hostname is: %o', hostname);
 
                 let host = actionUrl.host;
-                logger.debug('actionUrl.host is: %o', host);
 
             }
         }
@@ -435,7 +430,7 @@ const startAgent = ( logger ) => {
     /** -------------------------------------------------------------------------------------------------- */
 
 
-    logger.info('configured target service(s): %o', JSON.parse(targets));
+    options.logger.debug({message: 'configured target service(s)', targets: JSON.parse(targets)});
           
 
     var proxy = httpProxy.createProxyServer(options);
@@ -464,7 +459,7 @@ const startAgent = ( logger ) => {
             cert: fs.readFileSync(certificate_path),
             key: fs.readFileSync(key_path),
         }, app).listen(agent_listen_port, "0.0.0.0", function() {
-            logger.info(`Listening on ${agent_scheme} port ${agent_listen_port}`);
+            logger.info({message: 'listening', port: agent_listen_port, scheme: agent_scheme});
         });
 
     }
@@ -472,7 +467,7 @@ const startAgent = ( logger ) => {
 
         http.createServer({
         }, app).listen(agent_listen_port, "0.0.0.0", function() {
-            logger.info(`Listening on ${agent_scheme} port ${agent_listen_port}`);
+            logger.info({message: 'listening', port: agent_listen_port, scheme: agent_scheme});
         });
 
     }
@@ -490,7 +485,7 @@ const main = async () => {
 
     logger = createLogger();
 
-    logger.info(`ziti-http-agent version ${pjson.version} starting at ${new Date()}`);
+    logger.info({message: 'ziti-http-agent initializing', version: pjson.version});
 
     let validationResult = jsonschemaValidator.validate(jsonTargetArray, targetsSchema, {
         allowUnknownAttributes: false,
@@ -498,7 +493,7 @@ const main = async () => {
     });
     if (!validationResult.valid) {
         validationResult.errors.map(function(err) {
-            logger.error(`ZITI_AGENT_TARGETS error: ${err}`);
+            logger.error({message: 'targets specification error', error: `${err}`});
         });          
         process.exit(-1);
     }   
@@ -508,7 +503,7 @@ const main = async () => {
     });
     if (!validationResult.valid) {
         validationResult.errors.map(function(err) {
-            logger.error(`ZITI_AGENT_TARGETS error: ${err}`);
+            logger.error({message: 'targets specification error', error: `${err}`});
         });          
         process.exit(-1);
     }   
