@@ -1,9 +1,11 @@
 #!/bin/bash
 
+cat <<-EOF
+{"timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")", "level": "info", "message":  "ZITI_AGENT_LOG_PATH is ${ZITI_AGENT_LOG_PATH:-null}"}
+EOF
+
 if [ -z ${ZITI_AGENT_LOG_PATH} ]; then
-    echo "no ZITI_AGENT_LOG_PATH var was found"
-    node index.js
+    NODE_EXTRA_CA_CERTS=node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem node index.js
 else
-    echo "the ZITI_AGENT_LOG_PATH var was found: '${ZITI_AGENT_LOG_PATH}'"
-    node index.js >> "${ZITI_AGENT_LOG_PATH}" 2>&1
+    NODE_EXTRA_CA_CERTS=node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem node index.js >> "${ZITI_AGENT_LOG_PATH}" 2>&1
 fi

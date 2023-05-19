@@ -34,6 +34,7 @@ var cookieParser = require('cookie-parser')
 const helmet    = require("helmet");
 const vhost     = require('vhost');
 const forEach   = require('lodash.foreach');
+const { satisfies } = require('compare-versions');
 
 
 var logger;     // for ziti-http-agent
@@ -130,6 +131,7 @@ var ziti_controller_host = process.env.ZITI_CONTROLLER_HOST;
 if (typeof ziti_controller_host === 'undefined') { throw new Error('ZITI_CONTROLLER_HOST value not specified'); }
 if (typeof ziti_controller_host !== 'string') { throw new Error('ZITI_CONTROLLER_HOST value is not a string'); }
 if (ziti_controller_host === agent_host) { throw new Error('ZITI_CONTROLLER_HOST value and ZITI_AGENT_HOST value cannot be the same'); }
+var ziti_controller_port = process.env.ZITI_CONTROLLER_PORT;
 
 var zbr_src = `${agent_host}/ziti-browzer-runtime.js`;
 
@@ -358,6 +360,40 @@ const startAgent = ( logger ) => {
     selects.push(formselect);
     /** -------------------------------------------------------------------------------------------------- */
 
+    logger.info({message: 'contacting specified controller', host: ziti_controller_host, port: ziti_controller_port});
+
+    // process.env['NODE_EXTRA_CA_CERTS'] = 'node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem';
+
+    const request = https.request({
+        hostname: ziti_controller_host,
+        port: ziti_controller_port,
+        path: '/version',
+        method: 'GET',
+        timeout: 3000,
+      }, function(res) {
+        if (res.statusCode !== 200) {
+            logger.error({message: 'cannot contact specified controller', statusCode: res.statusCode, controllerHost: ziti_controller_host, controllerPort: ziti_controller_port});
+            process.exit(-1);
+        }
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            var jsonTargetArray = JSON.parse(chunk);
+            let controllerVersion = jsonTargetArray.data.version.replace('v','');
+            logger.info({message: 'attached controller version', controllerVersion: controllerVersion});
+            let compatibleControllerVersion = `${pjson.compatibleControllerVersion}`;
+            if (!satisfies(controllerVersion, compatibleControllerVersion)) {
+                logger.error({message: 'incompatible controller version', controllerVersion: controllerVersion, compatibleControllerVersion: compatibleControllerVersion});
+                process.exit(-1);
+            }
+        });
+    }).end();
+    request.on('timeout', () => {
+        request.destroy();
+        logger.error({message: 'timeout attempting to contact specified controller', controllerHost: ziti_controller_host, controllerPort: ziti_controller_port});
+        process.exit(-1);
+    });
+    
+      
     /** --------------------------------------------------------------------------------------------------
      *  Crank up the web server.  The 'agent_listen_port' value can be arbitrary since it is used
      *  inside the container.  Port 443|80 is typically mapped onto the 'agent_listen_port' e.g. 443->8443
