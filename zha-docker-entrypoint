@@ -1,8 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
-# npx greenlock init --config-dir /ziti/greenlock.d --maintainer-email "$ZITI_AGENT_ACME_MAINTAINER_EMAIL"
+cat <<-EOF
+{"timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")", "level": "info", "message":  "ZITI_AGENT_LOG_PATH is ${ZITI_AGENT_LOG_PATH:-null}"}
+EOF
 
-# npx greenlock add --subject "$ZITI_AGENT_HOST" --altnames "$ZITI_AGENT_HOST"
-
-# node index.js --staging >> log/ziti-http-agent.log 2>&1
-node index.js >> log/ziti-http-agent.log 2>&1
+if [ -z ${ZITI_AGENT_LOG_PATH} ]; then
+    NODE_EXTRA_CA_CERTS=node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem node index.js
+else
+    NODE_EXTRA_CA_CERTS=node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem node index.js >> "${ZITI_AGENT_LOG_PATH}" 2>&1
+fi

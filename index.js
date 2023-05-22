@@ -34,6 +34,7 @@ var cookieParser = require('cookie-parser')
 const helmet    = require("helmet");
 const vhost     = require('vhost');
 const forEach   = require('lodash.foreach');
+const { satisfies } = require('compare-versions');
 
 
 var logger;     // for ziti-http-agent
@@ -53,14 +54,11 @@ var logger;     // for ziti-http-agent
             "type": "array",
             "items": {
                 "properties": {
-                    "wildcard": {
+                    "vhost": {
                         "type": "string"
                     },
                     "service": {
                         "type": "string"
-                    },
-                    "port": {
-                        "type": "number"
                     },
                     "path": {
                         "type": "string"
@@ -80,7 +78,7 @@ var logger;     // for ziti-http-agent
                     },
                 },
                 "required": [
-                    "wildcard", "service", "port", "path", "scheme", "idp_issuer_base_url", "idp_client_id"
+                    "vhost", "service", "idp_issuer_base_url", "idp_client_id"
                 ],
             }        
         },
@@ -133,6 +131,7 @@ var ziti_controller_host = process.env.ZITI_CONTROLLER_HOST;
 if (typeof ziti_controller_host === 'undefined') { throw new Error('ZITI_CONTROLLER_HOST value not specified'); }
 if (typeof ziti_controller_host !== 'string') { throw new Error('ZITI_CONTROLLER_HOST value is not a string'); }
 if (ziti_controller_host === agent_host) { throw new Error('ZITI_CONTROLLER_HOST value and ZITI_AGENT_HOST value cannot be the same'); }
+var ziti_controller_port = process.env.ZITI_CONTROLLER_PORT;
 
 var zbr_src = `${agent_host}/ziti-browzer-runtime.js`;
 
@@ -208,9 +207,6 @@ if (typeof cidr_whitelist !== 'undefined') {
     cidr_whitelist_array = cidr_whitelist.split(',');
 }
 
-var target_path = process.env.ZITI_AGENT_TARGET_PATH;
-if (typeof target_path === 'undefined') { target_path = '/'; }
-
 /** --------------------------------------------------------------------------------------------------
  *  Create logger 
  */
@@ -222,7 +218,7 @@ const createLogger = () => {
         fs.mkdirSync( logDir );
     }
 
-    const { combine, timestamp, label, printf, splat } = winston.format;
+    const { combine, timestamp, label, printf, splat, json } = winston.format;
 
     const logFormat = printf(({ level, message, durationMs, timestamp }) => {
         if (typeof durationMs !== 'undefined') {
@@ -240,7 +236,7 @@ const createLogger = () => {
             logFormat
         ),
         transports: [
-            new winston.transports.Console({format: combine( timestamp(), logFormat ), }),
+            new winston.transports.Console({format: combine( timestamp(), logFormat, json() ), }),
         ],
         exceptionHandlers: [    // handle Uncaught exceptions
             new winston.transports.Console({format: combine( timestamp(), logFormat ), }),
@@ -288,7 +284,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script id="from-ziti-http-agent" type="text/javascript" src="${req.ziti_agent_scheme}://${req.ziti_wildcard}/${common.getZBRname()}"></script>
+<script id="from-ziti-http-agent" type="text/javascript" src="${req.ziti_agent_scheme}://${req.ziti_vhost}/${common.getZBRname()}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
@@ -348,19 +344,14 @@ const startAgent = ( logger ) => {
             if ((actionUrl.protocol === 'http:') || (actionUrl.protocol === 'https:')) {
 
                 let href = actionUrl.href;
-                logger.debug('actionUrl.href is: %o', href);
 
                 let origin = actionUrl.origin;
-                logger.debug('actionUrl.origin is: %o', origin);
 
                 let protocol = actionUrl.protocol;
-                logger.debug('actionUrl.protocol is: %o', protocol);
 
                 let hostname = actionUrl.hostname;
-                logger.debug('actionUrl.hostname is: %o', hostname);
 
                 let host = actionUrl.host;
-                logger.debug('actionUrl.host is: %o', host);
 
             }
         }
@@ -369,6 +360,40 @@ const startAgent = ( logger ) => {
     selects.push(formselect);
     /** -------------------------------------------------------------------------------------------------- */
 
+    logger.info({message: 'contacting specified controller', host: ziti_controller_host, port: ziti_controller_port});
+
+    // process.env['NODE_EXTRA_CA_CERTS'] = 'node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem';
+
+    const request = https.request({
+        hostname: ziti_controller_host,
+        port: ziti_controller_port,
+        path: '/version',
+        method: 'GET',
+        timeout: 3000,
+      }, function(res) {
+        if (res.statusCode !== 200) {
+            logger.error({message: 'cannot contact specified controller', statusCode: res.statusCode, controllerHost: ziti_controller_host, controllerPort: ziti_controller_port});
+            process.exit(-1);
+        }
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            var jsonTargetArray = JSON.parse(chunk);
+            let controllerVersion = jsonTargetArray.data.version.replace('v','');
+            logger.info({message: 'attached controller version', controllerVersion: controllerVersion});
+            let compatibleControllerVersion = `${pjson.compatibleControllerVersion}`;
+            if (!satisfies(controllerVersion, compatibleControllerVersion)) {
+                logger.error({message: 'incompatible controller version', controllerVersion: controllerVersion, compatibleControllerVersion: compatibleControllerVersion});
+                process.exit(-1);
+            }
+        });
+    }).end();
+    request.on('timeout', () => {
+        request.destroy();
+        logger.error({message: 'timeout attempting to contact specified controller', controllerHost: ziti_controller_host, controllerPort: ziti_controller_port});
+        process.exit(-1);
+    });
+    
+      
     /** --------------------------------------------------------------------------------------------------
      *  Crank up the web server.  The 'agent_listen_port' value can be arbitrary since it is used
      *  inside the container.  Port 443|80 is typically mapped onto the 'agent_listen_port' e.g. 443->8443
@@ -390,9 +415,9 @@ const startAgent = ( logger ) => {
 
     forEach(jsonTargetArray.targetArray, function(target) {
 
-        target_apps.set(target.wildcard, express());
+        target_apps.set(target.vhost, express());
 
-        var target_app = target_apps.get(target.wildcard);
+        var target_app = target_apps.get(target.vhost);
 
         target_app_to_target.set(target_app, target);
 
@@ -401,11 +426,10 @@ const startAgent = ( logger ) => {
             var target = target_app_to_target.get(target_app);
 
 
-            req.ziti_wildcard        = target.wildcard;
+            req.ziti_vhost           = target.vhost;
             req.ziti_target_service  = target.service;
-            req.ziti_target_port     = target.port;
-            req.ziti_target_path     = target.path;
-            req.ziti_target_scheme   = target.scheme;
+            req.ziti_target_path     = (target.path ? target.path : '/');
+            req.ziti_target_scheme   = (target.scheme ? target.scheme : 'http');
             req.ziti_agent_scheme    = agent_scheme;
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
@@ -442,7 +466,7 @@ const startAgent = ( logger ) => {
     /** -------------------------------------------------------------------------------------------------- */
 
 
-    logger.info('configured target service(s): %o', JSON.parse(targets));
+    options.logger.debug({message: 'configured target service(s)', targets: JSON.parse(targets)});
           
 
     var proxy = httpProxy.createProxyServer(options);
@@ -452,9 +476,9 @@ const startAgent = ( logger ) => {
      */
     forEach(jsonTargetArray.targetArray, function(target) {
 
-        var target_app = target_apps.get(target.wildcard);
+        var target_app = target_apps.get(target.vhost);
 
-        app.use(vhost(target.wildcard, target_app));
+        app.use(vhost(target.vhost, target_app));
     });
 
 
@@ -471,7 +495,7 @@ const startAgent = ( logger ) => {
             cert: fs.readFileSync(certificate_path),
             key: fs.readFileSync(key_path),
         }, app).listen(agent_listen_port, "0.0.0.0", function() {
-            logger.info(`Listening on ${agent_scheme} port ${agent_listen_port}`);
+            logger.info({message: 'listening', port: agent_listen_port, scheme: agent_scheme});
         });
 
     }
@@ -479,7 +503,7 @@ const startAgent = ( logger ) => {
 
         http.createServer({
         }, app).listen(agent_listen_port, "0.0.0.0", function() {
-            logger.info(`Listening on ${agent_scheme} port ${agent_listen_port}`);
+            logger.info({message: 'listening', port: agent_listen_port, scheme: agent_scheme});
         });
 
     }
@@ -497,7 +521,7 @@ const main = async () => {
 
     logger = createLogger();
 
-    logger.info(`ziti-http-agent version ${pjson.version} starting at ${new Date()}`);
+    logger.info({message: 'ziti-http-agent initializing', version: pjson.version});
 
     let validationResult = jsonschemaValidator.validate(jsonTargetArray, targetsSchema, {
         allowUnknownAttributes: false,
@@ -505,7 +529,7 @@ const main = async () => {
     });
     if (!validationResult.valid) {
         validationResult.errors.map(function(err) {
-            logger.error(`ZITI_AGENT_TARGETS error: ${err}`);
+            logger.error({message: 'targets specification error', error: `${err}`});
         });          
         process.exit(-1);
     }   
@@ -515,7 +539,7 @@ const main = async () => {
     });
     if (!validationResult.valid) {
         validationResult.errors.map(function(err) {
-            logger.error(`ZITI_AGENT_TARGETS error: ${err}`);
+            logger.error({message: 'targets specification error', error: `${err}`});
         });          
         process.exit(-1);
     }   
