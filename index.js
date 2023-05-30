@@ -381,9 +381,11 @@ const startAgent = ( logger ) => {
             let controllerVersion = jsonTargetArray.data.version.replace('v','');
             logger.info({message: 'attached controller version', controllerVersion: controllerVersion});
             let compatibleControllerVersion = `${pjson.compatibleControllerVersion}`;
-            if (!satisfies(controllerVersion, compatibleControllerVersion)) {
-                logger.error({message: 'incompatible controller version', controllerVersion: controllerVersion, compatibleControllerVersion: compatibleControllerVersion});
-                process.exit(-1);
+            if (controllerVersion !== '0.0.0') {
+                if (!satisfies(controllerVersion, compatibleControllerVersion)) {
+                    logger.error({message: 'incompatible controller version', controllerVersion: controllerVersion, compatibleControllerVersion: compatibleControllerVersion});
+                    process.exit(-1);
+                }
             }
         });
     }).end();
