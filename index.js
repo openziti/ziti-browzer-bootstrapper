@@ -430,8 +430,14 @@ const startAgent = ( logger ) => {
 
             req.ziti_vhost           = target.vhost;
             req.ziti_target_service  = target.service;
-            req.ziti_target_path     = (target.path ? target.path : '/');
-            req.ziti_target_scheme   = (target.scheme ? target.scheme : 'http');
+            if (typeof target.path === 'undefined') { 
+                target.path = '/';
+            }
+            req.ziti_target_path     = target.path;
+            if (typeof target.scheme === 'undefined') { 
+                target.path = 'http';
+            }
+            req.ziti_target_scheme   = target.scheme;
             req.ziti_agent_scheme    = agent_scheme;
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
