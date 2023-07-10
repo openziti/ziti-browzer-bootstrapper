@@ -324,10 +324,10 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@0.35.0":
-  version "0.35.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.35.0.tgz#b4f2ba52e266f65c76b55d2ad605c957459797f6"
-  integrity sha512-4L90SmQFNqoMWHfJlANSbKveFwIYX3Y3T8ep6YJGjOrm6QXnpeZ0Wl57Ek7AmzQ2WPFurOfQ0HkmKjjIcQv0wQ==
+"@openziti/ziti-browzer-runtime@0.36.0":
+  version "0.36.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.36.0.tgz#17682053c2374d783139eb5304bd1781ce450527"
+  integrity sha512-IMlcSnt6wZPnHV1nwd4MyYIDrEmLmMe3vTQPxobWpleywPBRlEJNDQXPZnZ1Bbqv+HnRyLtxsymTj4lgP1sSZQ==
   dependencies:
     "@auth0/auth0-spa-js" "^2.0.4"
     "@azure/msal-browser" "^2.38.0"
