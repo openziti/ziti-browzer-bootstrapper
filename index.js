@@ -471,6 +471,17 @@ const startAgent = ( logger ) => {
      app.use(helmet.xssFilter());
 
      app.use(cookieParser())
+
+     app.use('/healthcheck', require('express-healthcheck')({
+        healthy: function () {
+            return {
+                version: pjson.version,
+                uptime: process.uptime(),
+                date: new Date(),
+            };
+        }
+    }));
+
     /** -------------------------------------------------------------------------------------------------- */
 
 
