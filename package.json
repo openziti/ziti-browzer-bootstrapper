@@ -19,8 +19,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@openziti/ziti-browzer-runtime": "0.36.0",
-    "@openziti/ziti-browzer-sw": "^0.27.3",
+    "@openziti/ziti-browzer-runtime": "0.36.2",
+    "@openziti/ziti-browzer-sw": "^0.27.4",
     "acme-http-01-standalone": "^3.0.5",
     "compare-versions": "^6.0.0-rc.1",
     "connect": "^3.7.0",
@@ -29,6 +29,7 @@
     "dotenv": "^16.0.0",
     "eventemitter3": "^4.0.0",
     "express": "^4.18.1",
+    "express-healthcheck": "^0.1.0",
     "express-openid-connect": "^2.7.2",
     "follow-redirects": "^1.15.1",
     "heapdump": "^0.3.15",
