@@ -284,7 +284,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script id="from-ziti-http-agent" type="text/javascript" src="${req.ziti_agent_scheme}://${req.ziti_vhost}/${common.getZBRname()}"></script>
+<script id="from-ziti-http-agent" type="text/javascript" src="${req.ziti_agent_scheme}://${req.ziti_vhost}:${agent_listen_port}/${common.getZBRname()}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
