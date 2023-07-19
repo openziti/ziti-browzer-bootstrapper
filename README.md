@@ -1,7 +1,7 @@
 `ziti-http-agent`
 =====================
 
-A NodeJS-based Ziti-Enabled Reverse-Proxy for delivering secure browser-based web applications over an
+A NodeJS-based server responsible for securely bootstrapping browser-based web applications over an
 [OpenZiti Overlay Network](https://openziti.io/docs/reference/glossary/#network-overlay-overlay)
 
 <img src="https://raw.githubusercontent.com/openziti/branding/main/images/logos/ziti-dark.svg" width="400" />
@@ -86,10 +86,10 @@ will provide a CLIENT_ID of some kind. You will also need to know tihs value to 
 There's lots of information about the client id on the internet, one such source you can use to read about client id
 [is provided here](https://www.oauth.com/oauth2-servers/client-registration/client-id-secret/)
 
-Another piece of information you will require from the OIDC provider is the field to associate the user to. Every OIDC provider
-is different. It's up to you to understand what field you want to map. As another example, staying with Auth0, you
-will see the JWT bearer token returned from Auth0 will contain a field named "email". When creating the `ext-jwt-signer`,
-this field will be referenced as the 'claims-property'.
+Another piece of information you will require from the OIDC provider is the expected claim value to associate the user to. Every OIDC provider
+is different. It's up to you to understand what claim you want to map. As another example, staying with Auth0, you
+will see the JWT bearer token returned from Auth0 will contain a claim named "email". When creating the `ext-jwt-signer`,
+this claim is referenced as the 'claims-property'.
 
 Here's a very simple set of steps that illustrates how you might use the `ziti` CLI with Auth0 to create an external
 jwt signer in your OpenZiti overlay (see the official doc site for more information) This example will not work for you as-is,
@@ -146,8 +146,8 @@ environment variables.
 ### Environment Variables
 
 * NODE_ENV: controls if the environment is production or development
-* ZITI_BROWZER_RUNTIME_LOGLEVEL: the log level for the runtime to use
-* ZITI_BROWZER_RUNTIME_HOTKEY: the hotkey to activate the advanced BrowZer dialog box
+* ZITI_BROWZER_RUNTIME_LOGLEVEL: the log level for the Ziti BrowZer Runtime (ZBR) to use
+* ZITI_BROWZER_RUNTIME_HOTKEY: the hotkey to activate the BrowZer settings dialog modal. default: alt+F12
 * ZITI_CONTROLLER_HOST: the "alternative" address for the OpenZiti controller
 * ZITI_CONTROLLER_PORT: the port to find the OpenZiti controller at
 * ZITI_AGENT_LOGLEVEL: the log level for the ziti-http-agent to log at
@@ -161,7 +161,7 @@ environment variables.
 ```bash
       NODE_ENV: production
       ZITI_BROWZER_RUNTIME_LOGLEVEL: debug
-      ZITI_BROWZER_RUNTIME_HOTKEY: alt+f12
+      ZITI_BROWZER_RUNTIME_HOTKEY: alt+F12
       ZITI_CONTROLLER_HOST: ${ZITI_CTRL_EDGE_ALT_ADVERTISED_ADDRESS}
       ZITI_CONTROLLER_PORT: ${ZITI_CTRL_EDGE_ADVERTISED_PORT}
       ZITI_AGENT_LOGLEVEL: debug
@@ -211,7 +211,7 @@ docker run
 -e NODE_ENV=production
 -e ZITI_AGENT_LOGLEVEL=debug
 -e ZITI_BROWZER_RUNTIME_LOGLEVEL=debug
--e ZITI_BROWZER_RUNTIME_HOTKEY=F8
+-e ZITI_BROWZER_RUNTIME_HOTKEY=alt+F12
 -e ZITI_CONTROLLER_HOST=ctrl.zititv.demo.openziti.org
 -e ZITI_CONTROLLER_PORT=1280
 -e ZITI_AGENT_HOST=browzer.zititv.demo.openziti.org
