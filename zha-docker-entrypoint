@@ -5,7 +5,7 @@ cat <<-EOF
 EOF
 
 if [ -z ${ZITI_AGENT_LOG_PATH} ]; then
-    NODE_EXTRA_CA_CERTS=node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem node index.js
+    NODE_EXTRA_CA_CERTS=node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem exec node index.js
 else
-    NODE_EXTRA_CA_CERTS=node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem node index.js >> "${ZITI_AGENT_LOG_PATH}" 2>&1
+    NODE_EXTRA_CA_CERTS=node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem exec node index.js >> "${ZITI_AGENT_LOG_PATH}" 2>&1
 fi
