@@ -1,5 +1,5 @@
 /*
-Copyright Netfoundry, Inc.
+Copyright NetFoundry, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,16 @@ limitations under the License.
 // const SegfaultHandler = require('segfault-handler');
 // SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
+const nconf     = require('nconf');
+module.exports  = nconf;
+
+// Load config
+//  Order of precedence is:
+//      1) cmd line args
+//      2) env vars
+//
+nconf.argv().env();
+
 const path      = require('path');
 const http      = require("http");
 const https     = require("https");
@@ -37,13 +47,15 @@ const forEach   = require('lodash.foreach');
 const { satisfies } = require('compare-versions');
 
 
-var logger;     // for ziti-http-agent
+
+
+var logger;     // for Ziti BrowZer Bootstrapper
 
 /**
  * 
  */
- var targets = process.env.ZITI_AGENT_TARGETS;
- if (typeof targets === 'undefined') { throw new Error('ZITI_AGENT_TARGETS value not specified'); }
+ var targets = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_TARGETS', 'ZITI_AGENT_TARGETS')
+ if (typeof targets === 'undefined') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_TARGETS value not specified'); }
  var jsonTargetArray = JSON.parse(targets);
 
  var targetsSchema = {
@@ -93,58 +105,58 @@ var arraySchema = {
 /**
  * 
  */
-var agent_scheme = process.env.ZITI_AGENT_SCHEME;
-if (typeof agent_scheme === 'undefined') { 
-    agent_scheme = 'http'; 
+var browzer_bootstrapper_scheme = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_SCHEME', 'ZITI_AGENT_SCHEME')
+if (typeof browzer_bootstrapper_scheme === 'undefined') { 
+    browzer_bootstrapper_scheme = 'http'; 
 }
-if (typeof agent_scheme !== 'string') { throw new Error('ZITI_AGENT_SCHEME value is not a string'); }
-if (agent_scheme !== 'http' && agent_scheme !== 'https') { throw new Error(`ZITI_AGENT_SCHEME value [${agent_scheme}] is invalid`); }
+if (typeof browzer_bootstrapper_scheme !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_SCHEME value is not a string'); }
+if (browzer_bootstrapper_scheme !== 'http' && browzer_bootstrapper_scheme !== 'https') { throw new Error(`ZITI_BROWZER_BOOTSTRAPPER_SCHEME value [${browzer_bootstrapper_scheme}] is invalid`); }
  
 /**
  * 
  */
 var certificate_path;
-if (agent_scheme === 'https') {
-    certificate_path = process.env.ZITI_AGENT_CERTIFICATE_PATH;
-    if (typeof certificate_path === 'undefined') { throw new Error('ZITI_AGENT_CERTIFICATE_PATH value not specified'); }
-    if (typeof certificate_path !== 'string') { throw new Error('ZITI_AGENT_CERTIFICATE_PATH value is not a string'); }
+if (browzer_bootstrapper_scheme === 'https') {
+    certificate_path = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH', 'ZITI_AGENT_CERTIFICATE_PATH')
+    if (typeof certificate_path === 'undefined') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH value not specified'); }
+    if (typeof certificate_path !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH value is not a string'); }
 }
  
 /**
  * 
  */
 var key_path;
-if (agent_scheme === 'https') {
-    key_path = process.env.ZITI_AGENT_KEY_PATH;
-    if (typeof key_path === 'undefined') { throw new Error('ZITI_AGENT_KEY_PATH value not specified'); }
-    if (typeof key_path !== 'string') { throw new Error('ZITI_AGENT_KEY_PATH value is not a string'); }
+if (browzer_bootstrapper_scheme === 'https') {
+    key_path = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH', 'ZITI_AGENT_KEY_PATH')
+    if (typeof key_path === 'undefined') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH value not specified'); }
+    if (typeof key_path !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH value is not a string'); }
 }
 
 /**
  * 
  */
-var agent_host = process.env.ZITI_AGENT_HOST;
-if (typeof agent_host === 'undefined') { throw new Error('ZITI_AGENT_HOST value not specified'); }
-if (typeof agent_host !== 'string') { throw new Error('ZITI_AGENT_HOST value is not a string'); }
+var browzer_bootstrapper_host = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_HOST', 'ZITI_AGENT_HOST')
+if (typeof browzer_bootstrapper_host === 'undefined') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_HOST value not specified'); }
+if (typeof browzer_bootstrapper_host !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_HOST value is not a string'); }
 
-var ziti_controller_host = process.env.ZITI_CONTROLLER_HOST;
+var ziti_controller_host = common.getConfigValue('ZITI_CONTROLLER_HOST')
 if (typeof ziti_controller_host === 'undefined') { throw new Error('ZITI_CONTROLLER_HOST value not specified'); }
 if (typeof ziti_controller_host !== 'string') { throw new Error('ZITI_CONTROLLER_HOST value is not a string'); }
-if (ziti_controller_host === agent_host) { throw new Error('ZITI_CONTROLLER_HOST value and ZITI_AGENT_HOST value cannot be the same'); }
-var ziti_controller_port = process.env.ZITI_CONTROLLER_PORT;
+if (ziti_controller_host === browzer_bootstrapper_host) { throw new Error('ZITI_CONTROLLER_HOST value and ZITI_BROWZER_BOOTSTRAPPER_HOST value cannot be the same'); }
+var ziti_controller_port = common.getConfigValue('ZITI_CONTROLLER_PORT')
 
-var zbr_src = `${agent_host}/ziti-browzer-runtime.js`;
+var zbr_src = `${browzer_bootstrapper_host}/ziti-browzer-runtime.js`;
 
-var agent_listen_port = process.env.ZITI_AGENT_LISTEN_PORT;
-if (typeof agent_listen_port === 'undefined') {
-    if (agent_scheme === 'http') {
-        agent_listen_port = 80;
+var browzer_bootstrapper_listen_port = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT', 'ZITI_AGENT_LISTEN_PORT')
+if (typeof browzer_bootstrapper_listen_port === 'undefined') {
+    if (browzer_bootstrapper_scheme === 'http') {
+        browzer_bootstrapper_listen_port = 80;
     }
-    else if (agent_scheme === 'https') {
-        agent_listen_port = 443;
+    else if (browzer_bootstrapper_scheme === 'https') {
+        browzer_bootstrapper_listen_port = 443;
     }
     else {
-        throw new Error('ZITI_AGENT_LISTEN_PORT cannot be set');
+        throw new Error('ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT cannot be set');
     }
 }
 
@@ -161,51 +173,10 @@ if (typeof agent_listen_port === 'undefined') {
     silly
  *
  */
-var ziti_agent_loglevel = process.env.ZITI_AGENT_LOGLEVEL;
-if (typeof ziti_agent_loglevel === 'undefined') { ziti_agent_loglevel = 'info'; }
-ziti_agent_loglevel = ziti_agent_loglevel.toLowerCase();
+var ziti_browzer_bootstrapper_loglevel = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_LOGLEVEL', 'ZITI_AGENT_LOGLEVEL')
+if (typeof ziti_browzer_bootstrapper_loglevel === 'undefined') { ziti_browzer_bootstrapper_loglevel = 'info'; }
+ziti_browzer_bootstrapper_loglevel = ziti_browzer_bootstrapper_loglevel.toLowerCase();
 
-/**
- *  DDoS protection (request-rate limiting) variables
- */
-var ratelimit_terminate_on_exceed = process.env.ZITI_AGENT_RATELIMIT_TERMINATE_ON_EXCEED;
-if (typeof ratelimit_terminate_on_exceed !== 'undefined') {
-    if (!common.toBool(ratelimit_terminate_on_exceed)) {
-        throw new Error('ZITI_AGENT_RATELIMIT_TERMINATE_ON_EXCEED value is not a boolean');
-    }
-} else {
-    ratelimit_terminate_on_exceed = true;
-}
-
-var ratelimit_reqs_per_minute = process.env.ZITI_AGENT_RATELIMIT_REQS_PER_MINUTE;
-if (typeof ratelimit_reqs_per_minute === 'undefined') { ratelimit_reqs_per_minute = 300; }
-
-var ratelimit_whitelist = process.env.ZITI_AGENT_RATELIMIT_WHITELIST;
-var ratelimit_whitelist_array = [];
-if (typeof ratelimit_whitelist !== 'undefined') {
-    if (typeof ratelimit_whitelist !== 'string') {
-        throw new Error('ZITI_AGENT_RATELIMIT_WHITELIST value is not a string');
-    }
-    ratelimit_whitelist_array = ratelimit_whitelist.split(',');
-} 
-
-var ratelimit_blacklist = process.env.ZITI_AGENT_RATELIMIT_BLACKLIST;
-var ratelimit_blacklist_array = [];
-if (typeof ratelimit_blacklist !== 'undefined') { 
-    if (typeof ratelimit_blacklist !== 'string') {
-        throw new Error('ZITI_AGENT_RATELIMIT_BLACKLIST value is not a string');
-    }
-    ratelimit_blacklist_array = ratelimit_blacklist.split(',');
-}
- 
-var cidr_whitelist = process.env.ZITI_AGENT_CIDR_WHITELIST;
-var cidr_whitelist_array = [];
-if (typeof cidr_whitelist !== 'undefined') { 
-    if (typeof cidr_whitelist !== 'string') {
-        throw new Error('ZITI_AGENT_CIDR_WHITELIST value is not a string');
-    }
-    cidr_whitelist_array = cidr_whitelist.split(',');
-}
 
 /** --------------------------------------------------------------------------------------------------
  *  Create logger 
@@ -229,7 +200,7 @@ const createLogger = () => {
     });
     
     var logger = winston.createLogger({
-        level: ziti_agent_loglevel,
+        level: ziti_browzer_bootstrapper_loglevel,
         format: combine(
             splat(),
             timestamp(),
@@ -253,7 +224,7 @@ const createLogger = () => {
 var selects = [];
 
 /** --------------------------------------------------------------------------------------------------
- *  Start the agent
+ *  Start the browzer_bootstrapper
  */
 const startAgent = ( logger ) => {
 
@@ -284,7 +255,7 @@ const startAgent = ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script id="from-ziti-http-agent" type="text/javascript" src="${req.ziti_agent_scheme}://${req.ziti_vhost}:${agent_listen_port}/${common.getZBRname()}"></script>
+<script id="from-ziti-browzer-bootstrapper" type="text/javascript" src="${req.ziti_browzer_bootstrapper_scheme}://${req.ziti_vhost}:${browzer_bootstrapper_listen_port}/${common.getZBRname()}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
@@ -397,14 +368,14 @@ const startAgent = ( logger ) => {
     
       
     /** --------------------------------------------------------------------------------------------------
-     *  Crank up the web server.  The 'agent_listen_port' value can be arbitrary since it is used
-     *  inside the container.  Port 443|80 is typically mapped onto the 'agent_listen_port' e.g. 443->8443
+     *  Crank up the web server.  The 'browzer_bootstrapper_listen_port' value can be arbitrary since it is used
+     *  inside the container.  Port 443|80 is typically mapped onto the 'browzer_bootstrapper_listen_port' e.g. 443->8443
      */
     var options = {
         logger: logger,
 
         // Set up to rewrite 'Location' headers on redirects
-        hostRewrite: agent_host,
+        hostRewrite: browzer_bootstrapper_host,
         autoRewrite: true,
 
         // Pass in the dark web app target array
@@ -438,7 +409,7 @@ const startAgent = ( logger ) => {
                 target.path = 'http';
             }
             req.ziti_target_scheme   = target.scheme;
-            req.ziti_agent_scheme    = agent_scheme;
+            req.ziti_browzer_bootstrapper_scheme    = browzer_bootstrapper_scheme;
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
 
@@ -509,21 +480,21 @@ const startAgent = ( logger ) => {
      * 
      */
     var server
-    if (agent_scheme === 'https') {
+    if (browzer_bootstrapper_scheme === 'https') {
 
         server = https.createServer({
             cert: fs.readFileSync(certificate_path),
             key: fs.readFileSync(key_path),
-        }, app).listen(agent_listen_port, "0.0.0.0", function() {
-            logger.info({message: 'listening', port: agent_listen_port, scheme: agent_scheme});
+        }, app).listen(browzer_bootstrapper_listen_port, "0.0.0.0", function() {
+            logger.info({message: 'listening', port: browzer_bootstrapper_listen_port, scheme: browzer_bootstrapper_scheme});
         });
 
     }
     else {
 
         server = http.createServer({
-        }, app).listen(agent_listen_port, "0.0.0.0", function() {
-            logger.info({message: 'listening', port: agent_listen_port, scheme: agent_scheme});
+        }, app).listen(browzer_bootstrapper_listen_port, "0.0.0.0", function() {
+            logger.info({message: 'listening', port: browzer_bootstrapper_listen_port, scheme: browzer_bootstrapper_scheme});
         });
 
     }
@@ -563,7 +534,7 @@ const main = async () => {
 
     logger = createLogger();
 
-    logger.info({message: 'ziti-http-agent initializing', version: pjson.version});
+    logger.info({message: 'ziti-browzer-bootstrapper initializing', version: pjson.version});
 
     let validationResult = jsonschemaValidator.validate(jsonTargetArray, targetsSchema, {
         allowUnknownAttributes: false,
