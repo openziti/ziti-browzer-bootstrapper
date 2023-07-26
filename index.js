@@ -55,7 +55,7 @@ var logger;     // for Ziti BrowZer Bootstrapper
  * 
  */
  var targets = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_TARGETS', 'ZITI_AGENT_TARGETS')
- if (typeof targets === 'undefined') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_TARGETS value not specified'); }
+ if (!targets) { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_TARGETS value not specified'); }
  var jsonTargetArray = JSON.parse(targets);
 
  var targetsSchema = {
@@ -106,7 +106,7 @@ var arraySchema = {
  * 
  */
 var browzer_bootstrapper_scheme = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_SCHEME', 'ZITI_AGENT_SCHEME')
-if (typeof browzer_bootstrapper_scheme === 'undefined') { 
+if (!browzer_bootstrapper_scheme) { 
     browzer_bootstrapper_scheme = 'http'; 
 }
 if (typeof browzer_bootstrapper_scheme !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_SCHEME value is not a string'); }
@@ -118,7 +118,7 @@ if (browzer_bootstrapper_scheme !== 'http' && browzer_bootstrapper_scheme !== 'h
 var certificate_path;
 if (browzer_bootstrapper_scheme === 'https') {
     certificate_path = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH', 'ZITI_AGENT_CERTIFICATE_PATH')
-    if (typeof certificate_path === 'undefined') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH value not specified'); }
+    if (!certificate_path) { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH value not specified'); }
     if (typeof certificate_path !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH value is not a string'); }
 }
  
@@ -128,7 +128,7 @@ if (browzer_bootstrapper_scheme === 'https') {
 var key_path;
 if (browzer_bootstrapper_scheme === 'https') {
     key_path = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH', 'ZITI_AGENT_KEY_PATH')
-    if (typeof key_path === 'undefined') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH value not specified'); }
+    if (!key_path) { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH value not specified'); }
     if (typeof key_path !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH value is not a string'); }
 }
 
@@ -136,11 +136,11 @@ if (browzer_bootstrapper_scheme === 'https') {
  * 
  */
 var browzer_bootstrapper_host = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_HOST', 'ZITI_AGENT_HOST')
-if (typeof browzer_bootstrapper_host === 'undefined') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_HOST value not specified'); }
+if (!browzer_bootstrapper_host) { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_HOST value not specified'); }
 if (typeof browzer_bootstrapper_host !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_HOST value is not a string'); }
 
 var ziti_controller_host = common.getConfigValue('ZITI_CONTROLLER_HOST')
-if (typeof ziti_controller_host === 'undefined') { throw new Error('ZITI_CONTROLLER_HOST value not specified'); }
+if (!ziti_controller_host) { throw new Error('ZITI_CONTROLLER_HOST value not specified'); }
 if (typeof ziti_controller_host !== 'string') { throw new Error('ZITI_CONTROLLER_HOST value is not a string'); }
 if (ziti_controller_host === browzer_bootstrapper_host) { throw new Error('ZITI_CONTROLLER_HOST value and ZITI_BROWZER_BOOTSTRAPPER_HOST value cannot be the same'); }
 var ziti_controller_port = common.getConfigValue('ZITI_CONTROLLER_PORT')
@@ -148,7 +148,8 @@ var ziti_controller_port = common.getConfigValue('ZITI_CONTROLLER_PORT')
 var zbr_src = `${browzer_bootstrapper_host}/ziti-browzer-runtime.js`;
 
 var browzer_bootstrapper_listen_port = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT', 'ZITI_AGENT_LISTEN_PORT')
-if (typeof browzer_bootstrapper_listen_port === 'undefined') {
+console.log('browzer_bootstrapper_listen_port: ', browzer_bootstrapper_listen_port)
+if (!browzer_bootstrapper_listen_port) {
     if (browzer_bootstrapper_scheme === 'http') {
         browzer_bootstrapper_listen_port = 80;
     }
@@ -174,7 +175,7 @@ if (typeof browzer_bootstrapper_listen_port === 'undefined') {
  *
  */
 var ziti_browzer_bootstrapper_loglevel = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_LOGLEVEL', 'ZITI_AGENT_LOGLEVEL')
-if (typeof ziti_browzer_bootstrapper_loglevel === 'undefined') { ziti_browzer_bootstrapper_loglevel = 'info'; }
+if (!ziti_browzer_bootstrapper_loglevel) { ziti_browzer_bootstrapper_loglevel = 'info'; }
 ziti_browzer_bootstrapper_loglevel = ziti_browzer_bootstrapper_loglevel.toLowerCase();
 
 
