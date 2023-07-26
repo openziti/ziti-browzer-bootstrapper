@@ -60,9 +60,9 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/openziti/ziti-http-agent:${{ github.run_number }}
-            ghcr.io/openziti/ziti-http-agent:latest
-            ghcr.io/openziti/ziti-http-agent:${{ steps.extract_version_number.outputs.version_number }}
+            ghcr.io/openziti/ziti-browzer-bootstrapper:${{ github.run_number }}
+            ghcr.io/openziti/ziti-browzer-bootstrapper:latest
+            ghcr.io/openziti/ziti-browzer-bootstrapper:${{ steps.extract_version_number.outputs.version_number }}
         if: |
           steps.extract_branch.outputs.branch == 'main'
 
@@ -72,8 +72,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/openziti/ziti-http-agent:${{ github.run_number }}
-            ghcr.io/openziti/ziti-http-agent:PR${{ steps.extract_pr_number.outputs.pr_number }}.${{ github.run_number }}
+            ghcr.io/openziti/ziti-browzer-bootstrapper:${{ github.run_number }}
+            ghcr.io/openziti/ziti-browzer-bootstrapper:PR${{ steps.extract_pr_number.outputs.pr_number }}.${{ github.run_number }}
         if: |
           steps.extract_branch.outputs.branch != 'main'
           
