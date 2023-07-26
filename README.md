@@ -1,4 +1,4 @@
-`ziti-http-agent`
+`ziti-browzer-bootstrapper`
 =====================
 
 A NodeJS-based server responsible for securely bootstrapping browser-based web applications over an
@@ -9,10 +9,10 @@ A NodeJS-based server responsible for securely bootstrapping browser-based web a
 Learn about OpenZiti at [openziti.io](https://openziti.io)
 
 
-[![Build](https://github.com/openziti/ziti-http-agent/workflows/Build/badge.svg?branch=main)]()
-[![Issues](https://img.shields.io/github/issues-raw/openziti/ziti-http-agent)]()
+[![Build](https://github.com/openziti/ziti-browzer-bootstrapper/workflows/Build/badge.svg?branch=main)]()
+[![Issues](https://img.shields.io/github/issues-raw/openziti/ziti-browzer-bootstrapper)]()
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![LOC](https://img.shields.io/tokei/lines/github/openziti/ziti-http-agent)]()
+[![LOC](https://img.shields.io/tokei/lines/github/openziti/ziti-browzer-bootstrapper)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=rounded)](CONTRIBUTING.md)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 
@@ -59,7 +59,7 @@ you have configured the overlay with "alternative server certs" as outlined
 ### third-party verifiable, wildcard certificate
 BrowZer operates in your browser, having a PKI that is not self-signed make using BrowZer much easier. LetsEncrypt
 makes obtaining certificates attainable for nearly everyone. It is easier to procure a wildcard certificate and use it
-for not only your OpenZiti overlay network, but also for the ziti-http-agent as well.
+for not only your OpenZiti overlay network, but also for the ziti-browzer-bootstrapper as well.
 
 ### OIDC Provider
 
@@ -138,7 +138,7 @@ the service.
 
 ## Installing/Running
 
-Once the prerequisites are met, starting the `ziti-http-agent` should be relatively simple. To start the agent you will
+Once the prerequisites are met, starting the `ziti-browzer-bootstrapper` should be relatively simple. To start the bootstrapper you will
 be expected to provide the following environment variables before starting the service. If you are running with NodeJS,
 you'll set these as environment variables. If you're running via docker, you can either use a .env file or you can set
 environment variables.
@@ -150,13 +150,13 @@ environment variables.
 * ZITI_BROWZER_RUNTIME_HOTKEY: the hotkey to activate the BrowZer settings dialog modal. default: alt+F12
 * ZITI_CONTROLLER_HOST: the "alternative" address for the OpenZiti controller
 * ZITI_CONTROLLER_PORT: the port to find the OpenZiti controller at
-* ZITI_AGENT_LOGLEVEL: the log level for the ziti-http-agent to log at
-* ZITI_AGENT_HOST: the address the ziti-http-agent is available at
-* ZITI_AGENT_LISTEN_PORT: the port the ziti-http-agent is available at
-* ZITI_AGENT_SCHEME: the scheme to use to access the ziti-http-agent (https by default)
-* ZITI_AGENT_CERTIFICATE_PATH: the path to the certificate the ziti-http-agent presents to clients
-* ZITI_AGENT_KEY_PATH: the associated key for the ZITI_AGENT_CERTIFICATE_PATH
-* ZITI_AGENT_TARGETS: __more on this below__
+* ZITI_BROWZER_BOOTSTRAPPER_LOGLEVEL: the log level for the ziti-browzer-bootstrapper to log at
+* ZITI_BROWZER_BOOTSTRAPPER_HOST: the address the ziti-browzer-bootstrapper is available at
+* ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT: the port the ziti-browzer-bootstrapper is available at
+* ZITI_BROWZER_BOOTSTRAPPER_SCHEME: the scheme to use to access the ziti-browzer-bootstrapper (https by default)
+* ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH: the path to the certificate the ziti-browzer-bootstrapper presents to clients
+* ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH: the associated key for the ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH
+* ZITI_BROWZER_BOOTSTRAPPER_TARGETS: __more on this below__
 
 ```bash
       NODE_ENV: production
@@ -164,18 +164,18 @@ environment variables.
       ZITI_BROWZER_RUNTIME_HOTKEY: alt+F12
       ZITI_CONTROLLER_HOST: ${ZITI_CTRL_EDGE_ALT_ADVERTISED_ADDRESS}
       ZITI_CONTROLLER_PORT: ${ZITI_CTRL_EDGE_ADVERTISED_PORT}
-      ZITI_AGENT_LOGLEVEL: debug
-      ZITI_AGENT_HOST: ${ZITI_BROWZER_HTTP_AGENT_ADDRESS}
-      ZITI_AGENT_LISTEN_PORT: ${ZITI_AGENT_LISTEN_PORT}
-      ZITI_AGENT_SCHEME: https
-      ZITI_AGENT_CERTIFICATE_PATH: /etc/letsencrypt/live/your.fqdn.here/fullchain.pem
-      ZITI_AGENT_KEY_PATH: /etc/letsencrypt/live/your.fqdn.here/privkey.pem
-      ZITI_AGENT_TARGETS: __more on this below__
+      ZITI_BROWZER_BOOTSTRAPPER_LOGLEVEL: debug
+      ZITI_BROWZER_BOOTSTRAPPER_HOST: ${ZITI_BROWZER_BOOTSTRAPPER_ADDRESS}
+      ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT: ${ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT}
+      ZITI_BROWZER_BOOTSTRAPPER_SCHEME: https
+      ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH: /etc/letsencrypt/live/your.fqdn.here/fullchain.pem
+      ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH: /etc/letsencrypt/live/your.fqdn.here/privkey.pem
+      ZITI_BROWZER_BOOTSTRAPPER_TARGETS: __more on this below__
 ```
 
-### ZITI_AGENT_TARGETS
+### ZITI_BROWZER_BOOTSTRAPPER_TARGETS
 
-The `ZITI_AGENT_TARGETS` environment variable is a json block that specifies the configuration of services the `ziti-http-agent`
+The `ZITI_BROWZER_BOOTSTRAPPER_TARGETS` environment variable is a json block that specifies the configuration of services the `ziti-browzer-bootstrapper`
 should support. The json is a single entry named "targetArray" which is an array of services to configure with one entry
 per service. An example json block would look like the following:
 ```json
@@ -193,33 +193,33 @@ per service. An example json block would look like the following:
 }
 ```
 
-### Starting the ziti-http-agent
+### Starting the ziti-browzer-bootstrapper
 
-Once you have set the required environment variables you can start the `ziti-http-agent` directly by running `yarn build`
+Once you have set the required environment variables you can start the `ziti-browzer-bootstrapper` directly by running `yarn build`
 and then running:
 ```bash
 NODE_EXTRA_CA_CERTS=node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem node index.js
 ```
 
-To start the `ziti-http-agent` from docker you can issue a command, using the environment variables. For example:
+To start the `ziti-browzer-bootstrapper` from docker you can issue a command, using the environment variables. For example:
 ```bash
 docker run
---name ziti-http-agent
+--name ziti-browzer-bootstrapper
 --rm -v /etc/letsencrypt:/etc/letsencrypt
 --user 1000:2171
 -p 1443:1443
 -e NODE_ENV=production
--e ZITI_AGENT_LOGLEVEL=debug
+-e ZITI_BROWZER_BOOTSTRAPPER_LOGLEVEL=debug
 -e ZITI_BROWZER_RUNTIME_LOGLEVEL=debug
 -e ZITI_BROWZER_RUNTIME_HOTKEY=alt+F12
 -e ZITI_CONTROLLER_HOST=ctrl.zititv.demo.openziti.org
 -e ZITI_CONTROLLER_PORT=1280
--e ZITI_AGENT_HOST=browzer.zititv.demo.openziti.org
--e ZITI_AGENT_SCHEME=https
--e ZITI_AGENT_CERTIFICATE_PATH=/etc/letsencrypt/live/zititv.demo.openziti.org/fullchain.pem
--e ZITI_AGENT_KEY_PATH=/etc/letsencrypt/live/zititv.demo.openziti.org/privkey.pem
--e ZITI_AGENT_LISTEN_PORT=1443
--e ZITI_AGENT_TARGETS=  {
+-e ZITI_BROWZER_BOOTSTRAPPER_HOST=browzer.zititv.demo.openziti.org
+-e ZITI_BROWZER_BOOTSTRAPPER_SCHEME=https
+-e ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH=/etc/letsencrypt/live/zititv.demo.openziti.org/fullchain.pem
+-e ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH=/etc/letsencrypt/live/zititv.demo.openziti.org/privkey.pem
+-e ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT=1443
+-e ZITI_BROWZER_BOOTSTRAPPER_TARGETS=  {
     "targetArray": [
       {
         "vhost": "docker-whale.zititv.demo.openziti.org",
@@ -231,7 +231,7 @@ docker run
       }
     ]
   }\
-  ghcr.io/openziti/ziti-http-agent:pr177.432
+  ghcr.io/openziti/ziti-browzer-bootstrapper:pr177.432
 ```
 
 

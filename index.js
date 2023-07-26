@@ -225,9 +225,9 @@ const createLogger = () => {
 var selects = [];
 
 /** --------------------------------------------------------------------------------------------------
- *  Start the browzer_bootstrapper
+ *  Start the BrowZer Bootstrapper
  */
-const startAgent = ( logger ) => {
+const startBootstrapper = ( logger ) => {
 
     /** --------------------------------------------------------------------------------------------------
      *  Dynamically modify the proxied site's <head> element as we stream it back to the browser.  We will:
@@ -301,7 +301,7 @@ const startAgent = ( logger ) => {
     /** --------------------------------------------------------------------------------------------------
      *  Dynamically modify the proxied site's <form method="POST" action="..." ...> element as
      *  we stream it back to the browser.  We will ensure that:
-     *  1) the ACTION is massaged to ensure that the target specified is changed to the HTTP Agent
+     *  1) the ACTION is massaged to ensure that the target specified is changed to the BrowZer Bootstrapper
      */
     var formselect = {};
 
@@ -559,9 +559,9 @@ const main = async () => {
     }   
 
 
-    // Now start the Ziti HTTP Agent
+    // Now start the Ziti BrowZer Bootstrapper
     try {
-        startAgent( logger );
+        startBootstrapper( logger );
     }
     catch (e) {
         console.error(e);

@@ -16,15 +16,15 @@ RUN apt-get -y install nodejs
 RUN groupadd --gid 1000 node \
   && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
-# Create directory for the Ziti HTTP Agent, and explicitly set the owner of that new directory to the node user
-RUN mkdir /home/node/ziti-http-agent/ && chown -R node:node /home/node/ziti-http-agent
-WORKDIR /home/node/ziti-http-agent
+# Create directory for the Ziti BrowZer Bootstrapper, and explicitly set the owner of that new directory to the node user
+RUN mkdir /home/node/ziti-browzer-bootstrapper/ && chown -R node:node /home/node/ziti-browzer-bootstrapper
+WORKDIR /home/node/ziti-browzer-bootstrapper
 
 # Prepare for dependencies installation
 COPY --chown=node:node package.json ./
 COPY --chown=node:node yarn.lock ./
 
-# Install the dependencies for the Ziti HTTP Agent according to package-lock.json (ci) without
+# Install the dependencies for the Ziti BrowZer Bootstrapper according to package-lock.json (ci) without
 # devDepdendencies (--production), then uninstall npm which isn't needed.
 RUN npm install --global yarn \
  && yarn install \
@@ -34,20 +34,19 @@ RUN chown -R node:node .
 
 USER node
 
-# Bring in the source of the Ziti HTTP Agent to the working folder
+# Bring in the source of the Ziti BrowZer Bootstrapper to the working folder
 COPY --chown=node:node index.js .
 COPY --chown=node:node zha-docker-entrypoint .
 COPY --chown=node:node lib ./lib/
 COPY --chown=node:node greenlock.d ./greenlock.d/
-# COPY --chown=node:node agent.json .
 
-# Expose the Ziti HTTP Agent for traffic to be proxied (8000) and the
+# Expose the Ziti BrowZer Bootstrapper for traffic to be proxied (8000) and the
 # REST API where it can be configured (8001)
 EXPOSE 8000
 EXPOSE 8443
 
-# Put the Ziti HTTP Agent on path for zha-docker-entrypoint
+# Put the Ziti BrowZer Bootstrapper on path for zha-docker-entrypoint
 ENV PATH=/home/node/bin:$PATH
-ENTRYPOINT ["/home/node/ziti-http-agent/zha-docker-entrypoint"]
+ENTRYPOINT ["/home/node/ziti-browzer-bootstrapper/zha-docker-entrypoint"]
 
-# CMD ["node index.js > ./log/ziti-http-agent.log > 2&1"]
+# CMD ["node index.js > ./log/ziti-browzer-bootstrapper.log > 2&1"]
