@@ -45,6 +45,8 @@ const helmet    = require("helmet");
 const vhost     = require('vhost');
 const forEach   = require('lodash.foreach');
 const { satisfies } = require('compare-versions');
+const _httpErrorPages = require('http-error-pages');
+const URLON = require('urlon');
 
 
 
@@ -148,7 +150,6 @@ var ziti_controller_port = common.getConfigValue('ZITI_CONTROLLER_PORT')
 var zbr_src = `${browzer_bootstrapper_host}/ziti-browzer-runtime.js`;
 
 var browzer_bootstrapper_listen_port = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT', 'ZITI_AGENT_LISTEN_PORT')
-console.log('browzer_bootstrapper_listen_port: ', browzer_bootstrapper_listen_port)
 if (!browzer_bootstrapper_listen_port) {
     if (browzer_bootstrapper_scheme === 'http') {
         browzer_bootstrapper_listen_port = 80;
@@ -227,7 +228,7 @@ var selects = [];
 /** --------------------------------------------------------------------------------------------------
  *  Start the BrowZer Bootstrapper
  */
-const startBootstrapper = ( logger ) => {
+const startBootstrapper =  async ( logger ) => {
 
     /** --------------------------------------------------------------------------------------------------
      *  Dynamically modify the proxied site's <head> element as we stream it back to the browser.  We will:
@@ -384,6 +385,44 @@ const startBootstrapper = ( logger ) => {
     };
     
     var app                     = express();
+    app.use(require('express-status-monitor')(
+    {
+        title: `Ziti BrowZer Bootstrapper Status\n(${browzer_bootstrapper_host})`,
+        theme: 'default.css',
+        path: '/healthstatus',
+        spans: [{
+            interval: 1,
+            retention: 60
+        }, {
+            interval: 5,
+            retention: 60
+        }, {
+            interval: 15,
+            retention: 60
+        }, {
+            interval: 60,
+            retention: 60
+        }],
+        chartVisibility: {
+            cpu: true,
+            mem: true,
+            load: true,
+            eventLoop: true,
+            heap: true,
+            responseTime: true,
+            rps: true,
+            statusCodes: true
+        },
+        healthChecks: [
+            {
+                protocol: browzer_bootstrapper_scheme,
+                host: browzer_bootstrapper_host,
+                path: '/healthcheck',
+                port: browzer_bootstrapper_listen_port
+            }
+        ],
+    }));
+
     var target_apps             = new Map();
     var target_app_to_target    = new Map();
 
@@ -459,6 +498,12 @@ const startBootstrapper = ( logger ) => {
 
     options.logger.debug({message: 'configured target service(s)', targets: JSON.parse(targets)});
           
+    app.get('/browzer_error', function(req, res, next){
+        const err = new Error();
+        err.browzer_error_data = JSON.parse(URLON.parse(req.query.browzer_error_data));
+        err.status = err.browzer_error_data.status;
+        next(err);
+    });
 
     var proxy = httpProxy.createProxyServer(options);
 
@@ -475,6 +520,30 @@ const startBootstrapper = ( logger ) => {
 
     app.use(function (req, res) {
         proxy.web(req, res);
+    });
+
+    /**
+     * 
+     */
+    await _httpErrorPages.express(app, {
+        // configFile: './assets/config.json',
+        // lang:      '../../assets/i18n/foo',
+        template:   './assets/template.ejs',
+        css:        './assets/layout.css',
+        payload: {
+            footer: `<strong>BrowZer</strong> v${pjson.version}`,
+        },
+        filter: function(data, req, res){
+            data.pagetitle = `BrowZer error ${data.error.browzer_error_data.code}`;
+            data.title = data.error.browzer_error_data.title;
+            data.message = data.error.browzer_error_data.message;
+            data.code = data.error.browzer_error_data.code;
+            logger.error({message: `${data.message}`, error: `${data.title}`, error_code: data.code});
+            return data;
+        },
+        onError: function(data){
+            // logger.error({message: `${data.message}`, error: `${data.title}`, error_code: data.code});
+        }
     });
 
     /**
@@ -511,10 +580,7 @@ const startBootstrapper = ( logger ) => {
     // Do any necessary shutdown logic for our application here
     const shutdown = (signal, value) => {
         logger.info("shutdown!");
-        server.close(() => {
-            logger.info(`server stopped by ${signal} with value ${value}`);
-            process.exit(128 + value);
-        });
+        process.exit(128 + value);
     };
     // Create a listener for each of the signals that we want to handle
     Object.keys(signals).forEach((signal) => {
