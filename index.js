@@ -46,8 +46,8 @@ const vhost     = require('vhost');
 const forEach   = require('lodash.foreach');
 const { satisfies } = require('compare-versions');
 const _httpErrorPages = require('http-error-pages');
-const URLON = require('urlon');
-
+const URLON     = require('urlon');
+const favicon   = require('serve-favicon');
 
 
 
@@ -422,6 +422,8 @@ const startBootstrapper =  async ( logger ) => {
             }
         ],
     }));
+
+    app.use(favicon(path.join(__dirname, 'assets', 'favicon.ico')));
 
     var target_apps             = new Map();
     var target_app_to_target    = new Map();
