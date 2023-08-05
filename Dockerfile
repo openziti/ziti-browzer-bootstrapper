@@ -38,7 +38,7 @@ USER node
 COPY --chown=node:node index.js .
 COPY --chown=node:node zha-docker-entrypoint .
 COPY --chown=node:node lib ./lib/
-COPY --chown=node:node greenlock.d ./greenlock.d/
+COPY --chown=node:node assets ./assets/
 
 # Expose the Ziti BrowZer Bootstrapper for traffic to be proxied (8000) and the
 # REST API where it can be configured (8001)
