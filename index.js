@@ -528,19 +528,19 @@ const startBootstrapper =  async ( logger ) => {
      * 
      */
     await _httpErrorPages.express(app, {
-        // configFile: './assets/config.json',
-        // lang:      '../../assets/i18n/foo',
         template:   './assets/template.ejs',
         css:        './assets/layout.css',
         payload: {
             footer: `<strong>BrowZer</strong> v${pjson.version}`,
         },
-        filter: function(data, req, res){
-            data.pagetitle = `BrowZer error ${data.error.browzer_error_data.code}`;
-            data.title = data.error.browzer_error_data.title;
-            data.message = data.error.browzer_error_data.message;
-            data.code = data.error.browzer_error_data.code;
-            logger.error({message: `${data.message}`, error: `${data.title}`, error_code: data.code});
+        filter: function(data, req, res) {
+            if (data.error && data.error.browzer_error_data) {
+                data.pagetitle = `BrowZer error ${data.error.browzer_error_data.code}`;
+                data.title = data.error.browzer_error_data.title;
+                data.message = data.error.browzer_error_data.message;
+                data.code = data.error.browzer_error_data.code;
+                logger.error({message: `${data.message}`, error: `${data.title}`, error_code: data.code});
+            }
             return data;
         },
         onError: function(data){
