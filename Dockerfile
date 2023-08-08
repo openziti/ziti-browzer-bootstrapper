@@ -29,7 +29,7 @@ COPY --chown=node:node zha-docker-entrypoint .
 COPY --chown=node:node lib ./lib/
 COPY --chown=node:node assets ./assets/
 
-FROM gcr.io/distroless/nodejs:16
+FROM node:16-bullseye-slim
 
 COPY --from=build /home/node/ziti-browzer-bootstrapper /home/node/ziti-browzer-bootstrapper
 
