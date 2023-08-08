@@ -1,6 +1,6 @@
 # FROM node:lts-alpine3.12
 # FROM node:14.16.1-buster
-FROM ubuntu:20.04
+FROM ubuntu:20.04 as build
 
 LABEL maintainer="OpenZiti <openziti@netfoundry.io>"
 
@@ -39,6 +39,10 @@ COPY --chown=node:node index.js .
 COPY --chown=node:node zha-docker-entrypoint .
 COPY --chown=node:node lib ./lib/
 COPY --chown=node:node assets ./assets/
+
+FROM ubuntu:20.04
+
+COPY --from=build /home/node/ziti-browzer-bootstrapper /home/node/ziti-browzer-bootstrapper
 
 # Expose the Ziti BrowZer Bootstrapper for traffic to be proxied (8000) and the
 # REST API where it can be configured (8001)
