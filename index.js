@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// const SegfaultHandler = require('segfault-handler');
-// SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const nconf     = require('nconf');
 module.exports  = nconf;
@@ -385,43 +383,43 @@ const startBootstrapper =  async ( logger ) => {
     };
     
     var app                     = express();
-    app.use(require('express-status-monitor')(
-    {
-        title: `Ziti BrowZer Bootstrapper Status\n(${browzer_bootstrapper_host})`,
-        theme: 'default.css',
-        path: '/healthstatus',
-        spans: [{
-            interval: 1,
-            retention: 60
-        }, {
-            interval: 5,
-            retention: 60
-        }, {
-            interval: 15,
-            retention: 60
-        }, {
-            interval: 60,
-            retention: 60
-        }],
-        chartVisibility: {
-            cpu: true,
-            mem: true,
-            load: true,
-            eventLoop: true,
-            heap: true,
-            responseTime: true,
-            rps: true,
-            statusCodes: true
-        },
-        healthChecks: [
-            {
-                protocol: browzer_bootstrapper_scheme,
-                host: browzer_bootstrapper_host,
-                path: '/healthcheck',
-                port: browzer_bootstrapper_listen_port
-            }
-        ],
-    }));
+    // app.use(require('express-status-monitor')(
+    // {
+    //     title: `Ziti BrowZer Bootstrapper Status\n(${browzer_bootstrapper_host})`,
+    //     theme: 'default.css',
+    //     path: '/healthstatus',
+    //     spans: [{
+    //         interval: 1,
+    //         retention: 60
+    //     }, {
+    //         interval: 5,
+    //         retention: 60
+    //     }, {
+    //         interval: 15,
+    //         retention: 60
+    //     }, {
+    //         interval: 60,
+    //         retention: 60
+    //     }],
+    //     chartVisibility: {
+    //         cpu: true,
+    //         mem: true,
+    //         load: true,
+    //         eventLoop: true,
+    //         heap: true,
+    //         responseTime: true,
+    //         rps: true,
+    //         statusCodes: true
+    //     },
+    //     healthChecks: [
+    //         {
+    //             protocol: browzer_bootstrapper_scheme,
+    //             host: browzer_bootstrapper_host,
+    //             path: '/healthcheck',
+    //             port: browzer_bootstrapper_listen_port
+    //         }
+    //     ],
+    // }));
 
     app.use(favicon(path.join(__dirname, 'assets', 'favicon.ico')));
 
