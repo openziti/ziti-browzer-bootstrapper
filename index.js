@@ -189,7 +189,7 @@ const createLogger = () => {
         fs.mkdirSync( logDir );
     }
 
-    const { combine, timestamp, label, printf, splat, json } = winston.format;
+    const { combine, timestamp, label, printf, splat, json, errors } = winston.format;
 
     const logFormat = printf(({ level, message, durationMs, timestamp }) => {
         if (typeof durationMs !== 'undefined') {
@@ -203,6 +203,7 @@ const createLogger = () => {
         level: ziti_browzer_bootstrapper_loglevel,
         format: combine(
             splat(),
+            errors({ stack: true }),
             timestamp(),
             logFormat
         ),
@@ -624,16 +625,18 @@ const main = async () => {
         process.exit(-1);
     }   
 
-
-    // Now start the Ziti BrowZer Bootstrapper
-    try {
-        startBootstrapper( logger );
-    }
-    catch (e) {
-        console.error(e);
-    }
+    startBootstrapper( logger );
 
 };
+  
+
+process.on('unhandledRejection', function (reason, p) {
+    throw reason;
+});
+process.on('uncaughtException', function ( e ) {
+    logger.error( e );
+    process.exit( -1 );
+});
   
 main();
 
