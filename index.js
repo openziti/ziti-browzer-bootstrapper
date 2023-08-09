@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// const SegfaultHandler = require('segfault-handler');
-// SegfaultHandler.registerHandler('log/crash.log');
                   require('dotenv').config();
 const nconf     = require('nconf');
 module.exports  = nconf;
@@ -191,7 +189,7 @@ const createLogger = () => {
         fs.mkdirSync( logDir );
     }
 
-    const { combine, timestamp, label, printf, splat, json } = winston.format;
+    const { combine, timestamp, label, printf, splat, json, errors } = winston.format;
 
     const logFormat = printf(({ level, message, durationMs, timestamp }) => {
         if (typeof durationMs !== 'undefined') {
@@ -205,6 +203,7 @@ const createLogger = () => {
         level: ziti_browzer_bootstrapper_loglevel,
         format: combine(
             splat(),
+            errors({ stack: true }),
             timestamp(),
             logFormat
         ),
@@ -385,43 +384,43 @@ const startBootstrapper =  async ( logger ) => {
     };
     
     var app                     = express();
-    app.use(require('express-status-monitor')(
-    {
-        title: `Ziti BrowZer Bootstrapper Status\n(${browzer_bootstrapper_host})`,
-        theme: 'default.css',
-        path: '/healthstatus',
-        spans: [{
-            interval: 1,
-            retention: 60
-        }, {
-            interval: 5,
-            retention: 60
-        }, {
-            interval: 15,
-            retention: 60
-        }, {
-            interval: 60,
-            retention: 60
-        }],
-        chartVisibility: {
-            cpu: true,
-            mem: true,
-            load: true,
-            eventLoop: true,
-            heap: true,
-            responseTime: true,
-            rps: true,
-            statusCodes: true
-        },
-        healthChecks: [
-            {
-                protocol: browzer_bootstrapper_scheme,
-                host: browzer_bootstrapper_host,
-                path: '/healthcheck',
-                port: browzer_bootstrapper_listen_port
-            }
-        ],
-    }));
+    // app.use(require('express-status-monitor')(
+    // {
+    //     title: `Ziti BrowZer Bootstrapper Status\n(${browzer_bootstrapper_host})`,
+    //     theme: 'default.css',
+    //     path: '/healthstatus',
+    //     spans: [{
+    //         interval: 1,
+    //         retention: 60
+    //     }, {
+    //         interval: 5,
+    //         retention: 60
+    //     }, {
+    //         interval: 15,
+    //         retention: 60
+    //     }, {
+    //         interval: 60,
+    //         retention: 60
+    //     }],
+    //     chartVisibility: {
+    //         cpu: true,
+    //         mem: true,
+    //         load: true,
+    //         eventLoop: true,
+    //         heap: true,
+    //         responseTime: true,
+    //         rps: true,
+    //         statusCodes: true
+    //     },
+    //     healthChecks: [
+    //         {
+    //             protocol: browzer_bootstrapper_scheme,
+    //             host: browzer_bootstrapper_host,
+    //             path: '/healthcheck',
+    //             port: browzer_bootstrapper_listen_port
+    //         }
+    //     ],
+    // }));
 
     app.use(favicon(path.join(__dirname, 'assets', 'favicon.ico')));
 
@@ -626,16 +625,18 @@ const main = async () => {
         process.exit(-1);
     }   
 
-
-    // Now start the Ziti BrowZer Bootstrapper
-    try {
-        startBootstrapper( logger );
-    }
-    catch (e) {
-        console.error(e);
-    }
+    startBootstrapper( logger );
 
 };
+  
+
+process.on('unhandledRejection', function (reason, p) {
+    throw reason;
+});
+process.on('uncaughtException', function ( e ) {
+    logger.error( e );
+    process.exit( -1 );
+});
   
 main();
 
