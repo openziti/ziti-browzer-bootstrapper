@@ -358,10 +358,10 @@
     workbox-expiration "^6.5.3"
     workbox-strategies "^6.5.3"
 
-"@openziti/ziti-browzer-sw@^0.34.3":
-  version "0.34.3"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.34.3.tgz#7339da989a84716f0cff8c6f08959227a14c97d2"
-  integrity sha512-bDioUpaKsxis3gvrRWruU5cxeu4XcI4wyoGT2+BRrJUDJDUhVilp93ISLgjgj2K/HHbF3pzPc9u1E+PGrvoZEQ==
+"@openziti/ziti-browzer-sw@^0.34.4":
+  version "0.34.4"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.34.4.tgz#28e7041929132e5aa0c05e2aa540b271f32c61d6"
+  integrity sha512-Z0Ancrf1q8sKe37fw9P24fKS3TS5Orzrfh/3kWxLYgj9UfGhsWBXKpcjXPUEJZqZRzjNgxt8YAPmyjZ/YbSv8w==
   dependencies:
     "@openziti/ziti-browzer-sw-workbox-strategies" "^0.36.2"
     "@types/lodash-es" "^4.17.6"
