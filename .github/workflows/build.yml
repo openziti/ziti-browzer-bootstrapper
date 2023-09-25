@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BUILD_NUMBER: ${{ github.run_number }}
+      TARGET_PLATFORMS: linux/amd64,linux/arm64
     
     steps:
     
@@ -59,6 +60,7 @@ jobs:
         with:
           context: .
           push: true
+          platforms: ${{ env.TARGET_PLATFORMS }}
           tags: |
             ghcr.io/openziti/ziti-browzer-bootstrapper:${{ github.run_number }}
             ghcr.io/openziti/ziti-browzer-bootstrapper:latest
@@ -71,6 +73,7 @@ jobs:
         with:
           context: .
           push: true
+          platforms: ${{ env.TARGET_PLATFORMS }}
           tags: |
             ghcr.io/openziti/ziti-browzer-bootstrapper:${{ github.run_number }}
             ghcr.io/openziti/ziti-browzer-bootstrapper:PR${{ steps.extract_pr_number.outputs.pr_number }}.${{ github.run_number }}
