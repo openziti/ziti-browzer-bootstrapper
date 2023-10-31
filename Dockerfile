@@ -31,6 +31,8 @@ COPY --chown=node:node assets ./assets/
 
 FROM node:16-bullseye-slim
 
+RUN apt-get update && apt-get install curl -y
+
 COPY --from=build /home/node/ziti-browzer-bootstrapper /home/node/ziti-browzer-bootstrapper
 
 WORKDIR /home/node/ziti-browzer-bootstrapper
