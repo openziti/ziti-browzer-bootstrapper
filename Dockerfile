@@ -5,7 +5,6 @@ LABEL maintainer="OpenZiti <openziti@netfoundry.io>"
 # Install useful tools
 RUN apt-get update
 RUN apt-get install -y python3 build-essential
-RUN apt-get update && apt-get install curl -y
 
 # Create directory for the Ziti BrowZer Bootstrapper, and explicitly set the owner of that new directory to the node user
 RUN mkdir /home/node/ziti-browzer-bootstrapper/ && chown -R node:node /home/node/ziti-browzer-bootstrapper
@@ -31,6 +30,8 @@ COPY --chown=node:node lib ./lib/
 COPY --chown=node:node assets ./assets/
 
 FROM node:16-bullseye-slim
+
+RUN apt-get update && apt-get install curl -y
 
 COPY --from=build /home/node/ziti-browzer-bootstrapper /home/node/ziti-browzer-bootstrapper
 
