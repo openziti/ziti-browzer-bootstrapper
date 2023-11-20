@@ -29,6 +29,7 @@ const path      = require('path');
 const http      = require("http");
 const https     = require("https");
 const fs        = require('fs');
+const tls       = require('tls');
 const express   = require("express");
 const crypto    = require('crypto');
 const httpProxy = require('./lib/http-proxy');
@@ -111,7 +112,16 @@ if (!browzer_bootstrapper_scheme) {
 }
 if (typeof browzer_bootstrapper_scheme !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_SCHEME value is not a string'); }
 if (browzer_bootstrapper_scheme !== 'http' && browzer_bootstrapper_scheme !== 'https') { throw new Error(`ZITI_BROWZER_BOOTSTRAPPER_SCHEME value [${browzer_bootstrapper_scheme}] is invalid`); }
- 
+
+var browzer_load_balancer = common.getConfigValue('ZITI_BROWZER_LOAD_BALANCER_HOST');
+if (browzer_load_balancer) {
+    if (typeof browzer_load_balancer !== 'string') { throw new Error('ZITI_BROWZER_LOAD_BALANCER_HOST value is not a string'); }
+}
+var browzer_load_balancer_port = common.getConfigValue('ZITI_BROWZER_LOAD_BALANCER_PORT')
+if (!browzer_load_balancer_port) {
+    browzer_load_balancer_port = 443;
+}
+
 /**
  * 
  */
@@ -254,9 +264,15 @@ const startBootstrapper =  async ( logger ) => {
         });
 
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
+        let zbrSrc;
+        if (browzer_load_balancer) {
+            zbrSrc = `https://${browzer_load_balancer}:${browzer_load_balancer_port}/${common.getZBRname()}`;
+        } else {
+            zbrSrc = `${req.ziti_browzer_bootstrapper_scheme}://${req.ziti_vhost}:${browzer_bootstrapper_listen_port}/${common.getZBRname()}`;
+        }
         let ziti_inject_html = `
 <!-- load Ziti browZer Runtime -->
-<script id="from-ziti-browzer-bootstrapper" type="text/javascript" src="${req.ziti_browzer_bootstrapper_scheme}://${req.ziti_vhost}:${browzer_bootstrapper_listen_port}/${common.getZBRname()}"></script>
+<script id="from-ziti-browzer-bootstrapper" type="text/javascript" src="${zbrSrc}"></script>
 `;
         node.ws.write( ziti_inject_html );
 
@@ -450,7 +466,12 @@ const startBootstrapper =  async ( logger ) => {
                 target.path = 'http';
             }
             req.ziti_target_scheme   = target.scheme;
-            req.ziti_browzer_bootstrapper_scheme    = browzer_bootstrapper_scheme;
+            if (browzer_load_balancer) {
+                req.ziti_browzer_bootstrapper_scheme = 'https';
+            } else {
+                req.ziti_browzer_bootstrapper_scheme = browzer_bootstrapper_scheme;
+            }
+        
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
 
@@ -548,14 +569,35 @@ const startBootstrapper =  async ( logger ) => {
     });
 
     /**
-     * 
+     *  When listening on HTTPS, then detect certificate refreshes, and reload TLS context accordingly
      */
+    var tlsContext;
+    function createTLScontext() {
+        tlsContext = tls.createSecureContext({
+            cert: fs.readFileSync(certificate_path),
+            key: fs.readFileSync(key_path),
+        });
+        logger.info({message: 'new tlsContext created', certificate_path: certificate_path, key_path: key_path});
+    }
+      
     var server
     if (browzer_bootstrapper_scheme === 'https') {
 
+        createTLScontext();
+
+        fs.watch(certificate_path, (eventType, filename) => {
+            logger.info({message: 'file-system change detected', filename: filename, eventType: eventType});
+            createTLScontext();
+        });
+        fs.watch(key_path, (eventType, filename) => {
+            logger.info({message: 'file-system change detected', filename: filename, eventType: eventType});
+            createTLScontext();
+        });          
+
         server = https.createServer({
-            cert: fs.readFileSync(certificate_path),
-            key: fs.readFileSync(key_path),
+            SNICallback: (servername, cb) => {
+                cb(null, tlsContext);
+            }            
         }, app).listen(browzer_bootstrapper_listen_port, "0.0.0.0", function() {
             logger.info({message: 'listening', port: browzer_bootstrapper_listen_port, scheme: browzer_bootstrapper_scheme});
         });
