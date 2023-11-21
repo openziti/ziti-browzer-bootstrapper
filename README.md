@@ -156,6 +156,8 @@ environment variables.
 * ZITI_BROWZER_BOOTSTRAPPER_SCHEME: the scheme to use to access the ziti-browzer-bootstrapper (https by default)
 * ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH: the path to the certificate the ziti-browzer-bootstrapper presents to clients
 * ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH: the associated key for the ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH
+* ZITI_BROWZER_LOAD_BALANCER_HOST: the address of the load balancer (if an optional LB does TLS-termination in front of the ziti-browzer-bootstrapper)
+* ZITI_BROWZER_LOAD_BALANCER_PORT: the port the load balancer listens on (443 by default)
 * ZITI_BROWZER_BOOTSTRAPPER_TARGETS: __more on this below__
 
 ```bash
