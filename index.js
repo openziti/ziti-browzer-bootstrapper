@@ -585,17 +585,38 @@ const startBootstrapper =  async ( logger ) => {
 
         createTLScontext();
 
-        fs.watch(certificate_path, (eventType, filename) => {
-            logger.info({message: 'file-system change detected', filename: filename, eventType: eventType});
-            createTLScontext();
-        });
-        fs.watch(key_path, (eventType, filename) => {
-            logger.info({message: 'file-system change detected', filename: filename, eventType: eventType});
-            createTLScontext();
-        });          
+        fs.watchFile( 
+            certificate_path,
+            {
+              bigint: false,
+              persistent: true,
+              interval: 5000,
+            },
+            (curr, prev) => {
+                logger.info({message: 'file-system change detected', filename: certificate_path, curr: curr});
+                setTimeout(function () {
+                    createTLScontext();
+                }, 1000)
+            }
+        );
+        fs.watchFile(
+            key_path,
+            {
+              bigint: false,
+              persistent: true, 
+              interval: 5000,
+            },
+            (curr, prev) => {
+                logger.info({message: 'file-system change detected', filename: key_path, curr: curr});
+                setTimeout(function () {
+                    createTLScontext();
+                }, 1000)
+            }
+        );
 
         server = https.createServer({
             SNICallback: (servername, cb) => {
+                logger.silly({message: 'SNICallback() entered', servername: servername});
                 cb(null, tlsContext);
             }            
         }, app).listen(browzer_bootstrapper_listen_port, "0.0.0.0", function() {
