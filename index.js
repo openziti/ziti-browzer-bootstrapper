@@ -89,11 +89,42 @@ var logger;     // for Ziti BrowZer Bootstrapper
                     "idp_client_id": {
                         "type": "string"
                     },
+                    "idp_type": {
+                        "type": "string",
+                        "enum": [
+                            "OIDC",
+                            "AUTH0",
+                            "AZURE_AD",
+                        ]
+                    },
+                    "idp_authorization_endpoint": {
+                        "type": "string"
+                    },
+                    "idp_token_endpoint": {
+                        "type": "string"
+                    },
+                    "idp_userinfo_endpoint": {
+                        "type": "string"
+                    },
+                    "idp_issuer": {
+                        "type": "string"
+                    },
+                    "idp_jwks_uri": {
+                        "type": "string"
+                    },
+                    "idp_scopes": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "string"
+                            }
+                        ]
+                    },
                 },
                 "required": [
                     "vhost", "service", "idp_issuer_base_url", "idp_client_id"
                 ],
-            }        
+            }
         },
     },
     "required": ["targetArray"]
@@ -473,10 +504,17 @@ const startBootstrapper =  async ( logger ) => {
             }
         
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
-            req.ziti_idp_client_id   = target.idp_client_id;
+            req.ziti_idp_client_id = target.idp_client_id;
+            req.ziti_idp_type = target.idp_type;
+            req.ziti_idp_authorization_endpoint = target.idp_authorization_endpoint;
+            req.ziti_idp_token_endpoint = target.idp_token_endpoint;
+            req.ziti_idp_userinfo_endpoint = target.idp_userinfo_endpoint;
+            req.ziti_idp_issuer = target.idp_issuer;
+            req.ziti_idp_jwks_uri = target.idp_jwks_uri;
+            req.ziti_idp_scopes = target.idp_scopes;
 
             next();
-        });  
+        });
 
         target_app.use(require('./lib/inject')(options, [], selects));
 
