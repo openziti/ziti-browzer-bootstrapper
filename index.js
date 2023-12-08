@@ -266,7 +266,7 @@ const startBootstrapper =  async ( logger ) => {
         // Inject the Ziti browZer Runtime at the front of <head> element so we are prepared to intercept as soon as possible over on the browser
         let zbrSrc;
         if (browzer_load_balancer) {
-            zbrSrc = `https://${browzer_load_balancer}:${browzer_load_balancer_port}/${common.getZBRname()}`;
+            zbrSrc = `https://${req.ziti_vhost}:${browzer_load_balancer_port}/${common.getZBRname()}`;
         } else {
             zbrSrc = `${req.ziti_browzer_bootstrapper_scheme}://${req.ziti_vhost}:${browzer_bootstrapper_listen_port}/${common.getZBRname()}`;
         }
