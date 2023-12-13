@@ -83,10 +83,21 @@ var logger;     // for Ziti BrowZer Bootstrapper
                             "https"
                         ]
                     },
+                    "idp_type": {
+                        "type": "string",
+                        "enum": [
+                            "auth0", 
+                            "azure_ad",
+                            "keycloak",
+                        ]
+                    },
                     "idp_issuer_base_url": {
                         "type": "string"
                     },
                     "idp_client_id": {
+                        "type": "string"
+                    },
+                    "idp_realm": {
                         "type": "string"
                     },
                 },
@@ -270,7 +281,15 @@ const startBootstrapper =  async ( logger ) => {
         } else {
             zbrSrc = `${req.ziti_browzer_bootstrapper_scheme}://${req.ziti_vhost}:${browzer_bootstrapper_listen_port}/${common.getZBRname()}`;
         }
+        let thirdPartyHTML = '';
+        if (req.ziti_idp_type === 'keycloak') {
+            thirdPartyHTML = `
+<!-- load Keycloak Adapter -->
+<script src="https://cdn.jsdelivr.net/npm/keycloak-js@23.0.1/dist/keycloak.min.js"></script>        
+`;            
+        }
         let ziti_inject_html = `
+${thirdPartyHTML}
 <!-- load Ziti browZer Runtime -->
 <script id="from-ziti-browzer-bootstrapper" type="text/javascript" src="${zbrSrc}"></script>
 `;
@@ -474,6 +493,8 @@ const startBootstrapper =  async ( logger ) => {
         
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
+            req.ziti_idp_type        = target.idp_type;
+            req.ziti_idp_realm       = target.idp_realm;
 
             next();
         });  

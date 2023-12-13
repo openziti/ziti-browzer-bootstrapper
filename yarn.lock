@@ -325,10 +325,10 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@0.51.1":
-  version "0.51.1"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.51.1.tgz#392e27ecd670baf7672ad752b8dd87e2f0c00820"
-  integrity sha512-qCwGykwPVxp/vm1kxfq6956kLV88V7vJSjuXSwP/P5JMIKx2AMz8RZT80gd2yVRaHf80ezf/LebXGuWw6K+9Cg==
+"@openziti/ziti-browzer-runtime@0.52.2":
+  version "0.52.2"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.52.2.tgz#07bc41b2a0b6cabb7eefabdfae01745c421f5cec"
+  integrity sha512-lPRJpbW+Rdkx8Lj4MXVRI+yiwajd8Kpky+skYd1BtycegxEdr+lDntsLUafjJ3UbaeYyBfKl2hZFYNL3BVyYBw==
   dependencies:
     "@auth0/auth0-spa-js" "^2.0.4"
     "@azure/msal-browser" "^2.38.0"
@@ -345,10 +345,10 @@
     uuid "^8.3.2"
     workbox-window "^6.5.3"
 
-"@openziti/ziti-browzer-sw-workbox-strategies@^0.43.1":
-  version "0.43.1"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.43.1.tgz#3601d06dfde30e1df3300fe90d82649b4fbdf64d"
-  integrity sha512-WeAcjiCckahuLJYL3SXwmDDmKOuXIf25p/GZhM//tIZRIGaOtz523mr1QoNxki2lhg0Vxg3iJsnDLMOY9nGQkQ==
+"@openziti/ziti-browzer-sw-workbox-strategies@^0.44.2":
+  version "0.44.2"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.44.2.tgz#4d5b13c70cdb21e4a722ae64f806ac62ca4f1198"
+  integrity sha512-s9dNkqrAf8Sk+mMAoSXLtaJe2Du49ZXp6fohdpg9RBN5LRi1bUOLS9UDRabUMpQseCg7uT5jLTqvySLvE7fbxA==
   dependencies:
     "@openziti/ziti-browzer-core" "^0.34.1"
     async-mutex "^0.3.2"
@@ -360,12 +360,12 @@
     workbox-expiration "^6.5.3"
     workbox-strategies "^6.5.3"
 
-"@openziti/ziti-browzer-sw@^0.41.1":
-  version "0.41.1"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.41.1.tgz#6585a0534244e6933701af4781a7a7c1139d2377"
-  integrity sha512-cm7r+LKkXblMzh9VQd8bN06V1MKaDQTZnSYXHm/oL37TUllr+OGzVNkAAWmonsPJuk+zAQ4uSZA4GtEI+sY/FQ==
+"@openziti/ziti-browzer-sw@^0.42.2":
+  version "0.42.2"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.42.2.tgz#23c31746d195c14b031b2cdf5dc9ff1f82572156"
+  integrity sha512-LdM5Y7N5Psqma7GsYD5DlIlykIJOHaePPtJxtFpyPb6XTdDZvzE7WU/mf7nlxfbecpCYM6jMPP7l6XnLLaKBDg==
   dependencies:
-    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.43.1"
+    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.44.2"
     "@types/lodash-es" "^4.17.6"
     workbox-core "^6.5.3"
     workbox-expiration "^6.5.0"
