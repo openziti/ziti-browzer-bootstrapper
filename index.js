@@ -31,7 +31,6 @@ const https     = require("https");
 const fs        = require('fs');
 const tls       = require('tls');
 const express   = require("express");
-const crypto    = require('crypto');
 const httpProxy = require('./lib/http-proxy');
 const common    = require('./lib/http-proxy/common');
 const pjson     = require('./package.json');
@@ -47,7 +46,8 @@ const { satisfies } = require('compare-versions');
 const _httpErrorPages = require('http-error-pages');
 const URLON     = require('urlon');
 const favicon   = require('serve-favicon');
-
+const { X509Certificate } = require('crypto');
+const cron      = require('node-cron');
 
 
 var logger;     // for Ziti BrowZer Bootstrapper
@@ -634,6 +634,19 @@ ${thirdPartyHTML}
                 }, 1000)
             }
         );
+
+        cron.schedule('* * * * *', () => {      // run every midnight
+            const { validTo } = new X509Certificate(fs.readFileSync( certificate_path));
+            var validToDate = new Date(validTo);
+            var validToTime = validToDate.getTime() / 1000;
+            var nowDate = new Date();
+            var nowTime = nowDate.getTime() / 1000;
+            var remainingTime = validToTime - nowTime;
+            var remainingDays = Math.round( remainingTime / (60 * 60 * 24) );
+            if (remainingDays <= 7) {           // once we're within a week of expiration, start logging warnings
+                logger.warn({message: 'certificate expiration warning', certificate: certificate_path, remainingDays: remainingDays});
+            }
+        });          
 
         server = https.createServer({
             SNICallback: (servername, cb) => {
