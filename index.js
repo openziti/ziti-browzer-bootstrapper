@@ -288,6 +288,9 @@ const startBootstrapper =  async ( logger ) => {
 <script src="https://cdn.jsdelivr.net/npm/keycloak-js@23.0.1/dist/keycloak.min.js"></script>        
 `;            
         }
+        thirdPartyHTML += `
+<script src="https://cdn.jsdelivr.net/npm/eruda@3.0.1/eruda.min.js"></script>
+`;            
         let ziti_inject_html = `
 ${thirdPartyHTML}
 <!-- load Ziti browZer Runtime -->
