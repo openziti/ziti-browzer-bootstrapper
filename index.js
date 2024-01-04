@@ -165,6 +165,9 @@ if (!ziti_controller_host) { throw new Error('ZITI_CONTROLLER_HOST value not spe
 if (typeof ziti_controller_host !== 'string') { throw new Error('ZITI_CONTROLLER_HOST value is not a string'); }
 if (ziti_controller_host === browzer_bootstrapper_host) { throw new Error('ZITI_CONTROLLER_HOST value and ZITI_BROWZER_BOOTSTRAPPER_HOST value cannot be the same'); }
 var ziti_controller_port = common.getConfigValue('ZITI_CONTROLLER_PORT')
+if (!ziti_controller_port) {
+    ziti_controller_port = 443;
+}
 
 var zbr_src = `${browzer_bootstrapper_host}/ziti-browzer-runtime.js`;
 
