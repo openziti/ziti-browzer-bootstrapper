@@ -291,9 +291,13 @@ const startBootstrapper =  async ( logger ) => {
 <script src="https://cdn.jsdelivr.net/npm/keycloak-js@23.0.1/dist/keycloak.min.js"></script>        
 `;            
         }
-        thirdPartyHTML += `
+        if (req.ziti_load_eruda) {
+            console.log(`loading ERUDA`);
+
+            thirdPartyHTML += `
 <script src="https://cdn.jsdelivr.net/npm/eruda@3.0.1/eruda.min.js"></script>
 `;            
+        }
         let ziti_inject_html = `
 ${thirdPartyHTML}
 <!-- load Ziti browZer Runtime -->
@@ -501,6 +505,8 @@ ${thirdPartyHTML}
             req.ziti_idp_client_id   = target.idp_client_id;
             req.ziti_idp_type        = target.idp_type;
             req.ziti_idp_realm       = target.idp_realm;
+
+            req.ziti_load_eruda      = req.query.eruda ? true : false;
 
             next();
         });  
