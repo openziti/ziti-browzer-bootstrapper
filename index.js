@@ -133,6 +133,8 @@ if (!browzer_load_balancer_port) {
     browzer_load_balancer_port = 443;
 }
 
+var skip_controller_cert_check = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_SKIP_CONTROLLER_CERT_CHECK')
+
 /**
  * 
  */
@@ -377,40 +379,44 @@ ${thirdPartyHTML}
     selects.push(formselect);
     /** -------------------------------------------------------------------------------------------------- */
 
-    logger.info({message: 'contacting specified controller', host: ziti_controller_host, port: ziti_controller_port});
+    if (!skip_controller_cert_check) {
 
-    // process.env['NODE_EXTRA_CA_CERTS'] = 'node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem';
+        logger.info({message: 'contacting specified controller', host: ziti_controller_host, port: ziti_controller_port});
 
-    const request = https.request({
-        hostname: ziti_controller_host,
-        port: ziti_controller_port,
-        path: '/version',
-        method: 'GET',
-        timeout: 3000,
-      }, function(res) {
-        if (res.statusCode !== 200) {
-            logger.error({message: 'cannot contact specified controller', statusCode: res.statusCode, controllerHost: ziti_controller_host, controllerPort: ziti_controller_port});
-            process.exit(-1);
-        }
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            var jsonTargetArray = JSON.parse(chunk);
-            let controllerVersion = jsonTargetArray.data.version.replace('v','');
-            logger.info({message: 'attached controller version', controllerVersion: controllerVersion});
-            let compatibleControllerVersion = `${pjson.compatibleControllerVersion}`;
-            if (controllerVersion !== '0.0.0') {
-                if (!satisfies(controllerVersion, compatibleControllerVersion)) {
-                    logger.error({message: 'incompatible controller version', controllerVersion: controllerVersion, compatibleControllerVersion: compatibleControllerVersion});
-                    process.exit(-1);
-                }
+        // process.env['NODE_EXTRA_CA_CERTS'] = 'node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem';
+
+        const request = https.request({
+            hostname: ziti_controller_host,
+            port: ziti_controller_port,
+            path: '/version',
+            method: 'GET',
+            timeout: 3000,
+        }, function(res) {
+            if (res.statusCode !== 200) {
+                logger.error({message: 'cannot contact specified controller', statusCode: res.statusCode, controllerHost: ziti_controller_host, controllerPort: ziti_controller_port});
+                process.exit(-1);
             }
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+                var jsonTargetArray = JSON.parse(chunk);
+                let controllerVersion = jsonTargetArray.data.version.replace('v','');
+                logger.info({message: 'attached controller version', controllerVersion: controllerVersion});
+                let compatibleControllerVersion = `${pjson.compatibleControllerVersion}`;
+                if (controllerVersion !== '0.0.0') {
+                    if (!satisfies(controllerVersion, compatibleControllerVersion)) {
+                        logger.error({message: 'incompatible controller version', controllerVersion: controllerVersion, compatibleControllerVersion: compatibleControllerVersion});
+                        process.exit(-1);
+                    }
+                }
+            });
+        }).end();
+        request.on('timeout', () => {
+            request.destroy();
+            logger.error({message: 'timeout attempting to contact specified controller', controllerHost: ziti_controller_host, controllerPort: ziti_controller_port});
+            process.exit(-1);
         });
-    }).end();
-    request.on('timeout', () => {
-        request.destroy();
-        logger.error({message: 'timeout attempting to contact specified controller', controllerHost: ziti_controller_host, controllerPort: ziti_controller_port});
-        process.exit(-1);
-    });
+
+    }
     
       
     /** --------------------------------------------------------------------------------------------------

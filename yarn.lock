@@ -276,10 +276,10 @@
     "@types/emscripten" "^1.39.6"
     "@wasmer/wasi" "^1.0.2"
 
-"@openziti/ziti-browzer-core@^0.35.3":
-  version "0.35.3"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-core/-/ziti-browzer-core-0.35.3.tgz#a9cce741c5d162a8bd7349f0005c1bc6ebfbdaf9"
-  integrity sha512-IqcTAQwXq3mGvMvxwBDIwBbcI95N2LISULMBItzS7w9RW+1iqwyITDNtf/b/3VfBML7UQdfi6wFPVyMTl1SzJQ==
+"@openziti/ziti-browzer-core@^0.36.0":
+  version "0.36.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-core/-/ziti-browzer-core-0.36.0.tgz#5bfa4c5a3bc9927dd0949756db1adaf81faa669d"
+  integrity sha512-tzzeXDIkMw1wVBtmkxqGF9QXuUUH0QE9QeDlIvMdCUfL3V/YeXv+PFLWPM4b72LdCCiFZxTQNVYEw0E/pohwbA==
   dependencies:
     "@openziti/libcrypto-js" "^0.19.0"
     "@openziti/ziti-browzer-edge-client" "^0.6.2"
@@ -290,6 +290,7 @@
     buffer "^6.0.3"
     bufferutil "^4.0.6"
     chnl "^1.2.0"
+    elapsed-time "^0.0.1"
     es6-object-assign "^1.1.0"
     events "^3.3.0"
     fast-memoize "^2.5.2"
@@ -326,15 +327,15 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@0.55.3":
-  version "0.55.3"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.55.3.tgz#bdca21092891f57060ff8dfbe31df6488c84ced9"
-  integrity sha512-aelmzFjMtOBOfBrSfZvgAG+uLZ//drsr9iPON2NBB1v2knlzHMFzITC0PI6MO26AK/ArcNS+QaxVHV4uHf/r2A==
+"@openziti/ziti-browzer-runtime@0.56.2":
+  version "0.56.2"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.56.2.tgz#bc4fa30fa2e6549ca910247599d0106b961f0a25"
+  integrity sha512-tkyZltyeCWhL3y6gczXIpxl2l9yu2p8ZEac6JHcHNpU9AytsXFnlQMqoZar/76RXas5DV0ObHwHfY8U7rauLEA==
   dependencies:
     "@auth0/auth0-spa-js" "^2.0.4"
     "@azure/msal-browser" "^2.38.0"
     "@babel/runtime" "^7.17.9"
-    "@openziti/ziti-browzer-core" "^0.35.3"
+    "@openziti/ziti-browzer-core" "^0.36.0"
     bowser "^2.11.0"
     cookie-interceptor "^1.0.0"
     core-js "^3.22.8"
@@ -346,12 +347,12 @@
     uuid "^8.3.2"
     workbox-window "^6.5.3"
 
-"@openziti/ziti-browzer-sw-workbox-strategies@^0.47.2":
-  version "0.47.2"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.47.2.tgz#bd91809968c17fd535e54fe5c12a7a607c4f519d"
-  integrity sha512-Wi0K+E35k5HkjgJ4kFcaIA/iNtO5PsP0Vv8m0BYUng1peHO3IqFQz2+OcxcrmMda+qF814iaPmy4tBUD4Lqxtw==
+"@openziti/ziti-browzer-sw-workbox-strategies@^0.48.0":
+  version "0.48.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.48.0.tgz#465f3be7564484bb6d3c7366ff3c323d2fa91bce"
+  integrity sha512-FkNtZvP7WtxkJYt7fotgK7ngL+1ELGqrkDH+s0T+KILz86Oe6GXiXphYNkE3bC60FaMgrx4WL9+ssEfM5ZSSqg==
   dependencies:
-    "@openziti/ziti-browzer-core" "^0.35.3"
+    "@openziti/ziti-browzer-core" "^0.36.0"
     async-mutex "^0.3.2"
     cheerio "^1.0.0-rc.12"
     jwt-decode "^3.1.2"
@@ -361,12 +362,12 @@
     workbox-expiration "^6.5.3"
     workbox-strategies "^6.5.3"
 
-"@openziti/ziti-browzer-sw@^0.45.3":
-  version "0.45.3"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.45.3.tgz#8c00a52e26a737c01df12da6168c24808621c3f7"
-  integrity sha512-BwLC5xvjiafEIcGohZMuhWhR70yDVxn2Olh6kBs8vXfNPY5afOXcVarwtaXp+2IYX68hUp+RobpB/FjxknNQeQ==
+"@openziti/ziti-browzer-sw@^0.46.1":
+  version "0.46.1"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.46.1.tgz#69604570815b46d09bfbf63627260bbc74e90096"
+  integrity sha512-zznkz4ADfuV62lqqPdJdIkkPp6sRBXfhZ00U4/4P/lVo870JtqYCP+LG4muwYYvJBjg5iPpp2UHrfsJ1kSDZBg==
   dependencies:
-    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.47.2"
+    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.48.0"
     "@types/lodash-es" "^4.17.6"
     workbox-core "^6.5.3"
     workbox-expiration "^6.5.0"
@@ -641,6 +642,13 @@ axios@^0.27.2:
     follow-redirects "^1.14.9"
     form-data "^4.0.0"
 
+babel-runtime@^5.8.20:
+  version "5.8.38"
+  resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-5.8.38.tgz#1c0b02eb63312f5f087ff20450827b425c9d4c19"
+  integrity sha512-KpgoA8VE/pMmNCrnEeeXqFG24TIH11Z3ZaimIhJWsin8EbfZy3WzFKUTIan10ZIDgRVvi9EkLbruJElJC9dRlg==
+  dependencies:
+    core-js "^1.0.0"
+
 balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
@@ -724,6 +732,11 @@ braces@~3.0.2:
   integrity sha512-b8um+L1RzM3WDSzvhm6gIz1yfTbBt6YTlcEKAvsmqCZZFw46z626lVj9j1yEPW33H5H+lBQpZMP1k8l+78Ha0A==
   dependencies:
     fill-range "^7.0.1"
+
+browser-process-hrtime@^0.1.2:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/browser-process-hrtime/-/browser-process-hrtime-0.1.3.tgz#616f00faef1df7ec1b5bf9cfe2bdc3170f26c7b4"
+  integrity sha512-bRFnI4NnjO6cnyLmOV/7PVoDEMJChlcfN0z4s1YMBY989/SvlfMI1lgCnkFUs53e9gQF+w7qu7XdllSTiSl8Aw==
 
 browser-stdout@1.3.1:
   version "1.3.1"
@@ -1114,6 +1127,11 @@ cookiejar@^2.1.3:
   resolved "https://registry.yarnpkg.com/cookiejar/-/cookiejar-2.1.3.tgz#fc7a6216e408e74414b90230050842dacda75acc"
   integrity sha512-JxbCBUdrfr6AQjOXrxoTvAMJO4HBTUIlBzslcJPAz+/KT8yk53fXun51u+RenNYvad/+Vc2DIz5o9UxlCDymFQ==
 
+core-js@^1.0.0:
+  version "1.2.7"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-1.2.7.tgz#652294c14651db28fa93bd2d5ff2983a4f08c636"
+  integrity sha512-ZiPp9pZlgxpWRu0M+YWbm6+aQ84XEfH1JRXvfOc/fILWI0VKhLC2LX13X1NYq4fULzLMq7Hfh43CSo2/aIaUPA==
+
 core-js@^3.22.8:
   version "3.22.8"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.22.8.tgz#23f860b1fe60797cc4f704d76c93fea8a2f60631"
@@ -1315,6 +1333,14 @@ ejs@^3.1.3:
   integrity sha512-rC+QVNMJWv+MtPgkt0y+0rVEIdbtxVADApW9JXrUVlzHetgcyczP/E7DJmWJ4fJCZF2cPcBk0laWO9ZHMG3DmQ==
   dependencies:
     jake "^10.8.5"
+
+elapsed-time@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/elapsed-time/-/elapsed-time-0.0.1.tgz#f91e333a25ce1201ed81c233f8a9ee40d427cd86"
+  integrity sha512-RIQSJpq2El7Vnh3X35//HunSwUF2ByscTe7/vPdVsUeKAS20lkf8rr6zqIE5MJ3pkDCxgYLfo0dYond5zqm4Pg==
+  dependencies:
+    babel-runtime "^5.8.20"
+    browser-process-hrtime "^0.1.2"
 
 electron-to-chromium@^1.4.84:
   version "1.4.106"
