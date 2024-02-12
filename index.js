@@ -37,7 +37,6 @@ const pjson     = require('./package.json');
 const winston   = require('winston');
 const { v4: uuidv4 } = require('uuid');
 var Validator   = require('jsonschema').Validator;
-var jsonschemaValidator = new Validator();
 var cookieParser = require('cookie-parser')
 const helmet    = require("helmet");
 const vhost     = require('vhost');
@@ -48,6 +47,7 @@ const URLON     = require('urlon');
 const favicon   = require('serve-favicon');
 const { X509Certificate } = require('crypto');
 const cron      = require('node-cron');
+const { isEqual } = require('lodash');
 
 
 var logger;     // for Ziti BrowZer Bootstrapper
@@ -700,6 +700,15 @@ const main = async () => {
 
     logger.info({message: 'ziti-browzer-bootstrapper initializing', version: pjson.version});
 
+    Validator.prototype.customFormats.obsoleteIdPConfig = function(input) {
+        if (isEqual(input, 'idp_type') || isEqual(input, 'idp_realm')) {
+            logger.warn({message: 'obsolete config field encountered - ignored', field: input});
+        }
+        return false;
+    };
+      
+    var jsonschemaValidator = new Validator();
+
     let validationResult = jsonschemaValidator.validate(jsonTargetArray, targetsSchema, {
         allowUnknownAttributes: false,
         nestedErrors: true
@@ -719,7 +728,10 @@ const main = async () => {
             logger.error({message: 'targets specification error', error: `${err}`});
         });          
         process.exit(-1);
-    }   
+    }
+
+    jsonschemaValidator.validate('idp_type', {type: 'string', format: 'obsoleteIdPConfig'});
+
 
     startBootstrapper( logger );
 
