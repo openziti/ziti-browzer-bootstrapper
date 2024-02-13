@@ -37,7 +37,6 @@ const pjson     = require('./package.json');
 const winston   = require('winston');
 const { v4: uuidv4 } = require('uuid');
 var Validator   = require('jsonschema').Validator;
-var jsonschemaValidator = new Validator();
 var cookieParser = require('cookie-parser')
 const helmet    = require("helmet");
 const vhost     = require('vhost');
@@ -48,6 +47,7 @@ const URLON     = require('urlon');
 const favicon   = require('serve-favicon');
 const { X509Certificate } = require('crypto');
 const cron      = require('node-cron');
+const { isEqual } = require('lodash');
 
 
 var logger;     // for Ziti BrowZer Bootstrapper
@@ -83,21 +83,10 @@ var logger;     // for Ziti BrowZer Bootstrapper
                             "https"
                         ]
                     },
-                    "idp_type": {
-                        "type": "string",
-                        "enum": [
-                            "auth0", 
-                            "azure_ad",
-                            "keycloak",
-                        ]
-                    },
                     "idp_issuer_base_url": {
                         "type": "string"
                     },
                     "idp_client_id": {
-                        "type": "string"
-                    },
-                    "idp_realm": {
                         "type": "string"
                     },
                 },
@@ -287,12 +276,6 @@ const startBootstrapper =  async ( logger ) => {
             zbrSrc = `${req.ziti_browzer_bootstrapper_scheme}://${req.ziti_vhost}:${browzer_bootstrapper_listen_port}/${common.getZBRname()}`;
         }
         let thirdPartyHTML = '';
-        if (req.ziti_idp_type === 'keycloak') {
-            thirdPartyHTML = `
-<!-- load Keycloak Adapter -->
-<script src="https://cdn.jsdelivr.net/npm/keycloak-js@23.0.1/dist/keycloak.min.js"></script>        
-`;            
-        }
         if (req.ziti_load_eruda) {
             console.log(`loading ERUDA`);
 
@@ -509,8 +492,6 @@ ${thirdPartyHTML}
         
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
-            req.ziti_idp_type        = target.idp_type;
-            req.ziti_idp_realm       = target.idp_realm;
 
             req.ziti_load_eruda      = req.query.eruda ? true : false;
 
@@ -653,7 +634,7 @@ ${thirdPartyHTML}
             }
         );
 
-        cron.schedule('* * * * *', () => {      // run every midnight
+        cron.schedule('1,31 * * * *', () => {      // run every half-hour
             const { validTo } = new X509Certificate(fs.readFileSync( certificate_path));
             var validToDate = new Date(validTo);
             var validToTime = validToDate.getTime() / 1000;
@@ -719,6 +700,15 @@ const main = async () => {
 
     logger.info({message: 'ziti-browzer-bootstrapper initializing', version: pjson.version});
 
+    Validator.prototype.customFormats.obsoleteIdPConfig = function(input) {
+        if (isEqual(input, 'idp_type') || isEqual(input, 'idp_realm')) {
+            logger.warn({message: 'obsolete config field encountered - ignored', field: input});
+        }
+        return false;
+    };
+      
+    var jsonschemaValidator = new Validator();
+
     let validationResult = jsonschemaValidator.validate(jsonTargetArray, targetsSchema, {
         allowUnknownAttributes: false,
         nestedErrors: true
@@ -738,7 +728,10 @@ const main = async () => {
             logger.error({message: 'targets specification error', error: `${err}`});
         });          
         process.exit(-1);
-    }   
+    }
+
+    jsonschemaValidator.validate('idp_type', {type: 'string', format: 'obsoleteIdPConfig'});
+
 
     startBootstrapper( logger );
 
