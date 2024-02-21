@@ -277,8 +277,6 @@ const startBootstrapper =  async ( logger ) => {
         }
         let thirdPartyHTML = '';
         if (req.ziti_load_eruda) {
-            console.log(`loading ERUDA`);
-
             thirdPartyHTML += `
 <script src="https://cdn.jsdelivr.net/npm/eruda@3.0.1/eruda.min.js"></script>
 `;            
@@ -525,11 +523,19 @@ ${thirdPartyHTML}
 
      app.use(cookieParser())
 
+     var returnElapsedTime = function(epoch) { // epoch is in seconds
+        var days = epoch / 86400,
+            hours = (days % 1) * 24,
+            minutes = (hours % 1) * 60,
+            seconds = (minutes % 1) * 60;
+        return Math.floor(days) + " days, " + Math.floor(hours) + " hours, " + Math.floor(minutes) + " mins, " + Math.round(seconds) + " secs";
+      }
+      
      app.use('/healthcheck', require('express-healthcheck')({
         healthy: function () {
             return {
                 version: pjson.version,
-                uptime: process.uptime(),
+                uptime: returnElapsedTime(process.uptime()),
                 date: new Date(),
             };
         }
