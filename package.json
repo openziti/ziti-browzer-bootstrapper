@@ -1,6 +1,6 @@
 {
   "name": "ziti-browzer-bootstrapper",
-  "version": "0.52.3",
+  "version": "0.52.4",
   "compatibleControllerVersion": ">=0.27.9",
   "description": "Ziti BrowZer Bootstrapper -- providing Ziti network access into Dark web server",
   "main": "index.js",
@@ -19,8 +19,8 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@openziti/ziti-browzer-runtime": "0.59.1",
-    "@openziti/ziti-browzer-sw": "^0.48.3",
+    "@openziti/ziti-browzer-runtime": "0.59.2",
+    "@openziti/ziti-browzer-sw": "^0.48.4",
     "acme-http-01-standalone": "^3.0.5",
     "compare-versions": "^6.0.0-rc.1",
     "connect": "^3.7.0",
