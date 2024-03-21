@@ -110,6 +110,9 @@ var logger;     // for Ziti BrowZer Bootstrapper
                     "idp_client_id": {
                         "type": "string"
                     },
+                    "idp_nested_sso_inner_callback_path": {
+                        "type": "string"
+                    }
                 },
                 "required": [
                     "vhost", "service", "idp_issuer_base_url", "idp_client_id"
@@ -553,6 +556,7 @@ ${thirdPartyHTML}
         
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
+            req.ziti_idp_nested_sso_inner_callback_path = target.idp_nested_sso_inner_callback_path;
 
             req.ziti_load_eruda      = req.query.eruda ? true : false;
 
