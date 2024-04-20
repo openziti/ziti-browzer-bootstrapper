@@ -58,7 +58,6 @@ const verifyCache = (req, res, next) => {
 
         if (cache.has(id)) {
 
-            console.log(`verifyCache() HIT id [${id}]`)
             var cacheData = cache.get(id);
             res.writeHead(cacheData.status, cacheData.headers);
             res.write(cacheData.data);
@@ -66,8 +65,6 @@ const verifyCache = (req, res, next) => {
 
             return;
         }
-
-        // console.log(`verifyCache() MISS id [${id}]`)
 
         return next();
 
@@ -596,8 +593,6 @@ ${thirdPartyHTML}
         app.use(vhost(target.vhost, target_app));
     });
 
-
-    // app.use(function (req, res) {
     app.use(verifyCache, function (req, res) {
         proxy.web(req, res);
     });
