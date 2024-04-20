@@ -1,6 +1,6 @@
 {
   "name": "ziti-browzer-bootstrapper",
-  "version": "0.57.1",
+  "version": "0.58.0",
   "compatibleControllerVersion": ">=0.27.9",
   "description": "Ziti BrowZer Bootstrapper -- providing Ziti network access into Dark web server",
   "main": "index.js",
@@ -47,6 +47,7 @@
     "lodash.find": "^4.6.0",
     "lodash.foreach": "^4.5.0",
     "nconf": "^0.12.0",
+    "node-cache": "^5.1.2",
     "node-cron": "^3.0.3",
     "node_extra_ca_certs_mozilla_bundle": "^1.0.5",
     "pump": "^3.0.0",
