@@ -593,6 +593,11 @@ ${thirdPartyHTML}
         app.use(vhost(target.vhost, target_app));
     });
 
+    app.use(function (req, res, next) {
+        res.setHeader('X-Powered-By', `BrowZer v${pjson.version}`)
+        next()
+    })
+
     app.use(verifyCache, function (req, res) {
         proxy.web(req, res);
     });
