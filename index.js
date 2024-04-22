@@ -48,7 +48,31 @@ const favicon   = require('serve-favicon');
 const { X509Certificate } = require('crypto');
 const cron      = require('node-cron');
 const { isEqual } = require('lodash');
+const NodeCache = require("node-cache");
 
+const cache = new NodeCache({ stdTTL: 60 * 60 * 3 });   // 3-hour TTL
+
+const verifyCache = (req, res, next) => {
+    try {
+        const id = req.url;
+
+        if (cache.has(id)) {
+
+            var cacheData = cache.get(id);
+            res.writeHead(cacheData.status, cacheData.headers);
+            res.write(cacheData.data);
+            res.end();
+
+            return;
+        }
+
+        return next();
+
+    } catch (err) {
+        throw new Error(err);
+    }
+};
+  
 
 var logger;     // for Ziti BrowZer Bootstrapper
 
@@ -409,6 +433,8 @@ ${thirdPartyHTML}
     var options = {
         logger: logger,
 
+        cache: cache,
+
         // Set up to rewrite 'Location' headers on redirects
         hostRewrite: browzer_bootstrapper_host,
         autoRewrite: true,
@@ -567,8 +593,12 @@ ${thirdPartyHTML}
         app.use(vhost(target.vhost, target_app));
     });
 
+    app.use(function (req, res, next) {
+        res.setHeader('X-Powered-By', `BrowZer v${pjson.version}`)
+        next()
+    })
 
-    app.use(function (req, res) {
+    app.use(verifyCache, function (req, res) {
         proxy.web(req, res);
     });
 
