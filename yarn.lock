@@ -327,10 +327,10 @@
   dependencies:
     superagent "^7.1.3"
 
-"@openziti/ziti-browzer-runtime@0.66.1":
-  version "0.66.1"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.66.1.tgz#48d9978ef075dd14930899ed5893e1b3a6de25fb"
-  integrity sha512-STS3XO0USL0ImqrvVbETEiPEdiJgpnJjeLxXgJPlgpyLu3gJvLRRmcL6oBt9lZAqBpdIblYWsc4wWWu0/KcK7A==
+"@openziti/ziti-browzer-runtime@0.67.0":
+  version "0.67.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-runtime/-/ziti-browzer-runtime-0.67.0.tgz#7b232eb702a04d8a2c91ed329760f928eac2849d"
+  integrity sha512-JGvbQOIFlmUcXd/4uV/7gk9tYoQIoE4CceHfpIYGMsScAfAEwg3y6DKlXe17yMpkYL8VKzUafo+WWuy+XSBNTA==
   dependencies:
     "@auth0/auth0-spa-js" "^2.0.4"
     "@azure/msal-browser" "^2.38.0"
@@ -345,15 +345,16 @@
     localforage "^1.10.0"
     lodash-es "^4.17.21"
     oauth4webapi "^2.10.3"
+    rollup-plugin-css-only "^4.5.2"
     uplot "^1.6.24"
     uuid "^8.3.2"
     wasm-feature-detect "^1.6.1"
     workbox-window "^6.5.3"
 
-"@openziti/ziti-browzer-sw-workbox-strategies@^0.55.0":
-  version "0.55.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.55.0.tgz#4d45e9e190222478dd482eaa214509e46d103876"
-  integrity sha512-5DIk+AncX3GjyfzdxJMjkb2gUfEJi8FYJMssL4lpe4x4Z3CqWYiv7GgyuOl8EY9WKHuGzco8mhW3xzhIJTL+iw==
+"@openziti/ziti-browzer-sw-workbox-strategies@^0.56.0":
+  version "0.56.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw-workbox-strategies/-/ziti-browzer-sw-workbox-strategies-0.56.0.tgz#e58ea19311bab3f80f3329ba3135b9d44f6eb581"
+  integrity sha512-HaHmgYqmKdkXXjZ2+XiJ5AR5FcPiNiq0twwO6ZoVAibshhPoYMBD/QCOJGjgJiqs33oLoISO8nTWLFCIP9aakw==
   dependencies:
     "@openziti/ziti-browzer-core" "^0.40.1"
     async-mutex "^0.3.2"
@@ -365,12 +366,12 @@
     workbox-expiration "^6.5.3"
     workbox-strategies "^6.5.3"
 
-"@openziti/ziti-browzer-sw@^0.53.0":
-  version "0.53.0"
-  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.53.0.tgz#886bf32e466bb4ad07477530bbde5de8726a3cca"
-  integrity sha512-tyuHfY+FtfdxKM1lTXukX6RCqSzus2ZQD9fdTxXB/sHJJjScw28QfaQI9DlqBZn+Rhe8+B8dWOVvsbZqUqp74A==
+"@openziti/ziti-browzer-sw@^0.54.0":
+  version "0.54.0"
+  resolved "https://registry.yarnpkg.com/@openziti/ziti-browzer-sw/-/ziti-browzer-sw-0.54.0.tgz#339f05ad554e3058e52f7a7d7b4dfc10f84c9620"
+  integrity sha512-F/CEy0VLndK03qJnmDSzq6rSf1mUZhxIgJXDuEOfCTDL4NQW/9CygRJcjl1ntIv5+w3TIRJmHnCxoe/BOt6YdA==
   dependencies:
-    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.55.0"
+    "@openziti/ziti-browzer-sw-workbox-strategies" "^0.56.0"
     "@types/lodash-es" "^4.17.6"
     workbox-core "^6.5.3"
     workbox-expiration "^6.5.0"
@@ -382,6 +383,15 @@
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@panva/asn1.js/-/asn1.js-1.0.0.tgz#dd55ae7b8129e02049f009408b97c61ccf9032f6"
   integrity sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==
+
+"@rollup/pluginutils@5":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@rollup/pluginutils/-/pluginutils-5.1.0.tgz#7e53eddc8c7f483a4ad0b94afb1f7f5fd3c771e0"
+  integrity sha512-XTIWOPPcpvyKI6L1NHo0lFlCyznUEyPmPY1mc3KpPVDYulHSTvyeLNVW00QTLIAFNhR3kYnJTQHeGqU4M3n09g==
+  dependencies:
+    "@types/estree" "^1.0.0"
+    estree-walker "^2.0.2"
+    picomatch "^2.3.1"
 
 "@root/mkdirp@^1.0.0":
   version "1.0.0"
@@ -431,6 +441,11 @@
   version "1.39.6"
   resolved "https://registry.yarnpkg.com/@types/emscripten/-/emscripten-1.39.6.tgz#698b90fe60d44acf93c31064218fbea93fbfd85a"
   integrity sha512-H90aoynNhhkQP6DRweEjJp5vfUVdIj7tdPLsu7pq89vODD/lcugKfZOsfgwpvM6XUewEp2N5dCg1Uf3Qe55Dcg==
+
+"@types/estree@^1.0.0":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.5.tgz#a6ce3e556e00fd9895dd872dd172ad0d4bd687f4"
+  integrity sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==
 
 "@types/http-cache-semantics@*":
   version "4.0.1"
@@ -1488,6 +1503,11 @@ esprima@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.1.tgz#13b04cdb3e6c5d19df91ab6987a8695619b0aa71"
   integrity sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==
+
+estree-walker@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/estree-walker/-/estree-walker-2.0.2.tgz#52f010178c2a4c117a7757cfe942adb7d2da4cac"
+  integrity sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==
 
 etag@~1.8.1:
   version "1.8.1"
@@ -3316,7 +3336,7 @@ picocolors@^1.0.0:
   resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.0.0.tgz#cb5bdc74ff3f51892236eaf79d68bc44564ab81c"
   integrity sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==
 
-picomatch@^2.0.4, picomatch@^2.2.1:
+picomatch@^2.0.4, picomatch@^2.2.1, picomatch@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-2.3.1.tgz#3ba3833733646d9d3e4995946c1365a67fb07a42"
   integrity sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==
@@ -3580,6 +3600,13 @@ ripemd160@^2.0.2:
   dependencies:
     hash-base "^3.0.0"
     inherits "^2.0.1"
+
+rollup-plugin-css-only@^4.5.2:
+  version "4.5.2"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-css-only/-/rollup-plugin-css-only-4.5.2.tgz#f3a74bf889b538f3cc73c40b391cbc6b4bbb0ee4"
+  integrity sha512-7rj9+jB17Pz8LNcPgtMUb16JcgD8lxQMK9HcGfAVhMK3na/WXes3oGIo5QsrQQVqtgAU6q6KnQNXJrYunaUIQQ==
+  dependencies:
+    "@rollup/pluginutils" "5"
 
 safe-buffer@5.1.1:
   version "5.1.1"
