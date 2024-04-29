@@ -395,9 +395,26 @@ ${thirdPartyHTML}
             res.on('data', function (chunk) {
                 responseData += chunk;
             });
-            res.on('end', function () {              
+            res.on('end', function () {       
+                
+                latestBrowZerReleaseVersion = undefined;
+                let foundLatest = false;
+                let i = 0;
+
                 var releaseArray = JSON.parse(responseData);
-                latestBrowZerReleaseVersion = releaseArray[0].metadata.container.tags[0];
+
+                do {
+
+                    if (releaseArray[i].metadata.container.tags.includes('latest')) {
+                        latestBrowZerReleaseVersion = releaseArray[i].metadata.container.tags[0];
+                        foundLatest = true;
+                    } else {
+                        i++;
+                    }
+
+
+                } while (!foundLatest)
+                
                 logger.info({message: 'latest release check of browZer', latestVersion: latestBrowZerReleaseVersion});
             });
         }).end();
