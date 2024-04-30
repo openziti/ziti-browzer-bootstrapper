@@ -14,17 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-                  require('dotenv').config();
-const nconf     = require('nconf');
-module.exports  = nconf;
-
-// Load config
-//  Order of precedence is:
-//      1) cmd line args
-//      2) env vars
-//
-nconf.argv().env();
-
+                  require('dotenv').config();                  
+var env         = require('./lib/env');
 const path      = require('path');
 const http      = require("http");
 const https     = require("https");
@@ -47,8 +38,14 @@ const URLON     = require('urlon');
 const favicon   = require('serve-favicon');
 const { X509Certificate } = require('crypto');
 const cron      = require('node-cron');
-const { isEqual } = require('lodash');
+const { isEqual, isUndefined } = require('lodash');
 const NodeCache = require("node-cache");
+var getAccessToken = require('./lib/oidc/utils').getAccessToken;
+var ZitiContext = require('./lib/edge/context');
+var ZITI_CONSTANTS = require('./lib/edge/constants');
+
+
+var latestBrowZerReleaseVersion;
 
 const cache = new NodeCache({ stdTTL: 60 * 60 * 3 });   // 3-hour TTL
 
@@ -79,8 +76,7 @@ var logger;     // for Ziti BrowZer Bootstrapper
 /**
  * 
  */
- var targets = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_TARGETS', 'ZITI_AGENT_TARGETS')
- if (!targets) { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_TARGETS value not specified'); }
+ var targets = env('ZITI_BROWZER_BOOTSTRAPPER_TARGETS')
  var jsonTargetArray = JSON.parse(targets);
 
  var targetsSchema = {
@@ -130,90 +126,29 @@ var arraySchema = {
 /**
  * 
  */
-var browzer_bootstrapper_scheme = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_SCHEME', 'ZITI_AGENT_SCHEME')
-if (!browzer_bootstrapper_scheme) { 
-    browzer_bootstrapper_scheme = 'http'; 
-}
-if (typeof browzer_bootstrapper_scheme !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_SCHEME value is not a string'); }
-if (browzer_bootstrapper_scheme !== 'http' && browzer_bootstrapper_scheme !== 'https') { throw new Error(`ZITI_BROWZER_BOOTSTRAPPER_SCHEME value [${browzer_bootstrapper_scheme}] is invalid`); }
+var browzer_bootstrapper_scheme =   env('ZITI_BROWZER_BOOTSTRAPPER_SCHEME');
+var browzer_load_balancer =         env('ZITI_BROWZER_LOAD_BALANCER_HOST');
+var browzer_load_balancer_port =    env('ZITI_BROWZER_LOAD_BALANCER_PORT');
+var skip_controller_cert_check =    env('ZITI_BROWZER_BOOTSTRAPPER_SKIP_CONTROLLER_CERT_CHECK');
 
-var browzer_load_balancer = common.getConfigValue('ZITI_BROWZER_LOAD_BALANCER_HOST');
-if (browzer_load_balancer) {
-    if (typeof browzer_load_balancer !== 'string') { throw new Error('ZITI_BROWZER_LOAD_BALANCER_HOST value is not a string'); }
-}
-var browzer_load_balancer_port = common.getConfigValue('ZITI_BROWZER_LOAD_BALANCER_PORT')
-if (!browzer_load_balancer_port) {
-    browzer_load_balancer_port = 443;
-}
-
-var skip_controller_cert_check = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_SKIP_CONTROLLER_CERT_CHECK')
-
-/**
- * 
- */
 var certificate_path;
-if (browzer_bootstrapper_scheme === 'https') {
-    certificate_path = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH', 'ZITI_AGENT_CERTIFICATE_PATH')
-    if (!certificate_path) { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH value not specified'); }
-    if (typeof certificate_path !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH value is not a string'); }
-}
- 
-/**
- * 
- */
 var key_path;
 if (browzer_bootstrapper_scheme === 'https') {
-    key_path = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH', 'ZITI_AGENT_KEY_PATH')
-    if (!key_path) { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH value not specified'); }
-    if (typeof key_path !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH value is not a string'); }
+    certificate_path =              env('ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH')
+    key_path =                      env('ZITI_BROWZER_BOOTSTRAPPER_KEY_PATH')
 }
+ 
+var browzer_bootstrapper_host =     env('ZITI_BROWZER_BOOTSTRAPPER_HOST')
 
-/**
- * 
- */
-var browzer_bootstrapper_host = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_HOST', 'ZITI_AGENT_HOST')
-if (!browzer_bootstrapper_host) { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_HOST value not specified'); }
-if (typeof browzer_bootstrapper_host !== 'string') { throw new Error('ZITI_BROWZER_BOOTSTRAPPER_HOST value is not a string'); }
-
-var ziti_controller_host = common.getConfigValue('ZITI_CONTROLLER_HOST')
-if (!ziti_controller_host) { throw new Error('ZITI_CONTROLLER_HOST value not specified'); }
-if (typeof ziti_controller_host !== 'string') { throw new Error('ZITI_CONTROLLER_HOST value is not a string'); }
+var ziti_controller_host =          env('ZITI_CONTROLLER_HOST')
 if (ziti_controller_host === browzer_bootstrapper_host) { throw new Error('ZITI_CONTROLLER_HOST value and ZITI_BROWZER_BOOTSTRAPPER_HOST value cannot be the same'); }
-var ziti_controller_port = common.getConfigValue('ZITI_CONTROLLER_PORT')
-if (!ziti_controller_port) {
-    ziti_controller_port = 443;
-}
+var ziti_controller_port =          env('ZITI_CONTROLLER_PORT')
 
 var zbr_src = `${browzer_bootstrapper_host}/ziti-browzer-runtime.js`;
 
-var browzer_bootstrapper_listen_port = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT', 'ZITI_AGENT_LISTEN_PORT')
-if (!browzer_bootstrapper_listen_port) {
-    if (browzer_bootstrapper_scheme === 'http') {
-        browzer_bootstrapper_listen_port = 80;
-    }
-    else if (browzer_bootstrapper_scheme === 'https') {
-        browzer_bootstrapper_listen_port = 443;
-    }
-    else {
-        throw new Error('ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT cannot be set');
-    }
-}
+var browzer_bootstrapper_listen_port = env('ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT')
 
-
-/**
- *  These are the supported values for loglevel
- * 
-    error 
-    warn 
-    info 
-    http
-    verbose 
-    debug 
-    silly
- *
- */
-var ziti_browzer_bootstrapper_loglevel = common.getConfigValue('ZITI_BROWZER_BOOTSTRAPPER_LOGLEVEL', 'ZITI_AGENT_LOGLEVEL')
-if (!ziti_browzer_bootstrapper_loglevel) { ziti_browzer_bootstrapper_loglevel = 'info'; }
+var ziti_browzer_bootstrapper_loglevel = env('ZITI_BROWZER_BOOTSTRAPPER_LOGLEVEL')
 ziti_browzer_bootstrapper_loglevel = ziti_browzer_bootstrapper_loglevel.toLowerCase();
 
 
@@ -257,6 +192,8 @@ const createLogger = () => {
         ],
         exitOnError: false,     // Don't die if we encounter an uncaught exception or promise rejection
     });
+
+    logger.trace = logger.silly;
     
     return( logger );
 }
@@ -386,11 +323,14 @@ ${thirdPartyHTML}
     selects.push(formselect);
     /** -------------------------------------------------------------------------------------------------- */
 
+    // Make sure we don't experience the dreaded UNABLE_TO_VERIFY_LEAF_SIGNATURE issue when we make REST calls to the Controller
+    https.globalAgent.options.ca = fs.readFileSync(
+        'node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem'
+    );
+    
     if (!skip_controller_cert_check) {
 
         logger.info({message: 'contacting specified controller', host: ziti_controller_host, port: ziti_controller_port});
-
-        // process.env['NODE_EXTRA_CA_CERTS'] = 'node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem';
 
         const request = https.request({
             hostname: ziti_controller_host,
@@ -424,6 +364,85 @@ ${thirdPartyHTML}
         });
 
     }
+
+    /** --------------------------------------------------------------------------------------------------
+     *  Ask GHCR what the latest release of BrowZer is 
+     */
+    const fetchLatestBrowZerReleaseVersion = async ( ) => {
+
+        var options = {        
+            hostname: 'api.github.com',
+            path: '/orgs/openziti/packages/container/ziti-browzer-bootstrapper/versions',
+            method: 'GET',
+            port: 443,
+            headers: {
+                Accept: 'application/vnd.github+json',
+                Authorization: ' Bearer ' + ghApiToken,
+                'X-GitHub-Api-Version': '2022-11-28',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+            },
+            timeout: 3000
+        };
+    
+        let responseData = '';
+
+        const request = https.request(options, function(res) {
+            if (res.statusCode !== 200) {
+                logger.error({message: 'cannot contact GitHub API'});
+                process.exit(-1);
+            }
+            res.setEncoding('utf8');
+            res.on('data', function (chunk) {
+                responseData += chunk;
+            });
+            res.on('end', function () {       
+                
+                latestBrowZerReleaseVersion = undefined;
+                let foundLatest = false;
+                let i = 0;
+
+                var releaseArray = JSON.parse(responseData);
+
+                do {
+
+                    if (releaseArray[i].metadata.container.tags.includes('latest')) {
+                        latestBrowZerReleaseVersion = releaseArray[i].metadata.container.tags[0];
+                        foundLatest = true;
+                    } else {
+                        i++;
+                    }
+
+
+                } while (!foundLatest)
+                
+                logger.info({message: 'latest release check of browZer', latestVersion: latestBrowZerReleaseVersion});
+            });
+        }).end();
+        request.on('timeout', () => {
+            request.destroy();
+            logger.error({message: 'timeout attempting to contact GitHub API'});
+        });
+
+    };
+    const getLatestBrowZerReleaseVersion = ( ) => {
+        return latestBrowZerReleaseVersion;
+    };
+    
+    /** --------------------------------------------------------------------------------------------------
+     *  Keep track of the "latest" browZer release if Bootstrapper is configured to do so 
+     */
+    var ghApiToken = env('ZITI_BROWZER_BOOTSTRAPPER_GITHUB_API_TOKEN');
+    if (!isUndefined(ghApiToken)) {
+
+        await fetchLatestBrowZerReleaseVersion();   // fetch it upon start up...
+
+        cron.schedule('1 * * * *', () => {          // ... then run every hour
+
+            fetchLatestBrowZerReleaseVersion();
+
+        });
+
+    }
     
       
     /** --------------------------------------------------------------------------------------------------
@@ -434,6 +453,8 @@ ${thirdPartyHTML}
         logger: logger,
 
         cache: cache,
+
+        getLatestBrowZerReleaseVersion: getLatestBrowZerReleaseVersion,
 
         // Set up to rewrite 'Location' headers on redirects
         hostRewrite: browzer_bootstrapper_host,
@@ -581,6 +602,26 @@ ${thirdPartyHTML}
         next(err);
     });
 
+    app.get('/ziti-browzer-latest-release-version', function(req, res, next){
+
+        let data = {
+            latestBrowZerReleaseVersion: getLatestBrowZerReleaseVersion()
+        }
+
+        res.writeHead(
+            200, 
+            common.addServerHeader({ 
+                'Content-Type': 'application/javascript',
+            })
+        );
+
+        res.write( JSON.stringify(data) );
+
+        res.end();
+
+        return;
+    });
+
     var proxy = httpProxy.createProxyServer(options);
 
     /**
@@ -638,7 +679,8 @@ ${thirdPartyHTML}
         logger.info({message: 'new tlsContext created', certificate_path: certificate_path, key_path: key_path});
     }
       
-    var server
+    var server;
+    var zitiContext;
     if (browzer_bootstrapper_scheme === 'https') {
 
         createTLScontext();
@@ -683,7 +725,63 @@ ${thirdPartyHTML}
             if (remainingDays <= 7) {           // once we're within a week of expiration, start logging warnings
                 logger.warn({message: 'certificate expiration warning', certificate: certificate_path, remainingDays: remainingDays});
             }
-        });          
+        });
+
+
+        /** --------------------------------------------------------------------------------------------------
+         *  Spin up a fresh zitiContext 
+         */
+        const newZitiContext = async ( ) => {
+
+            // Instantiate/initialize the zitiContext we will use to obtain the Service's list from teh Controller
+            zitiContext = new ZitiContext(Object.assign({
+                logger:         logger,
+                controllerApi:  `https://${ziti_controller_host}:${ziti_controller_port}/edge/client/v1`,
+                token_type:     `Bearer`,
+                access_token:   await getAccessToken(),
+            }));
+            await zitiContext.initialize( {} );
+
+            // Monitor M2M JWT expiration events
+            zitiContext.on(ZITI_CONSTANTS.ZITI_EVENT_IDP_AUTH_HEALTH, idpAuthHealthEventHandler);
+        
+            // Do initial fetch of Services
+            await zitiContext.fetchServices();
+
+        };
+
+
+        /** --------------------------------------------------------------------------------------------------
+         *  Refresh the M2M IdP access token if it has expired 
+         */
+         const idpAuthHealthEventHandler = async ( idpAuthHealthEvent ) => {
+
+            console.log('idpAuthHealthEventHandler: ', idpAuthHealthEvent)
+            if (idpAuthHealthEvent.expired) {
+                newZitiContext();
+            }
+
+        };
+
+
+        /** --------------------------------------------------------------------------------------------------
+         *  If we are configured to do machine-to-machine (M2M) OIDC auth, then do a periodic fetch of
+         *  all zrok 'private' shares (Services) from the Controller.  The list of Services will be used 
+         *  to determine which wildcard vhost HTTP Requests should be honored, and which should be 404'd
+         */
+        if (env('ZITI_BROWZER_BOOTSTRAPPER_IDP_BASE_URL')) {
+
+            newZitiContext();
+
+            cron.schedule('* * * * *', async () => {          // run every minute
+
+                await zitiContext.fetchServices();
+
+                // let fooId = await zitiContext.getServiceIdByName(`foo`);
+                
+            });          
+
+        }
 
         server = https.createServer({
             SNICallback: (servername, cb) => {
