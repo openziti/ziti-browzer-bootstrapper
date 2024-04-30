@@ -181,6 +181,7 @@ const createLogger = () => {
             timestamp(),
             logFormat
         ),
+        defaultMeta: { version: `${pjson.version}` },
         transports: [
             new winston.transports.Console({format: combine( timestamp(), logFormat, json() ), }),
         ],
