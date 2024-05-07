@@ -41,8 +41,9 @@ const cron      = require('node-cron');
 const { isEqual, isUndefined } = require('lodash');
 const NodeCache = require("node-cache");
 var getAccessToken = require('./lib/oidc/utils').getAccessToken;
-var ZitiContext = require('./lib/edge/context');
 var ZITI_CONSTANTS = require('./lib/edge/constants');
+const Mustache = require('mustache');
+const he = require('he');
 
 
 var latestBrowZerReleaseVersion;
@@ -235,7 +236,12 @@ const startBootstrapper =  async ( logger ) => {
         if (browzer_load_balancer) {
             zbrSrc = `https://${req.ziti_vhost}:${browzer_load_balancer_port}/${common.getZBRname()}`;
         } else {
-            zbrSrc = `${req.ziti_browzer_bootstrapper_scheme}://${req.ziti_vhost}:${browzer_bootstrapper_listen_port}/${common.getZBRname()}`;
+            
+            if (env('ZITI_BROWZER_BOOTSTRAPPER_WILDCARD_VHOSTS')) {
+                zbrSrc = `${req.ziti_browzer_bootstrapper_scheme}://${req.ziti_vhost}.${ common.trimFirstSection( env('ZITI_BROWZER_BOOTSTRAPPER_HOST') )}:${browzer_bootstrapper_listen_port}/${common.getZBRname()}`;
+            } else {
+                zbrSrc = `${req.ziti_browzer_bootstrapper_scheme}://${req.ziti_vhost}:${browzer_bootstrapper_listen_port}/${common.getZBRname()}`;
+            }
         }
         let thirdPartyHTML = '';
         if (req.ziti_load_eruda) {
@@ -511,6 +517,8 @@ ${thirdPartyHTML}
 
     forEach(jsonTargetArray.targetArray, function(target) {
 
+        target.vhost = target.vhost.toLowerCase();
+
         target_apps.set(target.vhost, express());
 
         var target_app = target_apps.get(target.vhost);
@@ -520,7 +528,6 @@ ${thirdPartyHTML}
         target_app.use(function (req, res, next) {
 
             var target = target_app_to_target.get(target_app);
-
 
             req.ziti_vhost           = target.vhost;
             req.ziti_target_service  = target.service;
@@ -632,7 +639,46 @@ ${thirdPartyHTML}
 
         var target_app = target_apps.get(target.vhost);
 
-        app.use(vhost(target.vhost, target_app));
+        if (env('ZITI_BROWZER_BOOTSTRAPPER_WILDCARD_VHOSTS')) {
+
+            app.use(vhost( `*.${ common.trimFirstSection( env('ZITI_BROWZER_BOOTSTRAPPER_HOST') )}` , function handle (req, res, next) {
+
+                var target_app = target_apps.get('*');
+                var target = target_app_to_target.get(target_app);
+    
+                req.ziti_vhost           = req.vhost[0];
+                req.ziti_target_service  = req.vhost[0];
+                if (typeof target.path === 'undefined') { 
+                    target.path = '/';
+                }
+                req.ziti_target_path     = target.path;
+                if (typeof target.scheme === 'undefined') { 
+                    target.path = 'http';
+                }
+                req.ziti_target_scheme   = target.scheme;
+                if (browzer_load_balancer) {
+                    req.ziti_browzer_bootstrapper_scheme = 'https';
+                } else {
+                    req.ziti_browzer_bootstrapper_scheme = browzer_bootstrapper_scheme;
+                }
+            
+                req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
+                req.ziti_idp_client_id   = target.idp_client_id;
+    
+                req.ziti_load_eruda      = req.query.eruda ? true : false;
+    
+                next();
+    
+            }))
+    
+        } else {
+
+            app.use(vhost(target.vhost, target_app));
+
+        }
+
+        app.use(require('./lib/inject')(options, [], selects));
+
     });
 
     app.use(function (req, res, next) {
@@ -650,21 +696,49 @@ ${thirdPartyHTML}
     await _httpErrorPages.express(app, {
         template:   './assets/template.ejs',
         css:        './assets/layout.css',
-        payload: {
-            footer: `<strong>BrowZer</strong> v${pjson.version}`,
-        },
         filter: function(data, req, res) {
             if (data.error && data.error.browzer_error_data) {
-                data.pagetitle = `BrowZer error ${data.error.browzer_error_data.code}`;
-                data.title = data.error.browzer_error_data.title;
-                data.message = data.error.browzer_error_data.message;
-                data.code = data.error.browzer_error_data.code;
-                logger.error({message: `${data.message}`, error: `${data.title}`, error_code: data.code});
+
+                let footer = `<a href="https://openziti.io/docs/learn/quickstarts/browzer/"><strong>powered by OpenZiti BrowZer v${pjson.version}</strong><img src="https://ziti-logo.s3.amazonaws.com/ziti-browzer-logo.svg" style="width: 2%;position: fixed;bottom: 15px;margin-left: 10px;"></a>`;
+
+                if (isUndefined(data.error.browzer_error_data.myvar)) {
+                    data.error.browzer_error_data.myvar = {type: 'zbr'}
+                }
+                switch(data.error.browzer_error_data.myvar.type) {
+
+                    case `zbr`:
+                        data.body = Mustache.render(fs.readFileSync('./assets/template-zbr.ejs').toString(), {
+                            code: data.error.browzer_error_data.code,
+                            title: data.error.browzer_error_data.title,
+                            message: data.error.browzer_error_data.message,
+                            footer: footer,
+                        });
+                        data.body = he.decode(data.body);
+                        logger.error({message: `${data.error.browzer_error_data.message}`, error: `${data.error.browzer_error_data.title}`, error_code: data.error.browzer_error_data.code});
+                        break;
+
+                    case `zrok`:      
+                        data.body = Mustache.render(fs.readFileSync('./assets/template-zrok.ejs').toString(), {
+                            zrokshare: data.error.browzer_error_data.myvar.zrokshare,
+                            footer: footer,
+                        });
+                        data.body = he.decode(data.body);
+                        break;
+                      
+                    default:
+                        data.body = Mustache.render(fs.readFileSync('./assets/template-zbr.ejs').toString(), {
+                            code: data.error.browzer_error_data.code,
+                            title: data.error.browzer_error_data.title,
+                            message: data.error.browzer_error_data.message,
+                            footer: footer,
+                        });
+                        data.body = he.decode(data.body);
+                        logger.error({message: `${data.error.browzer_error_data.message}`, error: `${data.error.browzer_error_data.title}`, error_code: data.error.browzer_error_data.code});
+                }
             }
             return data;
         },
         onError: function(data){
-            // logger.error({message: `${data.message}`, error: `${data.title}`, error_code: data.code});
         }
     });
 
@@ -681,7 +755,6 @@ ${thirdPartyHTML}
     }
       
     var server;
-    var zitiContext;
     if (browzer_bootstrapper_scheme === 'https') {
 
         createTLScontext();
@@ -730,58 +803,13 @@ ${thirdPartyHTML}
 
 
         /** --------------------------------------------------------------------------------------------------
-         *  Spin up a fresh zitiContext 
-         */
-        const newZitiContext = async ( ) => {
-
-            // Instantiate/initialize the zitiContext we will use to obtain the Service's list from teh Controller
-            zitiContext = new ZitiContext(Object.assign({
-                logger:         logger,
-                controllerApi:  `https://${ziti_controller_host}:${ziti_controller_port}/edge/client/v1`,
-                token_type:     `Bearer`,
-                access_token:   await getAccessToken(),
-            }));
-            await zitiContext.initialize( {} );
-
-            // Monitor M2M JWT expiration events
-            zitiContext.on(ZITI_CONSTANTS.ZITI_EVENT_IDP_AUTH_HEALTH, idpAuthHealthEventHandler);
-        
-            // Do initial fetch of Services
-            await zitiContext.fetchServices();
-
-        };
-
-
-        /** --------------------------------------------------------------------------------------------------
-         *  Refresh the M2M IdP access token if it has expired 
-         */
-         const idpAuthHealthEventHandler = async ( idpAuthHealthEvent ) => {
-
-            console.log('idpAuthHealthEventHandler: ', idpAuthHealthEvent)
-            if (idpAuthHealthEvent.expired) {
-                newZitiContext();
-            }
-
-        };
-
-
-        /** --------------------------------------------------------------------------------------------------
-         *  If we are configured to do machine-to-machine (M2M) OIDC auth, then do a periodic fetch of
-         *  all zrok 'private' shares (Services) from the Controller.  The list of Services will be used 
-         *  to determine which wildcard vhost HTTP Requests should be honored, and which should be 404'd
+         *  If we are configured to do machine-to-machine (M2M) OIDC auth, then instantiate an initial
+         *  zitiContext.  The zitiContext will be used to look up zrok 'private' shares (Services) from 
+         *  the Controller.  The response from the Controller will be used to determine which wildcard 
+         *  vhost HTTP Requests should be honored, and which should be 404'd
          */
         if (env('ZITI_BROWZER_BOOTSTRAPPER_IDP_BASE_URL')) {
-
-            newZitiContext();
-
-            cron.schedule('* * * * *', async () => {          // run every minute
-
-                await zitiContext.fetchServices();
-
-                // let fooId = await zitiContext.getServiceIdByName(`foo`);
-                
-            });          
-
+            common.newZitiContext( logger );
         }
 
         server = https.createServer({

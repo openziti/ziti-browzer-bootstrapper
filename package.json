@@ -1,6 +1,6 @@
 {
   "name": "ziti-browzer-bootstrapper",
-  "version": "0.59.1",
+  "version": "0.60.0",
   "compatibleControllerVersion": ">=0.27.9",
   "description": "Ziti BrowZer Bootstrapper -- providing Ziti network access into Dark web server",
   "main": "index.js",
@@ -33,6 +33,7 @@
     "express-healthcheck": "^0.1.0",
     "express-openid-connect": "^2.7.2",
     "follow-redirects": "^1.15.1",
+    "he": "^1.2.0",
     "helmet": "^5.1.0",
     "hotkeys": "^1.0.0",
     "hotkeys-js": "^3.10.0",
@@ -51,6 +52,7 @@
     "lodash.isnull": "^3.0.0",
     "lodash.isundefined": "^3.0.1",
     "lodash.result": "^4.5.2",
+    "mustache": "^4.2.0",
     "nconf": "^0.12.1",
     "nconf-validator": "^0.0.3",
     "node-cache": "^5.1.2",
@@ -64,7 +66,7 @@
     "serve-favicon": "^2.5.0",
     "trumpet": "^1.7.2",
     "urlon": "^3.1.0",
-    "uuid": "^8.3.2",
+    "uuid": "^9.0.1",
     "vhost": "^3.0.2",
     "winston": "~3.3.0"
   },
