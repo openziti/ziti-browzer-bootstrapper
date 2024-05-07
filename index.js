@@ -801,17 +801,6 @@ ${thirdPartyHTML}
             }
         });
 
-
-        /** --------------------------------------------------------------------------------------------------
-         *  If we are configured to do machine-to-machine (M2M) OIDC auth, then instantiate an initial
-         *  zitiContext.  The zitiContext will be used to look up zrok 'private' shares (Services) from 
-         *  the Controller.  The response from the Controller will be used to determine which wildcard 
-         *  vhost HTTP Requests should be honored, and which should be 404'd
-         */
-        if (env('ZITI_BROWZER_BOOTSTRAPPER_IDP_BASE_URL')) {
-            common.newZitiContext( logger );
-        }
-
         server = https.createServer({
             SNICallback: (servername, cb) => {
                 logger.silly({message: 'SNICallback() entered', servername: servername});
@@ -830,6 +819,17 @@ ${thirdPartyHTML}
         });
 
     }
+
+    /** --------------------------------------------------------------------------------------------------
+     *  If we are configured to do machine-to-machine (M2M) OIDC auth, then instantiate an initial
+     *  zitiContext.  The zitiContext will be used to look up zrok 'private' shares (Services) from
+     *  the Controller.  The response from the Controller will be used to determine which wildcard
+     *  vhost HTTP Requests should be honored, and which should be 404'd
+     */
+    if (env('ZITI_BROWZER_BOOTSTRAPPER_IDP_BASE_URL')) {
+        common.newZitiContext( logger );
+    }
+
     /** -------------------------------------------------------------------------------------------------- */
 
     // The signals we want to handle
