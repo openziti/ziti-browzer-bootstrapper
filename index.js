@@ -235,6 +235,9 @@ const startBootstrapper =  async ( logger ) => {
         let zbrSrc;
         if (browzer_load_balancer) {
             zbrSrc = `https://${req.ziti_vhost}:${browzer_load_balancer_port}/${common.getZBRname()}`;
+            if (env('ZITI_BROWZER_BOOTSTRAPPER_WILDCARD_VHOSTS')) {
+                zbrSrc = `https://${req.ziti_vhost}.${ common.trimFirstSection( env('ZITI_BROWZER_LOAD_BALANCER_HOST') )}:${browzer_load_balancer_port}/${common.getZBRname()}`;
+            }
         } else {
             
             if (env('ZITI_BROWZER_BOOTSTRAPPER_WILDCARD_VHOSTS')) {
