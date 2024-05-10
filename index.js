@@ -174,6 +174,14 @@ const createLogger = () => {
         }
     });
     
+    let defaultMeta;
+    let logTags = env('ZITI_BROWZER_BOOTSTRAPPER_LOG_TAGS');
+    if (logTags) {
+        defaultMeta = { version: `${pjson.version}`, tags: JSON.parse(logTags) }
+    } else {
+        defaultMeta = { version: `${pjson.version}` }
+    }
+
     var logger = winston.createLogger({
         level: ziti_browzer_bootstrapper_loglevel,
         format: combine(
@@ -182,7 +190,7 @@ const createLogger = () => {
             timestamp(),
             logFormat
         ),
-        defaultMeta: { version: `${pjson.version}` },
+        defaultMeta: defaultMeta,
         transports: [
             new winston.transports.Console({format: combine( timestamp(), logFormat, json() ), }),
         ],
@@ -866,7 +874,7 @@ const main = async () => {
 
     logger = createLogger();
 
-    logger.info({message: 'ziti-browzer-bootstrapper initializing', version: pjson.version});
+    logger.info({message: 'ziti-browzer-bootstrapper initializing'});
 
     Validator.prototype.customFormats.obsoleteIdPConfig = function(input) {
         if (isEqual(input, 'idp_type') || isEqual(input, 'idp_realm')) {
