@@ -918,7 +918,11 @@ process.on('unhandledRejection', function (reason, p) {
     throw reason;
 });
 process.on('uncaughtException', function ( e ) {
-    logger.error( e );
+    if (logger) {
+        logger.error( e );
+    } else {
+        console.error( e );
+    }
     process.exit( -1 );
 });
   
