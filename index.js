@@ -341,10 +341,15 @@ ${thirdPartyHTML}
     selects.push(formselect);
     /** -------------------------------------------------------------------------------------------------- */
 
-    // Make sure we don't experience the dreaded UNABLE_TO_VERIFY_LEAF_SIGNATURE issue when we make REST calls to the Controller
-    https.globalAgent.options.ca = fs.readFileSync(
-        'node_modules/node_extra_ca_certs_mozilla_bundle/ca_bundle/ca_intermediate_root_bundle.pem'
-    );
+	// Check if NODE_EXTRA_CA_CERTS is set
+	const extraCaCertsPath = process.env.NODE_EXTRA_CA_CERTS;
+	if (extraCaCertsPath) {
+	  // Read the CA certificates from the file specified in the environment variable
+	  https.globalAgent.options.ca = fs.readFileSync(extraCaCertsPath);
+	  console.log(`Using CA certificates from env var: ${extraCaCertsPath}`);
+	} else {
+	  console.log('NODE_EXTRA_CA_CERTS is not set. Using default CA certificates.');
+	}
     
     if (!skip_controller_cert_check) {
 
