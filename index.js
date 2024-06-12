@@ -342,7 +342,7 @@ ${thirdPartyHTML}
     /** -------------------------------------------------------------------------------------------------- */
 
 	// Check if NODE_EXTRA_CA_CERTS is set
-	const extraCaCertsPath = process.env.NODE_EXTRA_CA_CERTS;
+	const extraCaCertsPath = env.NODE_EXTRA_CA_CERTS;
 	if (extraCaCertsPath) {
 	  // Read the CA certificates from the file specified in the environment variable
 	  https.globalAgent.options.ca = fs.readFileSync(extraCaCertsPath);
