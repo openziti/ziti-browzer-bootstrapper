@@ -342,7 +342,7 @@ ${thirdPartyHTML}
     selects.push(formselect);
     /** -------------------------------------------------------------------------------------------------- */
 
-	// Check if NODE_EXTRA_CA_CERTS is set
+    // Make sure we don't experience the dreaded UNABLE_TO_VERIFY_LEAF_SIGNATURE issue when we make REST calls to the Controller
     var extraCaCertsPath = nconf.get('NODE_EXTRA_CA_CERTS');
     logger.info(`Using CA certificates: ${extraCaCertsPath}`);
 	
