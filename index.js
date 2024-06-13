@@ -343,8 +343,10 @@ ${thirdPartyHTML}
     /** -------------------------------------------------------------------------------------------------- */
 
     // Make sure we don't experience the dreaded UNABLE_TO_VERIFY_LEAF_SIGNATURE issue when we make REST calls to the Controller
-    var extraCaCertsPath = nconf.get('NODE_EXTRA_CA_CERTS');
+    const extraCaCertsPath = nconf.get('NODE_EXTRA_CA_CERTS');
     logger.info(`Using CA certificates: ${extraCaCertsPath}`);
+		https.globalAgent.options.ca = fs.readFileSync(extraCaCertsPath});
+    );
 	
     if (!skip_controller_cert_check) {
 
