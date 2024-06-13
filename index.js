@@ -344,7 +344,7 @@ ${thirdPartyHTML}
 
 	// Check if NODE_EXTRA_CA_CERTS is set
     var extraCaCertsPath = nconf.get('NODE_EXTRA_CA_CERTS');
-    logger.info(`Using CA certificates from env var: ${extraCaCertsPath}`);
+    logger.info(`Using CA certificates: ${extraCaCertsPath}`);
 	
     if (!skip_controller_cert_check) {
 
