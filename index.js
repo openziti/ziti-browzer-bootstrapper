@@ -44,6 +44,7 @@ var getAccessToken = require('./lib/oidc/utils').getAccessToken;
 var ZITI_CONSTANTS = require('./lib/edge/constants');
 const Mustache = require('mustache');
 const he = require('he');
+var nconf       = require('nconf');
 
 
 var latestBrowZerReleaseVersion;
@@ -342,15 +343,9 @@ ${thirdPartyHTML}
     /** -------------------------------------------------------------------------------------------------- */
 
 	// Check if NODE_EXTRA_CA_CERTS is set
-	const extraCaCertsPath = env.NODE_EXTRA_CA_CERTS;
-	if (extraCaCertsPath) {
-	  // Read the CA certificates from the file specified in the environment variable
-	  https.globalAgent.options.ca = fs.readFileSync(extraCaCertsPath);
-	  console.log(`Using CA certificates from env var: ${extraCaCertsPath}`);
-	} else {
-	  console.log('NODE_EXTRA_CA_CERTS is not set. Using default CA certificates.');
-	}
-    
+    var extraCaCertsPath = nconf.get('NODE_EXTRA_CA_CERTS');
+    console.log(`Using CA certificates from env var: ${extraCaCertsPath}`);
+	
     if (!skip_controller_cert_check) {
 
         logger.info({message: 'contacting specified controller', host: ziti_controller_host, port: ziti_controller_port});
