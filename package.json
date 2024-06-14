@@ -36,7 +36,7 @@
     "he": "^1.2.0",
     "helmet": "^5.1.0",
     "hotkeys": "^1.0.0",
-    "hotkeys-js": "^3.10.0",
+    "hotkeys-js": "^3.13.7",
     "http-error-pages": "^3.1.0",
     "http-proxy": "^1.18.1",
     "hystmodal": "^0.5.1",
