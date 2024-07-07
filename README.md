@@ -22,8 +22,7 @@ Learn about OpenZiti at [openziti.io](https://openziti.io)
 
 - [Motivation](#motivation)
 - [Features](#features)
-- [Installing/Running&nbsp;via&nbsp;NodeJS](#installing-via-NPM)
-- [Installing/Running&nbsp;via&nbsp;Docker](#Installing-via-jsDelivr-CDN)
+- [Installing/Running](#installingrunning)
 - [Configuration](#configuration)
 - [License](#license)
 
