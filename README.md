@@ -81,7 +81,7 @@ this endpoint to you. The URL will generally end with `.well-known/openid-config
 as your OIDC provider you'll be given a 'domain' from Auth0 that will look like: https://dev-blah_blah_xctngxka.us.auth0.com.
 For this Auth0 domain, the discovery endpoint will be at `https://dev-blah_blah_xctngxka.us.auth0.com/.well-known/openid-configuration`.
 Inspecting this endpoint will provide you with the information you need to configure the overlay. All the OIDC providers
-will provide a CLIENT_ID of some kind. You will also need to know tihs value to configure BrowZer and OpenZiti properly.
+will provide a CLIENT_ID of some kind. You will also need to know this value to configure BrowZer and OpenZiti properly.
 There's lots of information about the client id on the internet, one such source you can use to read about client id
 [is provided here](https://www.oauth.com/oauth2-servers/client-registration/client-id-secret/)
 
