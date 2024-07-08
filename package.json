@@ -32,7 +32,7 @@
     "express": "^4.19.2",
     "express-healthcheck": "^0.1.0",
     "express-openid-connect": "^2.17.1",
-    "follow-redirects": "^1.15.1",
+    "follow-redirects": "^1.15.6",
     "he": "^1.2.0",
     "helmet": "^5.1.0",
     "http-error-pages": "^3.1.0",
