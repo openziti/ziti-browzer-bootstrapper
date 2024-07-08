@@ -68,7 +68,7 @@
     "winston": "~3.13.0"
   },
   "devDependencies": {
-    "async": "^3.0.0",
+    "async": "^3.2.5",
     "auto-changelog": "^2.2.1",
     "concat-stream": "^2.0.0",
     "expect.js": "~0.3.1",
