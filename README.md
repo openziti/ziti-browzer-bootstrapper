@@ -22,8 +22,7 @@ Learn about OpenZiti at [openziti.io](https://openziti.io)
 
 - [Motivation](#motivation)
 - [Features](#features)
-- [Installing/Running&nbsp;via&nbsp;NodeJS](#installing-via-NPM)
-- [Installing/Running&nbsp;via&nbsp;Docker](#Installing-via-jsDelivr-CDN)
+- [Installing/Running](#installingrunning)
 - [Configuration](#configuration)
 - [License](#license)
 
@@ -82,7 +81,7 @@ this endpoint to you. The URL will generally end with `.well-known/openid-config
 as your OIDC provider you'll be given a 'domain' from Auth0 that will look like: https://dev-blah_blah_xctngxka.us.auth0.com.
 For this Auth0 domain, the discovery endpoint will be at `https://dev-blah_blah_xctngxka.us.auth0.com/.well-known/openid-configuration`.
 Inspecting this endpoint will provide you with the information you need to configure the overlay. All the OIDC providers
-will provide a CLIENT_ID of some kind. You will also need to know tihs value to configure BrowZer and OpenZiti properly.
+will provide a CLIENT_ID of some kind. You will also need to know this value to configure BrowZer and OpenZiti properly.
 There's lots of information about the client id on the internet, one such source you can use to read about client id
 [is provided here](https://www.oauth.com/oauth2-servers/client-registration/client-id-secret/)
 
@@ -166,7 +165,7 @@ environment variables.
       ZITI_CONTROLLER_HOST: ${ZITI_CTRL_EDGE_ALT_ADVERTISED_ADDRESS}
       ZITI_CONTROLLER_PORT: ${ZITI_CTRL_EDGE_ADVERTISED_PORT}
       ZITI_BROWZER_BOOTSTRAPPER_LOGLEVEL: debug
-      ZITI_BROWZER_BOOTSTRAPPER_HOST: ${ZITI_BROWZER_BOOTSTRAPPER_ADDRESS}
+      ZITI_BROWZER_BOOTSTRAPPER_HOST: ${ZITI_BROWZER_BOOTSTRAPPER_HOST}
       ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT: ${ZITI_BROWZER_BOOTSTRAPPER_LISTEN_PORT}
       ZITI_BROWZER_BOOTSTRAPPER_SCHEME: https
       ZITI_BROWZER_BOOTSTRAPPER_CERTIFICATE_PATH: /etc/letsencrypt/live/your.fqdn.here/fullchain.pem
