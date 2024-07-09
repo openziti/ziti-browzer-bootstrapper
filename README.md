@@ -146,7 +146,6 @@ environment variables.
 
 * NODE_ENV: controls if the environment is production or development
 * ZITI_BROWZER_RUNTIME_LOGLEVEL: the log level for the Ziti BrowZer Runtime (ZBR) to use
-* ZITI_BROWZER_RUNTIME_HOTKEY: the hotkey to activate the BrowZer settings dialog modal. default: alt+F12
 * ZITI_CONTROLLER_HOST: the "alternative" address for the OpenZiti controller
 * ZITI_CONTROLLER_PORT: the port to find the OpenZiti controller at
 * ZITI_BROWZER_BOOTSTRAPPER_LOGLEVEL: the log level for the ziti-browzer-bootstrapper to log at
