@@ -255,11 +255,6 @@ const startBootstrapper =  async ( logger ) => {
             }
         }
         let thirdPartyHTML = '';
-        if (req.ziti_load_eruda) {
-            thirdPartyHTML += `
-<script src="https://cdn.jsdelivr.net/npm/eruda@3.0.1/eruda.min.js"></script>
-`;            
-        }
         let ziti_inject_html = `
 ${thirdPartyHTML}
 <!-- load JSPI Origin Trial Token -->
@@ -564,8 +559,6 @@ ${thirdPartyHTML}
             next();
         });  
 
-        target_app.use(require('./lib/inject')(options, [], selects));
-
     });
       
 
@@ -643,6 +636,8 @@ ${thirdPartyHTML}
 
     var proxy = httpProxy.createProxyServer(options);
 
+    app.use(require('./lib/inject')(options, [], selects));
+
     /**
      *  Loop through the target app array and set up
      */
@@ -687,8 +682,6 @@ ${thirdPartyHTML}
             app.use(vhost(target.vhost, target_app));
 
         }
-
-        app.use(require('./lib/inject')(options, [], selects));
 
     });
 
