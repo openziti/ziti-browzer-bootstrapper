@@ -7,7 +7,7 @@ RUN apt-get update
 RUN apt-get install -y python3 build-essential
 
 # Create directory for the Ziti BrowZer Bootstrapper, and explicitly set the owner of that new directory to the node user
-RUN mkdir /home/node/ziti-browzer-bootstrapper/ && chown -R node:node /home/node/ziti-browzer-bootstrapper
+RUN mkdir /home/node/ziti-browzer-bootstrapper
 WORKDIR /home/node/ziti-browzer-bootstrapper
 
 # Prepare for dependencies installation
@@ -18,10 +18,6 @@ COPY --chown=node:node yarn.lock ./
 # devDepdendencies (--production), then uninstall npm which isn't needed.
 RUN  yarn install \
  && npm cache clean --force --loglevel=error 
-
-RUN chown -R node:node .
-
-USER node
 
 # Bring in the source of the Ziti BrowZer Bootstrapper to the working folder
 COPY --chown=node:node index.js .
@@ -34,6 +30,9 @@ FROM node:16-bullseye-slim
 RUN apt-get update && apt-get install curl -y
 
 COPY --from=build /home/node/ziti-browzer-bootstrapper /home/node/ziti-browzer-bootstrapper
+
+RUN chown -R node:node /home/node/ziti-browzer-bootstrapper
+USER node
 
 WORKDIR /home/node/ziti-browzer-bootstrapper
 
