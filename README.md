@@ -193,6 +193,22 @@ per service. An example json block would look like the following:
 }
 ```
 
+#### Nested SSO Support
+
+To enhance user experience by skipping extra authentication steps for your application, you can configure your application's OIDC provider to be the same as the one used by Browzer. This way, both your RP (OIDC relying party) and Browzer will share the same SSO authentication session.
+
+To prevent Browzer from capturing the RP's callback authorization code grant parameters and disrupting the RP's code grant process, add your inner RP's callback path to the `idp_nested_sso_inner_callback_path` in the `targetArray` as shown below:
+```json
+{
+  "targetArray": [
+    {
+      // ...
+      "idp_nested_sso_inner_callback_path": "/rp_callback"
+    }
+  ]
+}
+```
+
 ### Starting the ziti-browzer-bootstrapper
 
 Once you have set the required environment variables you can start the `ziti-browzer-bootstrapper` directly by running `yarn build`
