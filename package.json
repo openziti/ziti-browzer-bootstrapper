@@ -40,7 +40,7 @@
     "ip-cidr": "^4.0.1",
     "js-base64": "^3.7.7",
     "jsonschema": "^1.4.1",
-    "jsonwebtoken": "^9.0.0",
+    "jsonwebtoken": "^9.0.2",
     "le-challenge-fs": "^2.0.9",
     "le-store-certbot": "^2.2.3",
     "lodash.find": "^4.6.0",
