@@ -37,6 +37,7 @@ const _httpErrorPages = require('http-error-pages');
 const URLON     = require('urlon');
 const favicon   = require('serve-favicon');
 const { X509Certificate } = require('crypto');
+const requestIp = require('request-ip');
 const cron      = require('node-cron');
 const { isEqual, isUndefined } = require('lodash');
 const NodeCache = require("node-cache");
@@ -45,6 +46,7 @@ var ZITI_CONSTANTS = require('./lib/edge/constants');
 const Mustache = require('mustache');
 const he = require('he');
 
+let uniqueIPs = new Set();
 
 var latestBrowZerReleaseVersion;
 
@@ -214,6 +216,15 @@ var selects = [];
  *  Start the BrowZer Bootstrapper
  */
 const startBootstrapper =  async ( logger ) => {
+
+    common.posthog_capture_event({
+        distinctId: browzer_bootstrapper_host,
+        event: "Bootstrapper Initialization",
+        properties: {
+            browZerHost: browzer_bootstrapper_host,
+            browZerVersion: pjson.version,
+        }
+    });            
 
     /** --------------------------------------------------------------------------------------------------
      *  Dynamically modify the proxied site's <head> element as we stream it back to the browser.  We will:
@@ -690,6 +701,14 @@ ${thirdPartyHTML}
         next()
     })
 
+    app.use((req, res, next) => {
+        const clientIP = requestIp.getClientIp(req)    
+        if (clientIP) {
+            uniqueIPs.add(clientIP);
+        }
+        next();
+    });    
+
     app.use(verifyCache, function (req, res) {
         proxy.web(req, res);
     });
@@ -745,6 +764,54 @@ ${thirdPartyHTML}
         onError: function(data){
         }
     });
+
+    /**
+     * 
+     */
+    cron.schedule('*/15 * * * *', () => {          // ... run every 15 minutes
+        try {
+
+            common.posthog_capture_event({
+                distinctId: browzer_bootstrapper_host,
+                event: "Bootstrapper Heartbeat",
+                properties: {
+                    browZerHost: browzer_bootstrapper_host,
+                    browZerVersion: pjson.version,
+                }
+            });            
+        
+        } catch (e) {
+            console.log(`error: `, e);
+        }
+
+    });
+
+    /**
+     * 
+     */
+    cron.schedule('*/15 * * * *', () => {          // ... run every 15 minutes
+
+        uniqueIPs.forEach(async function(ip) {
+            try {
+
+                common.posthog_capture_event({
+                    distinctId: browzer_bootstrapper_host,
+                    event: "BrowZer Client Unique IP",
+                    properties: {
+                        browZerHost: browzer_bootstrapper_host,
+                        browZerVersion: pjson.version,
+                        browZerClientIP: ip,
+                    }
+                });            
+            
+        
+            } catch (e) {
+                console.log(`error: `, e);
+            }
+        });
+          
+    });
+
 
     /**
      *  When listening on HTTPS, then detect certificate refreshes, and reload TLS context accordingly
