@@ -827,6 +827,10 @@ ${thirdPartyHTML}
             isServer: true,
         }, (socket) => {
 
+            //TEMP
+            logger.info({message: `socket.localAddress[${socket.localAddress}]`});
+            logger.info({message: `socket.remoteAddress[${socket.remoteAddress}]`});
+
             /**
              * If we are being hit via IP address, respond with simple response rendering our version number
              */
