@@ -19,8 +19,6 @@ var env         = require('./lib/env');
 const path      = require('path');
 const http      = require("http");
 const https     = require("https");
-const net       = require('net');
-const os        = require('os');
 const fs        = require('fs');
 const tls       = require('tls');
 const express   = require("express");
@@ -756,7 +754,6 @@ ${thirdPartyHTML}
         tlsContext = tls.createSecureContext({
             cert: fs.readFileSync(certificate_path),
             key: fs.readFileSync(key_path),
-            isServer: true,
         });
         logger.info({message: 'new tlsContext created', certificate_path: certificate_path, key_path: key_path});
     }
@@ -808,57 +805,14 @@ ${thirdPartyHTML}
             }
         });
 
-        const isValidIp = (hostname) => {
-            if (hostname.indexOf('127.0.0.1') != -1) return 0
-            return net.isIP(hostname) !== 0; // returns 1 for IPv4, 2 for IPv6, and 0 for invalid
-        };
-
-        const httpServer = http.createServer({
+        server = https.createServer({
             SNICallback: (servername, cb) => {
                 logger.silly({message: 'SNICallback() entered', servername: servername});
                 cb(null, tlsContext);
             }            
-        }, app);
-          
-        // Create a TLS server
-        server = tls.createServer({
-            cert: fs.readFileSync(certificate_path),
-            key: fs.readFileSync(key_path),
-            isServer: true,
-        }, (socket) => {
-
-            /**
-             * If we are being hit via IP address, respond with simple response rendering our version number
-             */
-            if (isValidIp(socket.localAddress)) {
-                let response = 
-`HTTP/1.1 200 OK
-Content-Type: text/plain
-x-ziti-browzer-bootstrapper: ${pjson.version}
-
-Hello, from OpenZiti BrowZer v${pjson.version} !
-`
-                socket.write(response);
-                socket.end();
-
-            } else {
-
-                /**
-                 * If we are being hit via DNS name, emit the socket to the HTTP server so that
-                 * it can process the request
-                 */
-                httpServer.emit('connection', socket);
-            }
-          
-            socket.on('error', (error) => {
-              logger.error({message: 'TLS error', error: error});
-              socket.destroy();
-            });
+        }, app).listen(browzer_bootstrapper_listen_port, "0.0.0.0", function() {
+            logger.info({message: 'listening', port: browzer_bootstrapper_listen_port, scheme: browzer_bootstrapper_scheme});
         });
-  
-        server.listen(443, () => {
-            console.log('Server listening on port 443');
-        });          
 
     }
     else {
