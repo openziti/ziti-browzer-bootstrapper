@@ -808,11 +808,6 @@ ${thirdPartyHTML}
             }
         });
 
-        const isValidIp = (hostname) => {
-            if (hostname.indexOf('127.0.0.1') != -1) return 0
-            return net.isIP(hostname) !== 0; // returns 1 for IPv4, 2 for IPv6, and 0 for invalid
-        };
-
         const httpServer = http.createServer({
             SNICallback: (servername, cb) => {
                 logger.silly({message: 'SNICallback() entered', servername: servername});
@@ -827,14 +822,10 @@ ${thirdPartyHTML}
             isServer: true,
         }, (socket) => {
 
-            //TEMP
-            logger.info({message: `socket.localAddress[${socket.localAddress}]`});
-            logger.info({message: `socket.remoteAddress[${socket.remoteAddress}]`});
-
             /**
              * If we are being hit via IP address, respond with simple response rendering our version number
              */
-            if (isValidIp(socket.localAddress)) {
+            if (!(socket.servername)) {
                 let response = 
 `HTTP/1.1 200 OK
 Content-Type: text/plain
