@@ -112,6 +112,12 @@ var logger;     // for Ziti BrowZer Bootstrapper
                     "idp_client_id": {
                         "type": "string"
                     },
+                    "idp_authorization_endpoint_parms": {
+                        "type": "string"
+                    },
+                    "idp_authorization_scope": {
+                        "type": "string"
+                    },
                 },
                 "required": [
                     "vhost", "service", "idp_issuer_base_url", "idp_client_id"
@@ -555,8 +561,8 @@ ${thirdPartyHTML}
         
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
-
-            req.ziti_load_eruda      = req.query.eruda ? true : false;
+            req.ziti_idp_authorization_endpoint_parms   = target.idp_authorization_endpoint_parms;
+            req.ziti_idp_authorization_scope   = target.idp_authorization_scope;
 
             next();
         });  
@@ -672,8 +678,8 @@ ${thirdPartyHTML}
             
                 req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
                 req.ziti_idp_client_id   = target.idp_client_id;
-    
-                req.ziti_load_eruda      = req.query.eruda ? true : false;
+                req.ziti_idp_authorization_endpoint_parms   = target.idp_authorization_endpoint_parms;
+                req.ziti_idp_authorization_scope   = target.idp_authorization_scope;
     
                 next();
     
@@ -899,6 +905,13 @@ Hello, from OpenZiti BrowZer v${pjson.version} !
     });
 };
 
+/**
+ * 
+ */
+const isValidSearchParams = (paramString) => {
+    const regex = /^(?:(?:[a-zA-Z0-9%_.+-]+=[^&]*)|(?:[a-zA-Z0-9%_.+-]+(?:&|$)))*$/;    
+    return regex.test(paramString);
+};
 
 /**
  * 
@@ -941,8 +954,16 @@ const main = async () => {
         process.exit(-1);
     }
 
-    jsonschemaValidator.validate('idp_type', {type: 'string', format: 'obsoleteIdPConfig'});
+    forEach(jsonTargetArray.targetArray, function(target) {
+        if (target.idp_authorization_endpoint_parms) {
+            if (!isValidSearchParams(target.idp_authorization_endpoint_parms)) {
+                logger.error({message: 'idp_authorization_endpoint_parms does not valid URL search parms', idp_authorization_endpoint_parms: `${target.idp_authorization_endpoint_parms}`});
+                process.exit(-1);
+            }        
+        }
+    });
 
+    jsonschemaValidator.validate('idp_type', {type: 'string', format: 'obsoleteIdPConfig'});
 
     startBootstrapper( logger );
 
