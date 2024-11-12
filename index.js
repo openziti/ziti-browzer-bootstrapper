@@ -115,6 +115,9 @@ var logger;     // for Ziti BrowZer Bootstrapper
                     "idp_authorization_endpoint_parms": {
                         "type": "string"
                     },
+                    "idp_authorization_scope": {
+                        "type": "string"
+                    },
                 },
                 "required": [
                     "vhost", "service", "idp_issuer_base_url", "idp_client_id"
@@ -559,6 +562,7 @@ ${thirdPartyHTML}
             req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
             req.ziti_idp_client_id   = target.idp_client_id;
             req.ziti_idp_authorization_endpoint_parms   = target.idp_authorization_endpoint_parms;
+            req.ziti_idp_authorization_scope   = target.idp_authorization_scope;
 
             next();
         });  
@@ -675,6 +679,7 @@ ${thirdPartyHTML}
                 req.ziti_idp_issuer_base_url = target.idp_issuer_base_url;
                 req.ziti_idp_client_id   = target.idp_client_id;
                 req.ziti_idp_authorization_endpoint_parms   = target.idp_authorization_endpoint_parms;
+                req.ziti_idp_authorization_scope   = target.idp_authorization_scope;
     
                 next();
     
