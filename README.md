@@ -74,6 +74,8 @@ To configure the OpenZiti overlay, you'll need to do the following:
 * create an `auth-policy` that uses the configured `ext-jwt-signer`
 * associate the `auth-policy` to the identities which are to be enabled for BrowZer-based authentication
 
+[BrowZer IdP configuration guides](https://openziti.io/docs/identity-providers-for-browZer)
+
 ### Create a valid ext-jwt-signer
 
 The easiest way to configure the ext-jwt-signer will be to use the OIDC discovery endpoint. Most OIDC providers will expose
