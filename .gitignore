@@ -111,3 +111,5 @@ dist
 docker-compose.override.yml
 .env
 .idea
+
+start-*.sh
