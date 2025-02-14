@@ -366,16 +366,19 @@ ${thirdPartyHTML}
             }
             res.setEncoding('utf8');
             res.on('data', function (chunk) {
-                var jsonTargetArray = JSON.parse(chunk);
-                let controllerVersion = jsonTargetArray.data.version.replace('v','');
-                logger.info({message: 'attached controller version', controllerVersion: controllerVersion});
-                let compatibleControllerVersion = `${pjson.compatibleControllerVersion}`;
-                if (controllerVersion !== '0.0.0') {
-                    if (!satisfies(controllerVersion, compatibleControllerVersion)) {
-                        logger.error({message: 'incompatible controller version', controllerVersion: controllerVersion, compatibleControllerVersion: compatibleControllerVersion});
-                        process.exit(-1);
+                try {
+                    var jsonTargetArray = JSON.parse(chunk);
+                    let controllerVersion = jsonTargetArray.data.version.replace('v','');
+                    logger.info({message: 'attached controller version', controllerVersion: controllerVersion});
+                    let compatibleControllerVersion = `${pjson.compatibleControllerVersion}`;
+                    if (controllerVersion !== '0.0.0') {
+                        if (!satisfies(controllerVersion, compatibleControllerVersion)) {
+                            logger.error({message: 'incompatible controller version', controllerVersion: controllerVersion, compatibleControllerVersion: compatibleControllerVersion});
+                            process.exit(-1);
+                        }
                     }
                 }
+                catch (e) {}
             });
         }).end();
         request.on('timeout', () => {
@@ -642,6 +645,73 @@ ${thirdPartyHTML}
         return;
     });
 
+    /**
+     * 
+     */
+    app.use(express.json()); 
+    app.post('/controller-oidc-proxy', async (req, res) => {
+
+        let { 
+            urlWithParams,
+            method,
+            headers,
+            postData
+        } = req.body; // Extract the proxy variables from POST body
+
+        if (!urlWithParams) {
+            return res.status(400).json({ error: 'Missing urlWithParams parameter' });
+        }
+
+        const url = new URL(urlWithParams);
+
+        const options = {
+            hostname:   url.hostname,
+            port:       url.port || 443,
+            path:       url.pathname + url.search, 
+            method:     method,
+            headers:    headers,
+            redirect:   'manual' 
+        };
+
+        if (isEqual(method, 'POST')) {
+
+            postData = JSON.stringify(postData);              
+            options.headers['Content-Length'] = Buffer.byteLength(postData);
+
+            const req = https.request(options, (response) => {
+                let data = '';
+                response.on('data', (chunk) => {
+                  data += chunk;
+                });
+              
+                response.on('end', () => {
+                  if (response.statusCode >= 300 && response.statusCode < 400) {
+                      res.json({ redirectUrl: response.headers.location });
+                  } else {
+                      res.status(400).json({ error: 'expected redirect did not occur' });
+                  }
+                  res.end();
+                });
+              });
+                            
+              req.write(postData);
+              req.end();
+
+        } else {
+
+            https.request(options, async function(response) {
+
+                if (response.statusCode >= 300 && response.statusCode < 400) {
+                    res.json({ redirectUrl: response.headers.location });
+                } else {
+                    res.status(400).json({ error: 'expected redirect did not occur' });
+                }
+                res.end();
+
+            }).end();
+        }    
+    });    
+
     var proxy = httpProxy.createProxyServer(options);
 
     app.use(require('./lib/inject')(options, [], selects));
@@ -711,7 +781,9 @@ ${thirdPartyHTML}
         filter: function(data, req, res) {
             if (data.error && data.error.browzer_error_data) {
 
-                let footer = `<a href="https://openziti.io/docs/learn/quickstarts/browzer/"><strong>powered by OpenZiti BrowZer v${pjson.version}</strong><img src="https://ziti-logo.s3.amazonaws.com/ziti-browzer-logo.svg" style="width: 2%;position: fixed;bottom: 15px;margin-left: 10px;"></a>`;
+                let whitelabel = JSON.parse(env('ZITI_BROWZER_WHITELABEL'));
+
+                let footer = `<a href="https://openziti.io/docs/learn/quickstarts/browzer/"><strong>powered by ${whitelabel.branding.browZerName} v${pjson.version}</strong><img src="${whitelabel.branding.browZerButtonIconSvgUrl}" style="width: 2%;position: fixed;bottom: 15px;margin-left: 10px;"></a>`;
 
                 if (isUndefined(data.error.browzer_error_data.myvar)) {
                     data.error.browzer_error_data.myvar = {type: 'zbr'}
@@ -723,6 +795,7 @@ ${thirdPartyHTML}
                             code: data.error.browzer_error_data.code,
                             title: data.error.browzer_error_data.title,
                             message: data.error.browzer_error_data.message,
+                            browzer_name: whitelabel.branding.browZerName,
                             footer: footer,
                         });
                         data.body = he.decode(data.body);
@@ -742,6 +815,7 @@ ${thirdPartyHTML}
                             code: data.error.browzer_error_data.code,
                             title: data.error.browzer_error_data.title,
                             message: data.error.browzer_error_data.message,
+                            browzer_name: whitelabel.branding.browZerName,
                             footer: footer,
                         });
                         data.body = he.decode(data.body);
@@ -859,7 +933,7 @@ Hello, from OpenZiti BrowZer v${pjson.version} !
         });
   
         server.listen(browzer_bootstrapper_listen_port, () => {
-            console.log(`Server listening on port ${browzer_bootstrapper_listen_port}`);
+            logger.info({message: 'listening', port: browzer_bootstrapper_listen_port, scheme: browzer_bootstrapper_scheme});
         });          
 
     }

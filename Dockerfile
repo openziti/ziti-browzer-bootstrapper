@@ -1,4 +1,4 @@
-FROM node:16-bullseye-slim AS build
+FROM node:18-bookworm-slim AS build
 
 LABEL maintainer="OpenZiti <openziti@netfoundry.io>"
 
@@ -25,7 +25,7 @@ COPY --chown=node:node zha-docker-entrypoint .
 COPY --chown=node:node lib ./lib/
 COPY --chown=node:node assets ./assets/
 
-FROM node:16-bullseye-slim
+FROM node:18-bookworm-slim
 
 RUN apt-get update && apt-get install curl -y
 
