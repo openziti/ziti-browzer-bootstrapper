@@ -41,7 +41,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22   # Or another supported version
-          cache: 'yarn'      # Caches Yarn dependencies
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
