@@ -18,8 +18,8 @@ COPY --chown=node:node yarn.lock ./
 RUN corepack enable
 RUN corepack prepare yarn@4.0.2 --activate
 
-# Install the dependencies for the Ziti BrowZer Bootstrapper
-RUN  yarn install
+# # Install the dependencies for the Ziti BrowZer Bootstrapper
+# RUN  yarn install
 
 # Bring in the source of the Ziti BrowZer Bootstrapper to the working folder
 COPY --chown=node:node index.js .
@@ -33,8 +33,13 @@ COPY --chown=node:node assets ./assets/
 
 # COPY --from=build /home/node/ziti-browzer-bootstrapper /home/node/ziti-browzer-bootstrapper
 
-# RUN chown -R node:node /home/node/ziti-browzer-bootstrapper
+RUN chown -R node:node /home/node/ziti-browzer-bootstrapper
 USER node
+
+# Install the dependencies for the Ziti BrowZer Bootstrapper
+RUN  yarn install
+
+RUN ls -l
 
 # WORKDIR /home/node/ziti-browzer-bootstrapper
 
