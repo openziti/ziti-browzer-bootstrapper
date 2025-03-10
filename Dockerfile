@@ -20,8 +20,7 @@ RUN corepack prepare yarn@4.0.2 --activate
 
 # Install the dependencies for the Ziti BrowZer Bootstrapper according to yarn.lock (ci) without
 # devDepdendencies (--production), then uninstall npm which isn't needed.
-RUN  yarn install \
- && npm cache clean --force --loglevel=error 
+RUN  yarn install
 
 # Bring in the source of the Ziti BrowZer Bootstrapper to the working folder
 COPY --chown=node:node index.js .
