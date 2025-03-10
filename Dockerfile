@@ -37,9 +37,7 @@ RUN chown -R node:node /home/node/ziti-browzer-bootstrapper
 USER node
 
 # Install the dependencies for the Ziti BrowZer Bootstrapper
-RUN  yarn install
-
-RUN ls -l
+RUN yarn config set nodeLinker node-modules && yarn install && ls -l 
 
 # WORKDIR /home/node/ziti-browzer-bootstrapper
 
