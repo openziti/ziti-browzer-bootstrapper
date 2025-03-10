@@ -20,7 +20,7 @@ RUN corepack prepare yarn@4.0.2 --activate
 
 # Install the dependencies for the Ziti BrowZer Bootstrapper according to yarn.lock (ci) without
 # devDepdendencies (--production), then uninstall npm which isn't needed.
-RUN  yarn install
+# RUN  yarn install
 
 # Bring in the source of the Ziti BrowZer Bootstrapper to the working folder
 COPY --chown=node:node index.js .
@@ -38,6 +38,7 @@ RUN chown -R node:node /home/node/ziti-browzer-bootstrapper
 USER node
 
 WORKDIR /home/node/ziti-browzer-bootstrapper
+RUN  yarn install
 
 # Expose the Ziti BrowZer Bootstrapper for traffic to be proxied (8000) and the
 # REST API where it can be configured (8001)
