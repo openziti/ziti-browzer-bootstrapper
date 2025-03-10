@@ -14,6 +14,15 @@ WORKDIR /home/node/ziti-browzer-bootstrapper
 COPY --chown=node:node package.json ./
 COPY --chown=node:node yarn.lock ./
 
+ENV YARN_VERSION 4.0.2
+
+RUN set -ex \
+  && curl -fsSLO --compressed "https://yarnpkg.com/downloads/$YARN_VERSION/yarn-v$YARN_VERSION.tar.gz" \
+  && tar -xzf yarn-v$YARN_VERSION.tar.gz -C /opt/ \
+  && ln -s /opt/yarn-v$YARN_VERSION/bin/yarn /usr/local/bin/yarn \
+  && ln -s /opt/yarn-v$YARN_VERSION/bin/yarnpkg /usr/local/bin/yarnpkg \
+  && rm yarn-v$YARN_VERSION.tar.gz
+
 # Install the dependencies for the Ziti BrowZer Bootstrapper according to yarn.lock (ci) without
 # devDepdendencies (--production), then uninstall npm which isn't needed.
 RUN  yarn install \
