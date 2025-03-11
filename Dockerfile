@@ -1,4 +1,5 @@
-FROM node:22-slim
+# Stage 1: Install dependencies
+FROM node:22-slim AS build
 
 LABEL maintainer="OpenZiti <openziti@netfoundry.io>"
 
@@ -14,12 +15,8 @@ WORKDIR /home/node/ziti-browzer-bootstrapper
 COPY --chown=node:node package.json ./
 COPY --chown=node:node yarn.lock ./
 
-# Install yarn 4
-RUN corepack enable
-RUN corepack prepare yarn@4.0.2 --activate
-
-# # Install the dependencies for the Ziti BrowZer Bootstrapper
-# RUN  yarn install
+# Install Yarn 4 globally
+RUN corepack enable && yarn set version stable
 
 # Bring in the source of the Ziti BrowZer Bootstrapper to the working folder
 COPY --chown=node:node index.js .
@@ -27,19 +24,19 @@ COPY --chown=node:node zha-docker-entrypoint .
 COPY --chown=node:node lib ./lib/
 COPY --chown=node:node assets ./assets/
 
-# FROM node:22-slim
+# Install dependencies (ensuring node_modules remains)
+RUN yarn install --immutable
 
-# RUN apt-get update && apt-get install curl -y
+# Stage 2: Production-ready image
+FROM node:22-slim
 
-# COPY --from=build /home/node/ziti-browzer-bootstrapper /home/node/ziti-browzer-bootstrapper
+WORKDIR /home/node/ziti-browzer-bootstrapper
+
+# Copy installed node_modules from build stage
+COPY --from=build /home/node/ziti-browzer-bootstrapper /home/node/ziti-browzer-bootstrapper
 
 RUN chown -R node:node /home/node/ziti-browzer-bootstrapper
 USER node
-
-# Install the dependencies for the Ziti BrowZer Bootstrapper
-RUN yarn config set nodeLinker node-modules && yarn install && ls -l 
-
-# WORKDIR /home/node/ziti-browzer-bootstrapper
 
 # Expose the Ziti BrowZer Bootstrapper for traffic to be proxied (8000) and the
 # REST API where it can be configured (8001)
