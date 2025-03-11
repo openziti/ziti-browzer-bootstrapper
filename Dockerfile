@@ -16,7 +16,7 @@ COPY --chown=node:node package.json ./
 COPY --chown=node:node yarn.lock ./
 
 # Install Yarn 4 globally
-RUN corepack enable && yarn set version stable
+RUN corepack enable && corepack prepare yarn@4.0.2 --activate
 
 # Bring in the source of the Ziti BrowZer Bootstrapper to the working folder
 COPY --chown=node:node index.js .
