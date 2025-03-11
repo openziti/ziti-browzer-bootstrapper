@@ -16,7 +16,7 @@ COPY --chown=node:node package.json ./
 COPY --chown=node:node yarn.lock ./
 
 # Install Yarn 4 globally
-RUN corepack enable && corepack prepare yarn@4.0.2 --activate
+RUN corepack enable && corepack prepare yarn@4.0.2 --activate && yarn config set nodeLinker node-modules
 
 # Bring in the source of the Ziti BrowZer Bootstrapper to the working folder
 COPY --chown=node:node index.js .
@@ -25,7 +25,9 @@ COPY --chown=node:node lib ./lib/
 COPY --chown=node:node assets ./assets/
 
 # Install dependencies (ensuring node_modules remains)
-RUN yarn install --immutable
+RUN yarn install
+
+RUN ls -l
 
 # Stage 2: Production-ready image
 FROM node:22-slim
