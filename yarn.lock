@@ -1614,13 +1614,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "cookie@npm:1.0.2"
-  checksum: fd25fe79e8fbcfcaf6aa61cd081c55d144eeeba755206c058682257cb38c4bd6795c6620de3f064c740695bb65b7949ebb1db7a95e4636efb8357a335ad3f54b
-  languageName: node
-  linkType: hard
-
 "cookiejar@npm:^2.1.3":
   version: 2.1.4
   resolution: "cookiejar@npm:2.1.4"
@@ -7271,7 +7264,6 @@ __metadata:
     compare-versions: "npm:^6.0.0-rc.1"
     concat-stream: "npm:^2.0.0"
     connect: "npm:^3.7.0"
-    cookie: "npm:^1.0.2"
     cookie-parser: "npm:^1.4.6"
     dotenv: "npm:^16.4.5"
     eventemitter3: "npm:^4.0.0"
