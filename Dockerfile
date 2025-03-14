@@ -32,7 +32,7 @@ RUN ls -l
 # Stage 2: Production-ready image
 FROM node:22-slim
 
-RUN apt-get install -y curl
+RUN apt-get update && apt-get install -y curl
 
 WORKDIR /home/node/ziti-browzer-bootstrapper
 
