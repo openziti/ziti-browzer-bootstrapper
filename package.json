@@ -1,6 +1,6 @@
 {
   "name": "ziti-browzer-bootstrapper",
-  "version": "0.82.3",
+  "version": "0.82.4",
   "compatibleControllerVersion": ">=0.27.9",
   "description": "Ziti BrowZer Bootstrapper -- providing Ziti network access into Dark web server",
   "main": "index.js",
@@ -80,5 +80,10 @@
     "sse": "0.0.8",
     "xmlhttprequest-ssl": ">=1.6.2"
   },
-  "packageManager": "yarn@4.0.2+sha512.4e502bea682e7d8004561f916f1da2dfbe6f718024f6aa50bf8cd86f38ea3a94a7f1bf854a9ca666dd8eafcfb8d44baaa91bf5c7876e79a7aeac952c332f0e88"
+  "packageManager": "yarn@4.0.2+sha512.4e502bea682e7d8004561f916f1da2dfbe6f718024f6aa50bf8cd86f38ea3a94a7f1bf854a9ca666dd8eafcfb8d44baaa91bf5c7876e79a7aeac952c332f0e88",
+  "resolutions": {
+    "@openziti/ziti-browzer-sw": "portal:/Users/curt/Repos/nf/github/ziti-browzer-sw",
+    "@openziti/ziti-browzer-runtime": "portal:/Users/curt/Repos/nf/github/ziti-browzer-runtime",
+    "@openziti/ziti-browzer-core": "portal:/Users/curt/Repos/nf/github/ziti-browzer-core"
+  }
 }
