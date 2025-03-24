@@ -6,6 +6,9 @@ on:
       version:
         description: "Image tag to promote to stable"
         required: true
+  push:
+    branches:
+      - some-bogus-test-branch
 
 jobs:
   promote:
