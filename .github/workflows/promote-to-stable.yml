@@ -22,7 +22,7 @@ jobs:
           username: ${{ secrets.GHCR_USER }}
           password: ${{ secrets.GHCR_PAT }} 
 
-      - name: Pull and retag image
+      - name: Retag image as stable
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/ziti-browzer-bootstrapper
           VERSION=${{ github.event.inputs.version }}
@@ -34,4 +34,4 @@ jobs:
           docker tag $IMAGE_NAME:$VERSION $IMAGE_NAME:stable
 
           # Push the new stable tag
-          docker push $IMAGE_NAME:stable
+          docker push $IMAGE_NAME:$VERSION $IMAGE_NAME:stable
