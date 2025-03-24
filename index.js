@@ -701,12 +701,23 @@ ${thirdPartyHTML}
 
             https.request(options, async function(response) {
 
-                if (response.statusCode >= 300 && response.statusCode < 400) {
-                    res.json({ redirectUrl: response.headers.location });
-                } else {
-                    res.status(400).json({ error: 'expected redirect did not occur' });
-                }
-                res.end();
+                let data = '';
+
+                response.on('data', (chunk) => {
+                  data += chunk;
+                });
+
+                response.on('end', () => {
+              
+                    if (response.statusCode >= 300 && response.statusCode < 400) {
+                        res.json({ redirectUrl: response.headers.location });
+                    } else {
+                        logger.error({error: `${data}`, redirect_uri: `${env('ZITI_BROWZER_BOOTSTRAPPER_HOST')}`, error_code: response.statusCode});
+
+                        res.status(400).json({ error: 'expected redirect did not occur' });
+                    }
+                    res.end();
+                });
 
             }).end();
         }    
