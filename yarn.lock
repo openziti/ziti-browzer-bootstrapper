@@ -422,9 +422,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openziti/ziti-browzer-runtime@npm:^0.108.0":
-  version: 0.108.0
-  resolution: "@openziti/ziti-browzer-runtime@npm:0.108.0"
+"@openziti/ziti-browzer-runtime@npm:^0.112.0":
+  version: 0.112.0
+  resolution: "@openziti/ziti-browzer-runtime@npm:0.112.0"
   dependencies:
     "@auth0/auth0-spa-js": "npm:^2.0.4"
     "@babel/runtime": "npm:^7.17.9"
@@ -439,7 +439,7 @@ __metadata:
     localforage: "npm:^1.10.0"
     lodash-es: "npm:^4.17.21"
     luna-modal: "npm:^1.2.3"
-    luna-notification: "npm:^0.2.0"
+    luna-notification: "npm:^0.3.3"
     luna-setting: "npm:^1.0.1"
     luna-tab: "npm:^0.3.0"
     oauth4webapi: "npm:^2.17.0"
@@ -447,8 +447,8 @@ __metadata:
     uplot: "npm:^1.6.24"
     uuid: "npm:^11.1.0"
     wasm-feature-detect: "npm:^1.8.0"
-    workbox-window: "npm:^6.5.3"
-  checksum: a097f0c289e78b624e2cf8831a28eec42919ca04eb2d6b21752cc2f61ab8ef45b420523788380ace66d38c00346bf0f13510f9dfc171541035f8e8abd6bb27d9
+    workbox-window: "npm:^7.3.0"
+  checksum: 61bfda8714595417f24756a60ba53f5ac6d1a61464e209a1dedebc22ec868b13beb7055e8770056d61ed178c081a3b710b2b20ce10504e61a52de49526fceb34
   languageName: node
   linkType: hard
 
@@ -4214,12 +4214,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luna-notification@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "luna-notification@npm:0.2.0"
+"luna-notification@npm:^0.3.3":
+  version: 0.3.3
+  resolution: "luna-notification@npm:0.3.3"
   dependencies:
-    licia: "npm:^1.39.2"
-  checksum: e984fb51001c673149a57f6b43b849ce508ee1b53df7913e8c0f134ba5ffacff61880b41f988faba1152a1263d44be1fdf79d9fd5ec1e91d7eb27d7b721c19fa
+    licia: "npm:^1.46.0"
+  checksum: 626f85f371150666f3b59116e76a3f32288fdadf9027a584e806d46852b835f10081e1278ac4e05640e81b3928e84cfc907e0e1b726b497aabeece5a4f058e55
   languageName: node
   linkType: hard
 
@@ -7020,6 +7020,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"workbox-core@npm:7.3.0":
+  version: 7.3.0
+  resolution: "workbox-core@npm:7.3.0"
+  checksum: b7dce640cd9665ed207f65f5b08a50e2e24e5599790c6ea4fec987539b9d2ef81765d8c5f94acfee3a8a45d5ade8e1a4ebd0b8847a1471302ef75a5b93c7bd04
+  languageName: node
+  linkType: hard
+
 "workbox-expiration@npm:^6.6.0":
   version: 6.6.0
   resolution: "workbox-expiration@npm:6.6.0"
@@ -7059,13 +7066,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"workbox-window@npm:^6.5.3":
-  version: 6.6.0
-  resolution: "workbox-window@npm:6.6.0"
+"workbox-window@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "workbox-window@npm:7.3.0"
   dependencies:
     "@types/trusted-types": "npm:^2.0.2"
-    workbox-core: "npm:6.6.0"
-  checksum: 7e3fdfaa9d018644bf67ad51820838a18227ba612f8dbe13711e2ebdfd5e112ad5b165b50358eff3d0e7ced4bade49b456d4702254fcf57a3cfe193bd011e86b
+    workbox-core: "npm:7.3.0"
+  checksum: dbda33c4761ec40051cfe6e3f1701b2381b4f3b191f7a249c32f683503ea35cf8b42d1f99df5ba3b693fac78705d8ed0c191488bdd178c525d1291d0161ec8ff
   languageName: node
   linkType: hard
 
@@ -7261,7 +7268,7 @@ __metadata:
   resolution: "ziti-browzer-bootstrapper@workspace:."
   dependencies:
     "@openziti/ziti-browzer-edge-client": "npm:^0.6.2"
-    "@openziti/ziti-browzer-runtime": "npm:^0.108.0"
+    "@openziti/ziti-browzer-runtime": "npm:^0.112.0"
     "@openziti/ziti-browzer-sw": "npm:^0.83.0"
     acme-http-01-standalone: "npm:^3.0.5"
     ajv: "npm:^8.17.1"
