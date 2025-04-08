@@ -422,9 +422,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openziti/ziti-browzer-runtime@portal:/Users/curt/Repos/nf/github/ziti-browzer-runtime::locator=ziti-browzer-bootstrapper%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@openziti/ziti-browzer-runtime@portal:/Users/curt/Repos/nf/github/ziti-browzer-runtime::locator=ziti-browzer-bootstrapper%40workspace%3A."
+"@openziti/ziti-browzer-runtime@npm:^0.112.0":
+  version: 0.112.0
+  resolution: "@openziti/ziti-browzer-runtime@npm:0.112.0"
   dependencies:
     "@auth0/auth0-spa-js": "npm:^2.0.4"
     "@babel/runtime": "npm:^7.17.9"
@@ -448,8 +448,9 @@ __metadata:
     uuid: "npm:^11.1.0"
     wasm-feature-detect: "npm:^1.8.0"
     workbox-window: "npm:^7.3.0"
+  checksum: 61bfda8714595417f24756a60ba53f5ac6d1a61464e209a1dedebc22ec868b13beb7055e8770056d61ed178c081a3b710b2b20ce10504e61a52de49526fceb34
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "@openziti/ziti-browzer-sw-workbox-strategies@npm:^0.88.0":
   version: 0.88.0
