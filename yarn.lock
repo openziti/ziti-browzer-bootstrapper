@@ -422,9 +422,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openziti/ziti-browzer-runtime@npm:^0.115.0":
-  version: 0.115.0
-  resolution: "@openziti/ziti-browzer-runtime@npm:0.115.0"
+"@openziti/ziti-browzer-runtime@npm:^0.116.0":
+  version: 0.116.0
+  resolution: "@openziti/ziti-browzer-runtime@npm:0.116.0"
   dependencies:
     "@auth0/auth0-spa-js": "npm:^2.0.4"
     "@babel/runtime": "npm:^7.17.9"
@@ -448,7 +448,7 @@ __metadata:
     uuid: "npm:^11.1.0"
     wasm-feature-detect: "npm:^1.8.0"
     workbox-window: "npm:^7.3.0"
-  checksum: b841ce2ef5e032b5379782070fd97736066461a4a826cfebd7a366274046a818e6a065aef8ab73cf7e743a08c0debb2e993bb931579ad767a2dee3e28f5362ec
+  checksum: 160f5376e86d55942182f873e41a01fb98aa2ae01af4a83e7998eecd2a2ba9afd61d06fb5e954b839c69c2cae3ac675ff310d3cb02addfa335fbac877f86e3f1
   languageName: node
   linkType: hard
 
@@ -7268,7 +7268,7 @@ __metadata:
   resolution: "ziti-browzer-bootstrapper@workspace:."
   dependencies:
     "@openziti/ziti-browzer-edge-client": "npm:^0.6.2"
-    "@openziti/ziti-browzer-runtime": "npm:^0.115.0"
+    "@openziti/ziti-browzer-runtime": "npm:^0.116.0"
     "@openziti/ziti-browzer-sw": "npm:^0.83.0"
     acme-http-01-standalone: "npm:^3.0.5"
     ajv: "npm:^8.17.1"
