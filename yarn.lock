@@ -4941,14 +4941,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node_extra_ca_certs_mozilla_bundle@npm:^1.0.6":
-  version: 1.0.6
-  resolution: "node_extra_ca_certs_mozilla_bundle@npm:1.0.6"
+"node_extra_ca_certs_mozilla_bundle@npm:^1.0.7":
+  version: 1.0.7
+  resolution: "node_extra_ca_certs_mozilla_bundle@npm:1.0.7"
   dependencies:
     axios: "npm:^1.6.5"
     cross-env: "npm:^7.0.3"
     csvtojson: "npm:^2.0.10"
-  checksum: 06b40da339b9d594d357cea9070eb0b4ea5fe89c2576cdbf7d0026f08caa8ca7213fa6e4d4eebaf3d77162dc3387d092c2a0042a1b3b16a94266ce703d80be70
+  checksum: a7f270f6101875a2b38d7b97b9c666b4900ba36ae1205eb85118ef85ba04e954fe729d1374434cbd7d27b2692f8e2c36a2df2267db340ba4a29006f2461b0df7
   languageName: node
   linkType: hard
 
@@ -7310,7 +7310,7 @@ __metadata:
     node-cache: "npm:^5.1.2"
     node-cron: "npm:^3.0.3"
     node-fetch: "npm:^3.3.2"
-    node_extra_ca_certs_mozilla_bundle: "npm:^1.0.6"
+    node_extra_ca_certs_mozilla_bundle: "npm:^1.0.7"
     nyc: "npm:^15.1.0"
     openid-client: "npm:^5.6.5"
     pump: "npm:^3.0.0"
