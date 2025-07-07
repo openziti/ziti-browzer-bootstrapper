@@ -265,8 +265,6 @@ const startBootstrapper =  async ( logger ) => {
         let thirdPartyHTML = '';
         let ziti_inject_html = `
 ${thirdPartyHTML}
-<!-- load JSPI Origin Trial Token -->
-<meta http-equiv="origin-trial" id="ziti-browzer-origin-trial" content="${common.getOriginTrialToken()}">
 <!-- load Ziti browZer Runtime -->
 <script id="from-ziti-browzer-bootstrapper" type="text/javascript" src="${zbrSrc}"></script>
 `;
