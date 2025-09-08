@@ -6804,6 +6804,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuid@npm:^12.0.0":
+  version: 12.0.0
+  resolution: "uuid@npm:12.0.0"
+  bin:
+    uuid: dist/bin/uuid
+  checksum: 242db6735d15a187a0d7f22576db02668f974ffc65d0806b23fe4237cbb0db3153442cb3082c7550784acb6272e5c6c931532916f9604bd814dfab1edf2dac40
+  languageName: node
+  linkType: hard
+
 "uvu@npm:^0.5.0":
   version: 0.5.6
   resolution: "uvu@npm:0.5.6"
@@ -7321,7 +7330,7 @@ __metadata:
     sse: "npm:0.0.8"
     trumpet: "npm:^1.7.2"
     urlon: "npm:^3.1.0"
-    uuid: "npm:^11.1.0"
+    uuid: "npm:^12.0.0"
     vhost: "npm:^3.0.2"
     winston: "npm:~3.13.0"
     xmlhttprequest-ssl: "npm:>=1.6.2"
